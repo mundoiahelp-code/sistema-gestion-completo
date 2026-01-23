@@ -1,0 +1,14 @@
+{
+  "system": {
+    "systemName": "MundoIAple",
+    "systemUrl": "http://localhost:3000",
+    "supportEmail": "sistema@mundoiaple.store"
+  },
+  "smtp": {
+    "host": "smtp.hostinger.com",
+    "port": "465",
+    "secure": true,
+    "user": "sistema@mundoiaple.store",
+    "from": "MundoIAple Sistema <sistema@mundoiaple.store>"
+  }
+}

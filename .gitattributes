@@ -1,0 +1,24 @@
+# Asegurar que archivos sensibles nunca se commiteen
+.env filter=git-crypt diff=git-crypt
+.env.* filter=git-crypt diff=git-crypt
+*.db filter=git-crypt diff=git-crypt
+*.session.json filter=git-crypt diff=git-crypt
+*-credentials.json filter=git-crypt diff=git-crypt
+
+# Normalización de líneas
+* text=auto
+*.js text eol=lf
+*.ts text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# Archivos binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
