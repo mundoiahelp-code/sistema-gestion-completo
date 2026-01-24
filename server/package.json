@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc && npx prisma generate",
     "start": "npx prisma migrate deploy && node dist/index.js",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
