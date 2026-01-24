@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "npx prisma generate && tsc --skipLibCheck --noEmit false || true",
-    "start": "tsx src/index.ts",
+    "build": "npx prisma generate && tsc",
+    "start": "npx prisma migrate deploy && node dist/index.js",
+    "postinstall": "npx prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
