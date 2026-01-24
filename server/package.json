@@ -7,7 +7,7 @@
     "node": "18.x"
   },
   "scripts": {
-    "build": "npx prisma generate && tsc",
+    "build": "npx prisma generate && tsc --skipLibCheck",
     "start": "npx prisma migrate deploy && node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "migrate": "npx prisma migrate deploy"
