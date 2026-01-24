@@ -1,256 +1,171 @@
-# 🍎 Sistema MundoIAple - Gestión de Negocio con IA
+# 🏪 Sistema de Gestión Completo
 
-Sistema completo de gestión para negocios de tecnología con Asistente IA integrado.
+Sistema completo de gestión para tiendas con frontend, backend y landing page.
 
-## 🎉 NUEVO: Sistema Multi-Tenant
-
-El sistema ahora soporta **múltiples clientes simultáneos**, cada uno con su propio WhatsApp e IA completamente aislados.
-
-**Ver documentación completa:**
-- 📖 **`RESUMEN_MULTI_TENANT.md`** - Resumen ejecutivo
-- 🚀 **`SETUP_MULTI_TENANT.md`** - Guía rápida de inicio
-- 🧪 **`PROBAR_MULTI_TENANT.md`** - Cómo probar el sistema
-- 📚 **`MULTI_TENANT_WHATSAPP.md`** - Documentación completa
-- 🔄 **`MIGRACION_A_MULTI_TENANT.md`** - Migrar desde sistema antiguo
-
----
-
-## 🚀 Inicio Rápido
-
-### Requisitos
-- Node.js 18+
-- PostgreSQL (o Supabase)
-- npm o yarn
-
-### Instalación
-
-```bash
-# 1. Clonar repositorio
-git clone <repo-url>
-cd sistema-mundoiaple
-
-# 2. Instalar dependencias
-cd server && npm install
-cd ../sistema && npm install
-cd ../landing && npm install
-
-# 3. Configurar variables de entorno
-# Copiar .env.example a .env en cada carpeta y configurar
-
-# 4. Ejecutar migraciones
-cd server
-npx prisma migrate deploy
-
-# 5. Crear superadmin
-npm run setup:superadmin
-
-# 6. Iniciar servicios
-npm run dev  # En cada carpeta (server, sistema, landing)
-```
-
-## 📁 Estructura del Proyecto
+## 📦 Estructura del Proyecto
 
 ```
-.
+sistema-gestion-completo/
 ├── server/          # Backend API (Node.js + Express + Prisma)
 ├── sistema/         # Frontend Admin (Next.js 14)
 ├── landing/         # Landing Page (Next.js 14)
-├── chat-auto/       # Bot WhatsApp (opcional)
+├── DEPLOY-GUIDE.md  # Guía completa de deployment
 └── README.md        # Este archivo
 ```
 
-## 🎯 Funcionalidades
+## 🚀 Deploy Rápido
 
-### 🆕 Multi-Tenant (NUEVO)
-- **Múltiples Clientes**: Vender el sistema a 10, 20 o más tiendas
-- **WhatsApp Aislado**: Cada cliente con su propio WhatsApp
-- **IA Separada**: Cada cliente con su propia IA que responde automáticamente
-- **Datos Aislados**: Nada se mezcla entre clientes
-- **Gestión con PM2**: Procesos separados, fácil de monitorear
+### Producción (Supabase + Railway + Vercel)
 
-### ✅ Gestión Completa
-- **Productos**: Teléfonos y accesorios con IMEI, códigos de barras, costos
-- **Ventas**: Registro de ventas con múltiples métodos de pago (USD/ARS)
-- **Clientes**: Base de datos de clientes con historial
-- **Usuarios**: Sistema de roles (ADMIN, MANAGER, SELLER)
-- **Dashboard**: Métricas en tiempo real, ganancias reales, reportes
+1. **Leer la guía completa**: [DEPLOY-GUIDE.md](./DEPLOY-GUIDE.md)
+2. **Crear base de datos en Supabase**
+3. **Deploy backend en Railway**
+4. **Deploy frontends en Vercel**
+5. **Crear usuario admin**
 
-### 🔍 Sistema de Auditoría
-- Registro automático de todas las acciones
-- Historial completo con filtros avanzados
-- Información detallada (usuario, fecha, IP, cambios)
-- Solo visible para ADMIN
+Todo el proceso está explicado paso a paso en la guía.
 
-### 🔐 Seguridad
-- Autenticación JWT
-- Multi-tenant (cada negocio aislado)
-- Roles y permisos
-- Auditoría completa
-- Backups automáticos
+## 💻 Desarrollo Local
 
-### 📊 Reportes y Métricas
-- Ventas del mes por moneda
-- Ganancias reales (ventas - costos)
-- Margen de ganancia
-- Top productos vendidos
-- Ventas por vendedor
+### Requisitos
+- Node.js 18+
+- PostgreSQL (local o Supabase)
+- npm o yarn
 
-## 🛠️ Scripts Útiles
-
-### Multi-Tenant (NUEVO)
+### 1. Clonar repositorio
 ```bash
-# Crear nuevo cliente
+git clone https://github.com/tu-usuario/sistema-gestion-completo.git
+cd sistema-gestion-completo
+```
+
+### 2. Configurar Backend
+```bash
 cd server
-node create-tenant.js
-
-# Iniciar bot de un cliente
-node start-tenant-bot.js <tenantId>
-
-# Ver todos los bots
-pm2 status
-
-# Ver logs de un bot
-pm2 logs bot-abc12345
-
-# Reiniciar un bot
-pm2 restart bot-abc12345
+npm install
+cp .env.example .env
+# Editar .env con tu configuración
+npx prisma migrate dev
+node init-production-db.js
+npm run dev
 ```
 
-### Backend (server/)
+### 3. Configurar Sistema (Frontend)
 ```bash
-npm run dev              # Desarrollo
-npm run build            # Build producción
-npm run start            # Iniciar producción
-npm run setup:superadmin # Crear superadmin
-npm run clean:db         # Limpiar base de datos
-npm run backup           # Backup de BD
-npm run health           # Health check
-npm run integrity        # Verificar integridad
+cd sistema
+npm install
+cp .env.example .env.local
+# Editar .env.local
+npm run dev
 ```
 
-### Frontend (sistema/)
+### 4. Configurar Landing
 ```bash
-npm run dev              # Desarrollo
-npm run build            # Build producción
-npm run start            # Iniciar producción
+cd landing
+npm install
+cp .env.example .env.local
+# Editar .env.local
+npm run dev
 ```
 
-## 📚 Documentación
+### Acceder
+- **Sistema**: http://localhost:3000
+- **Landing**: http://localhost:3001
+- **API**: http://localhost:8002
 
-### Multi-Tenant (NUEVO)
-- `RESUMEN_MULTI_TENANT.md` - Resumen ejecutivo
-- `SETUP_MULTI_TENANT.md` - Guía rápida
-- `PROBAR_MULTI_TENANT.md` - Cómo probar
-- `MULTI_TENANT_WHATSAPP.md` - Documentación completa
-- `MIGRACION_A_MULTI_TENANT.md` - Migrar desde sistema antiguo
-- `IMPLEMENTACION_MULTI_TENANT_COMPLETA.md` - Cambios técnicos
+### Credenciales por defecto
+```
+Email: mundoia.help@gmail.com
+Password: Lauti10b12RR!!
+```
+
+## 🛠️ Stack Tecnológico
 
 ### Backend
-- `server/README.md` - Documentación general
-- `server/INSTALACION.md` - Guía de instalación
-- `server/PRODUCCION.md` - Deploy a producción
-- `server/ESTRUCTURA.md` - Estructura del código
-- `server/CONFIGURACION_EMAILS.md` - Configuración de emails
-- `server/SEGURIDAD_Y_BACKUPS.md` - Seguridad y backups
-- `server/GUIA_SUPABASE.md` - Configuración de Supabase
-
-### Sistema
-- `SISTEMA_AUDITORIA_IMPLEMENTADO.md` - Sistema de auditoría
-- `SISTEMA_COMPLETO_LISTO.md` - Estado completo del sistema
-
-## 🌐 URLs
-
-### Desarrollo
-- Backend: http://localhost:8001
-- Sistema Admin: http://localhost:3000
-- Landing: http://localhost:3001
-
-### Producción
-Configurar en variables de entorno de cada servicio.
-
-## 🔧 Tecnologías
-
-### Backend
-- Node.js + Express
+- Node.js 18
+- Express
 - Prisma ORM
 - PostgreSQL
 - JWT Authentication
-- Nodemailer (emails)
-- WhatsApp Web.js (opcional)
+- TypeScript
 
-### Frontend
-- Next.js 14 (App Router)
+### Frontend (Sistema)
+- Next.js 14
 - React 18
 - TypeScript
 - Tailwind CSS
 - Shadcn/ui
-- Recharts (gráficos)
 
-## 📊 Performance
+### Frontend (Landing)
+- Next.js 14
+- React 18
+- TypeScript
+- Tailwind CSS
 
-- ✅ Optimizado para 10+ usuarios simultáneos
-- ✅ Índices en todas las tablas críticas
-- ✅ Queries optimizadas
-- ✅ Paginación en todas las listas
-- ✅ Caché de datos frecuentes
+## 📚 Documentación
+
+- [Guía de Deploy](./DEPLOY-GUIDE.md) - Deployment completo a producción
+- [Backend README](./server/README.md) - Documentación del backend
+- [Sistema README](./sistema/README.md) - Documentación del frontend admin
+- [Landing README](./landing/README.md) - Documentación de la landing
 
 ## 🔒 Seguridad
 
-- ✅ JWT con expiración
-- ✅ Contraseñas hasheadas (bcrypt)
-- ✅ Validación de inputs
-- ✅ CORS configurado
-- ✅ Rate limiting
-- ✅ SQL injection protegido
-- ✅ XSS protegido
-- ✅ Auditoría completa
+- Autenticación JWT
+- Passwords hasheados con bcrypt
+- CORS configurado
+- Rate limiting
+- Helmet para headers de seguridad
+- Variables de entorno para secretos
 
-## 📱 Compatibilidad
+## 📝 Variables de Entorno
 
-- ✅ Chrome, Firefox, Safari, Edge (últimas 2 versiones)
-- ✅ Responsive (Desktop, Tablet, Mobile)
-- ✅ Touch-friendly
+### Backend (.env)
+```env
+DATABASE_URL=postgresql://...
+JWT_SECRET=tu-secret-aqui
+PORT=8002
+FRONTEND_URL=http://localhost:3000
+LANDING_URL=http://localhost:3001
+NODE_ENV=development
+```
 
-## 🚀 Deploy
+### Sistema (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8002/api
+```
 
-### Backend (Railway/Render)
-1. Conectar repositorio
-2. Configurar variables de entorno
-3. Ejecutar migraciones
-4. Deploy automático
+### Landing (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8002/api
+NEXT_PUBLIC_SISTEMA_URL=http://localhost:3000
+```
 
-### Frontend (Vercel/Netlify)
-1. Conectar repositorio
-2. Configurar variables de entorno
-3. Build automático
-4. Deploy automático
+## 🤝 Contribuir
 
-Ver `server/PRODUCCION.md` para más detalles.
-
-## 🐛 Troubleshooting
-
-### Error al activar cuenta
-- Verificar `NEXT_PUBLIC_API_URL` en `.env.local`
-- Debe apuntar a `http://localhost:8001` en desarrollo
-
-### No aparece el nombre del negocio
-- Completar el wizard de onboarding
-
-### No veo el menú "Historial"
-- Solo ADMIN puede verlo
-
-### No se calculan las ganancias
-- Ingresar el costo de los productos
-
-## 📞 Soporte
-
-Para problemas o consultas, revisar la documentación en las carpetas correspondientes.
+1. Fork el proyecto
+2. Crear rama feature (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
 
 ## 📄 Licencia
 
-Propietario - Todos los derechos reservados
+Este proyecto es privado y propietario.
+
+## 👤 Autor
+
+**Mundo Apple**
+- Email: mundoia.help@gmail.com
+- Website: https://www.mundoaple.store
+
+## 🆘 Soporte
+
+Si tienes problemas:
+1. Revisar [DEPLOY-GUIDE.md](./DEPLOY-GUIDE.md)
+2. Revisar logs del servidor
+3. Revisar consola del navegador (F12)
+4. Contactar al equipo de desarrollo
 
 ---
 
-**Estado:** ✅ 100% Funcional  
-**Última actualización:** Enero 2026
+**¿Listo para deployar?** Lee la [Guía de Deploy](./DEPLOY-GUIDE.md) 🚀

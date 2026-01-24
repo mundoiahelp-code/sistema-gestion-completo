@@ -1,5 +1,6 @@
 /**
- * Script para crear un nuevo usuario SUPER_ADMIN
+ * Script para crear/actualizar usuario super admin
+ * Uso: node create-new-admin.js
  */
 
 const { PrismaClient } = require('@prisma/client');
@@ -7,84 +8,56 @@ const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
-const NEW_ADMIN = {
+const ADMIN = {
   email: 'mundoia.help@gmail.com',
   password: 'Lauti10b12RR!!',
-  name: 'Lauti - Super Admin'
+  name: 'Super Admin'
 };
 
 async function main() {
-  console.log('🚀 Creando nuevo usuario SUPER_ADMIN...\n');
+  console.log('🔧 Creando/actualizando usuario super admin...\n');
 
-  // Buscar el tenant del sistema
-  const systemTenant = await prisma.tenant.findFirst({
-    where: { slug: 'sistema' }
-  });
-
-  if (!systemTenant) {
-    throw new Error('No se encontró el tenant del sistema');
+  // Buscar tenant y tienda
+  const tenant = await prisma.tenant.findFirst();
+  if (!tenant) {
+    throw new Error('❌ No hay tenants en la base de datos. Ejecutar init-production-db.js primero');
   }
 
-  // Buscar la sucursal
-  const store = await prisma.store.findFirst({
-    where: { tenantId: systemTenant.id }
-  });
-
+  const store = await prisma.store.findFirst({ where: { tenantId: tenant.id } });
   if (!store) {
-    throw new Error('No se encontró la sucursal');
+    throw new Error('❌ No hay tiendas en la base de datos. Ejecutar init-production-db.js primero');
   }
 
-  // Verificar si el usuario ya existe
-  const existingUser = await prisma.user.findUnique({
-    where: { email: NEW_ADMIN.email }
+  // Crear o actualizar usuario
+  const hashedPassword = await bcrypt.hash(ADMIN.password, 10);
+  const user = await prisma.user.upsert({
+    where: { email: ADMIN.email },
+    update: {
+      password: hashedPassword,
+      role: 'SUPER_ADMIN',
+      active: true
+    },
+    create: {
+      email: ADMIN.email,
+      password: hashedPassword,
+      name: ADMIN.name,
+      role: 'SUPER_ADMIN',
+      tenantId: tenant.id,
+      storeId: store.id,
+      active: true
+    }
   });
 
-  if (existingUser) {
-    console.log('⚠️  El usuario ya existe. Actualizando...');
-    const hashedPassword = await bcrypt.hash(NEW_ADMIN.password, 10);
-    
-    const updatedUser = await prisma.user.update({
-      where: { email: NEW_ADMIN.email },
-      data: {
-        password: hashedPassword,
-        name: NEW_ADMIN.name,
-        role: 'SUPER_ADMIN',
-        active: true
-      }
-    });
-    
-    console.log(`✅ Usuario actualizado: ${updatedUser.email}\n`);
-  } else {
-    console.log('👤 Creando nuevo usuario...');
-    const hashedPassword = await bcrypt.hash(NEW_ADMIN.password, 10);
-    
-    const newAdmin = await prisma.user.create({
-      data: {
-        email: NEW_ADMIN.email,
-        password: hashedPassword,
-        name: NEW_ADMIN.name,
-        role: 'SUPER_ADMIN',
-        tenantId: systemTenant.id,
-        storeId: store.id,
-        active: true
-      }
-    });
-    
-    console.log(`✅ Usuario creado: ${newAdmin.email}\n`);
-  }
-
+  console.log('✅ Usuario configurado correctamente\n');
   console.log('═══════════════════════════════════════════');
-  console.log('🎉 ¡USUARIO CONFIGURADO!');
-  console.log('═══════════════════════════════════════════');
-  console.log('');
-  console.log('📧 Email:    ', NEW_ADMIN.email);
-  console.log('🔑 Password: ', NEW_ADMIN.password);
-  console.log('');
+  console.log('📧 Email:    ', ADMIN.email);
+  console.log('🔑 Password: ', ADMIN.password);
+  console.log('═══════════════════════════════════════════\n');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error:', e);
+    console.error('❌ Error:', e.message);
     process.exit(1);
   })
   .finally(async () => {
