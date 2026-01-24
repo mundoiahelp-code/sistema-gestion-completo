@@ -1,32 +1,16 @@
 {
-  "name": "iphonezonasur-server",
+  "name": "sistema-backend",
   "version": "1.0.0",
-  "description": "Backend moderno para sistema de gestión",
+  "description": "Backend sistema de gestión",
   "main": "dist/index.js",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "18.x"
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "npx prisma generate && tsc",
+    "build": "tsc && npx prisma generate",
     "start": "npx prisma migrate deploy && node dist/index.js",
-    "postinstall": "npx prisma generate",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "seed": "tsx prisma/seed.ts",
-    "backup": "node scripts/backup-database.js",
-    "health": "node scripts/health-check.js",
-    "integrity": "node scripts/data-integrity-check.js",
-    "setup:superadmin": "node setup-superadmin.js",
-    "clean:db": "node clean-db.js"
+    "dev": "tsx watch src/index.ts"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@prisma/client": "^5.22.0",
