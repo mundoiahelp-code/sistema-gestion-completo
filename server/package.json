@@ -7,18 +7,13 @@
     "node": "18.x"
   },
   "scripts": {
-    "build": "tsc && npx prisma generate",
+    "build": "npx prisma generate && tsc",
     "start": "npx prisma migrate deploy && node dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "postinstall": "npx prisma generate"
+    "migrate": "npx prisma migrate deploy"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
     "@prisma/client": "^5.22.0",
-    "@types/multer": "^2.0.0",
-    "@types/nodemailer": "^7.0.4",
-    "@types/qrcode": "^1.5.6",
-    "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.1",
@@ -32,11 +27,6 @@
     "multer": "^2.0.2",
     "node-cache": "^5.1.2",
     "node-cron": "^4.2.1",
-    "nodemailer": "^7.0.12",
-    "pino": "^10.1.0",
-    "qrcode": "^1.5.4",
-    "qrcode-terminal": "^0.12.0",
-    "resend": "^6.6.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
