@@ -18,6 +18,13 @@ class WhatsAppService {
   getSocket() {
     return null;
   }
+
+  getStatus() {
+    return {
+      connected: false,
+      message: 'WhatsApp bot runs separately'
+    };
+  }
 }
 
 export const whatsappService = new WhatsAppService();
