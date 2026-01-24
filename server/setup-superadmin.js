@@ -18,9 +18,9 @@ const prisma = new PrismaClient();
 // ========== CONFIGURACIÓN ==========
 // Cambiá estos datos por los tuyos
 const SUPER_ADMIN = {
-  email: 'sistema@mundoiaple.com',
-  password: 'mundoiaplezonasur',
-  name: 'Dueño sistema'
+  email: 'mundoia.help@gmail.com',
+  password: 'Lauti10b12RR!!',
+  name: 'Lauti - Super Admin'
 };
 // ===================================
 
