@@ -5,13 +5,13 @@ class WhatsAppService {
     return false;
   }
 
-  async sendMessage(phone: string, message: string) {
-    console.log(`📱 WhatsApp message queued for ${phone}`);
+  async sendMessage(phone: string, message: string, tenantId?: string) {
+    console.log(`📱 WhatsApp message queued for ${phone}${tenantId ? ` (tenant: ${tenantId})` : ''}`);
     return true;
   }
 
-  async sendMessageToGroup(chatId: string, message: string) {
-    console.log(`📱 WhatsApp group message queued for ${chatId}`);
+  async sendMessageToGroup(chatId: string, message: string, tenantId?: string) {
+    console.log(`📱 WhatsApp group message queued for ${chatId}${tenantId ? ` (tenant: ${tenantId})` : ''}`);
     return true;
   }
 
@@ -24,6 +24,16 @@ class WhatsAppService {
       connected: false,
       message: 'WhatsApp bot runs separately'
     };
+  }
+
+  async disconnect() {
+    console.log('⚠️ WhatsApp disconnect called (dummy service)');
+    return true;
+  }
+
+  async reconnect() {
+    console.log('⚠️ WhatsApp reconnect called (dummy service)');
+    return false;
   }
 }
 
