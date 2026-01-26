@@ -603,12 +603,15 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
       ...(process.env.NODE_ENV === 'development' && { code: verificationCode })
     });
     
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Datos inválidos', details: error.errors });
     }
     console.error('Error enviando código de verificación:', error);
-    res.status(500).json({ error: 'Error al enviar código de verificación' });
+    res.status(500).json({ 
+      error: 'Error al enviar código de verificación',
+      details: error.message || error.toString()
+    });
   }
 };
 
@@ -822,12 +825,15 @@ export const forgotPassword = async (req: Request, res: Response) => {
       ...(process.env.NODE_ENV === 'development' && { resetLink })
     });
     
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Email inválido', details: error.errors });
     }
     console.error('Error en forgot password:', error);
-    res.status(500).json({ error: 'Error al procesar solicitud' });
+    res.status(500).json({ 
+      error: 'Error al procesar solicitud',
+      details: error.message || error.toString()
+    });
   }
 };
 

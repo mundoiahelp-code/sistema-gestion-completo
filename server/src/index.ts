@@ -40,6 +40,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8001;
 
+// Trust proxy - necesario para Railway/Vercel
+app.set('trust proxy', 1);
+
 // CORS PRIMERO - antes que cualquier otra cosa
 app.use(cors({
   origin: true, // Permitir todos los orígenes en desarrollo
