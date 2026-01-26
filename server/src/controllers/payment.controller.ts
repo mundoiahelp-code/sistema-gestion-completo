@@ -899,10 +899,3 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
   }
 };
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Datos inválidos', details: error.errors });
-    }
-    console.error('Error en reset password:', error);
-    res.status(500).json({ error: 'Error al restablecer contraseña' });
-  }
-};
