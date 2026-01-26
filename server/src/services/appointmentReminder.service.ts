@@ -33,7 +33,7 @@ class AppointmentReminderService {
       
       // Buscar turnos que:
       // 1. Son para las próximas 2 horas (ventana de 5 min para no perder ninguno)
-      // 2. Fueron creados hace más de 30 minutos (no mandar si acaba de sacar el turno)
+      // 2. Fueron creados hace más de 2 horas (no mandar si acaba de sacar el turno)
       // 3. Están confirmados o pendientes
       // 4. No se les ha enviado recordatorio aún
       
@@ -52,9 +52,9 @@ class AppointmentReminderService {
             lte: targetTimeEnd
           },
           status: { in: ['CONFIRMED', 'PENDING'] },
-          // Creado hace más de 30 minutos
+          // Creado hace más de 2 horas
           createdAt: {
-            lte: new Date(now.getTime() - 30 * 60 * 1000)
+            lte: new Date(now.getTime() - 2 * 60 * 60 * 1000)
           }
         },
         include: {

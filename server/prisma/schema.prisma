@@ -13,6 +13,7 @@ model Tenant {
   name                        String
   slug                        String                       @unique
   logo                        String?
+  customLogo                  String?                      // URL del logo personalizado
   primaryColor                String?                      @default("#000000")
   secondaryColor              String?                      @default("#ffffff")
   phone                       String?
@@ -65,6 +66,7 @@ model Tenant {
   botPort                     Int?
   lastSalesExportAt           DateTime?
   appointments                Appointment[]
+  blockedTimeSlots            BlockedTimeSlot[]
   auditLogs                   AuditLog[]
   botConfigs                  BotConfig[]
   broadcastChannels           BroadcastChannel[]
@@ -95,6 +97,8 @@ model User {
   active                  Boolean                  @default(true)
   resetPasswordToken      String?
   resetPasswordExpires    DateTime?
+  refreshToken            String?                  @unique
+  refreshTokenExpires     DateTime?
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   tenantId                String
@@ -133,6 +137,7 @@ model Store {
   updatedAt           DateTime      @updatedAt
   tenantId            String
   appointments        Appointment[]
+  blockedTimeSlots    BlockedTimeSlot[]
   products            Product[]
   sales               Sale[]
   tenant              Tenant        @relation(fields: [tenantId], references: [id])
@@ -350,6 +355,22 @@ model Appointment {
   @@index([date, time])
   @@index([customerPhone])
   @@map("appointments")
+}
+
+model BlockedTimeSlot {
+  id        String   @id @default(uuid())
+  date      DateTime
+  startTime String
+  endTime   String
+  reason    String?
+  storeId   String?
+  tenantId  String
+  createdAt DateTime @default(now())
+  store     Store?   @relation(fields: [storeId], references: [id])
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([date, storeId])
+  @@map("blocked_time_slots")
 }
 
 model BotConfig {

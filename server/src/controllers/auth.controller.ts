@@ -41,6 +41,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
+    // Generar access token (1 hora)
     const token = jwt.sign(
       { 
         userId: user.id, 
@@ -49,13 +50,35 @@ export const login = async (req: Request, res: Response) => {
         tenantId: user.tenantId 
       },
       process.env.JWT_SECRET!,
+      { expiresIn: '1h' }
+    );
+
+    // Generar refresh token (7 días)
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
+
+    // Guardar refresh token en la base de datos
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        refreshToken,
+        refreshTokenExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      }
+    });
 
     res.cookie('accessToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 60 * 60 * 1000 // 1 hora
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
     });
 
     // Calcular estado de suscripción
@@ -90,7 +113,7 @@ export const login = async (req: Request, res: Response) => {
       userAgent: req.get('user-agent') || 'unknown'
     });
     
-    res.json({ user: userWithoutPassword, token, subscription });
+    res.json({ user: userWithoutPassword, token, refreshToken, subscription });
   } catch (error) {
     console.error('Error en login:', error);
     res.status(400).json({ error: 'Error al iniciar sesión' });
@@ -197,5 +220,57 @@ export const verifyPassword = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Error al verificar contraseña:', error);
     res.status(500).json({ error: 'Error al verificar contraseña', valid: false });
+  }
+};
+
+// Renovar access token usando refresh token
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token no proporcionado' });
+    }
+
+    // Verificar el refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET!) as { userId: string };
+
+    // Buscar usuario y verificar que el refresh token coincida
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { tenant: true }
+    });
+
+    if (!user || !user.active || user.refreshToken !== refreshToken) {
+      return res.status(401).json({ error: 'Refresh token inválido' });
+    }
+
+    // Verificar que el refresh token no haya expirado
+    if (user.refreshTokenExpires && new Date() > user.refreshTokenExpires) {
+      return res.status(401).json({ error: 'Refresh token expirado' });
+    }
+
+    // Generar nuevo access token
+    const newAccessToken = jwt.sign(
+      { 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role,
+        tenantId: user.tenantId 
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: '1h' }
+    );
+
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 1000 // 1 hora
+    });
+
+    res.json({ token: newAccessToken, message: 'Token renovado exitosamente' });
+  } catch (error) {
+    console.error('Error renovando token:', error);
+    res.status(401).json({ error: 'Error al renovar token' });
   }
 };

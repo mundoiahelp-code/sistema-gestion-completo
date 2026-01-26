@@ -843,3 +843,56 @@ export const createBusinessInvitation = async (req: AuthRequest, res: Response) 
     res.status(400).json({ error: 'Error al crear invitación' });
   }
 };
+
+// Subir logo personalizado
+export const uploadCustomLogo = async (req: AuthRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    
+    if (!tenantId) {
+      return res.status(400).json({ error: 'Tenant no encontrado' });
+    }
+
+    // El logo viene como base64 en el body
+    const { logo } = req.body;
+    
+    if (!logo) {
+      return res.status(400).json({ error: 'Logo requerido' });
+    }
+
+    // Actualizar tenant con el logo
+    const tenant = await prisma.tenant.update({
+      where: { id: tenantId },
+      data: { customLogo: logo }
+    });
+
+    res.json({ 
+      message: 'Logo actualizado exitosamente',
+      customLogo: tenant.customLogo
+    });
+  } catch (error) {
+    console.error('Error subiendo logo:', error);
+    res.status(500).json({ error: 'Error al subir logo' });
+  }
+};
+
+// Eliminar logo personalizado
+export const deleteCustomLogo = async (req: AuthRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    
+    if (!tenantId) {
+      return res.status(400).json({ error: 'Tenant no encontrado' });
+    }
+
+    await prisma.tenant.update({
+      where: { id: tenantId },
+      data: { customLogo: null }
+    });
+
+    res.json({ message: 'Logo eliminado exitosamente' });
+  } catch (error) {
+    console.error('Error eliminando logo:', error);
+    res.status(500).json({ error: 'Error al eliminar logo' });
+  }
+};

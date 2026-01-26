@@ -18,7 +18,9 @@ import {
   updateHiddenModels,
   updateHiddenCategories,
   updateTenantPlan,
-  createBusinessInvitation
+  createBusinessInvitation,
+  uploadCustomLogo,
+  deleteCustomLogo
 } from '../controllers/tenant.controller';
 import { 
   getTenantPayments, 
@@ -49,6 +51,8 @@ router.patch('/current/locale', authorize('ADMIN'), updateLocale);
 router.patch('/current/hidden-models', authorize('ADMIN'), updateHiddenModels);
 router.patch('/current/hidden-categories', authorize('ADMIN'), updateHiddenCategories);
 router.post('/current/onboarding', authorize('ADMIN'), completeOnboarding);
+router.post('/current/logo', authorize('ADMIN'), uploadCustomLogo);
+router.delete('/current/logo', authorize('ADMIN'), deleteCustomLogo);
 
 // Rutas de estadísticas de IA (solo SUPER_ADMIN) - ANTES de las rutas con :id
 router.get('/ai-stats/global', authorize('SUPER_ADMIN'), getGlobalAIStats);
