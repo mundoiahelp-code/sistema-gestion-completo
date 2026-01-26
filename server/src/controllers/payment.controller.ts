@@ -754,3 +754,130 @@ export const resendVerificationCode = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error al reenviar código' });
   }
 };
+
+// ============================================
+// ENDPOINTS DE RECUPERACIÓN DE CONTRASEÑA
+// ============================================
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email()
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string(),
+  password: z.string().min(6)
+});
+
+// Solicitar recuperación de contraseña
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = forgotPasswordSchema.parse(req.body);
+    
+    // Buscar usuario por email
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+    
+    if (!user) {
+      // Por seguridad, no revelar si el email existe o no
+      return res.json({ 
+        success: true, 
+        message: 'Si el email existe, recibirás un link de recuperación' 
+      });
+    }
+    
+    // Generar token único
+    const crypto = await import('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    
+    // Guardar token en el usuario
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: resetTokenExpires
+      }
+    });
+    
+    // Generar link de recuperación
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.mundoaple.store';
+    const resetLink = `${frontendUrl}/restablecer-password/${resetToken}`;
+    
+    // Enviar email
+    const { sendPasswordResetEmail } = await import('../services/email.service');
+    await sendPasswordResetEmail({
+      to: email,
+      userName: user.name,
+      resetLink
+    });
+    
+    console.log(`✅ Email de recuperación enviado a ${email}`);
+    console.log(`🔗 Reset link: ${resetLink}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Si el email existe, recibirás un link de recuperación',
+      // En desarrollo, devolver el link para testing
+      ...(process.env.NODE_ENV === 'development' && { resetLink })
+    });
+    
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Email inválido', details: error.errors });
+    }
+    console.error('Error en forgot password:', error);
+    res.status(500).json({ error: 'Error al procesar solicitud' });
+  }
+};
+
+// Restablecer contraseña con token
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = resetPasswordSchema.parse(req.body);
+    
+    // Buscar usuario por token
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          gt: new Date() // Token no expirado
+        }
+      }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ 
+        error: 'Token inválido o expirado. Solicita un nuevo link de recuperación.' 
+      });
+    }
+    
+    // Hashear nueva contraseña
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.default.hash(password, 10);
+    
+    // Actualizar contraseña y limpiar token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpires: null
+      }
+    });
+    
+    console.log(`✅ Contraseña restablecida para ${user.email}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Contraseña restablecida exitosamente' 
+    });
+    
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Datos inválidos', details: error.errors });
+    }
+    console.error('Error en reset password:', error);
+    res.status(500).json({ error: 'Error al restablecer contraseña' });
+  }
+};

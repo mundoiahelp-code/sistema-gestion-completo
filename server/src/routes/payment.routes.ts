@@ -11,7 +11,9 @@ import {
   getPublicPaymentStatus,
   sendVerificationCode,
   activateWithCode,
-  resendVerificationCode
+  resendVerificationCode,
+  forgotPassword,
+  resetPassword
 } from '../controllers/payment.controller';
 
 const router = Router();
@@ -25,6 +27,10 @@ router.get('/public/:id/status', getPublicPaymentStatus);
 router.post('/send-verification', sendVerificationCode);
 router.post('/activate-with-code', activateWithCode);
 router.post('/resend-verification', resendVerificationCode);
+
+// Rutas de recuperación de contraseña
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 // Rutas protegidas (para usuarios con cuenta)
 router.post('/', authenticate, createPayment);
