@@ -768,7 +768,10 @@ const forgotPasswordSchema = z.object({
 
 const resetPasswordSchema = z.object({
   token: z.string(),
-  password: z.string().min(6)
+  password: z.string().min(6).optional(),
+  newPassword: z.string().min(6).optional()
+}).refine(data => data.password || data.newPassword, {
+  message: "Password is required"
 });
 
 // Solicitar recuperación de contraseña
@@ -840,7 +843,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
 // Restablecer contraseña con token
 export const resetPassword = async (req: Request, res: Response) => {
   try {
-    const { token, password } = resetPasswordSchema.parse(req.body);
+    const validatedData = resetPasswordSchema.parse(req.body);
+    const { token } = validatedData;
+    const password = validatedData.password || validatedData.newPassword;
+    
+    if (!password) {
+      return res.status(400).json({ error: 'Contraseña requerida' });
+    }
     
     // Buscar usuario por token
     const user = await prisma.user.findFirst({
@@ -879,7 +888,17 @@ export const resetPassword = async (req: Request, res: Response) => {
       message: 'Contraseña restablecida exitosamente' 
     });
     
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Datos inválidos', details: error.errors });
+    }
+    console.error('Error en reset password:', error);
+    res.status(500).json({ 
+      error: 'Error al restablecer contraseña',
+      details: error.message || error.toString()
+    });
+  }
+};
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Datos inválidos', details: error.errors });
     }
