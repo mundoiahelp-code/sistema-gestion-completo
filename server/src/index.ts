@@ -121,6 +121,55 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server running' });
 });
 
+// Endpoint temporal para crear admin
+app.post('/api/create-admin-temp', async (req, res) => {
+  try {
+    const { PrismaClient } = await import('@prisma/client');
+    const bcrypt = await import('bcryptjs');
+    const prisma = new PrismaClient();
+    
+    const tenant = await prisma.tenant.findFirst();
+    if (!tenant) {
+      return res.status(400).json({ error: 'No hay tenants' });
+    }
+    
+    const store = await prisma.store.findFirst({ where: { tenantId: tenant.id } });
+    if (!store) {
+      return res.status(400).json({ error: 'No hay tiendas' });
+    }
+    
+    const hashedPassword = await bcrypt.default.hash('Lauti10b12RR!!', 10);
+    const user = await prisma.user.upsert({
+      where: { email: 'mundoia.help@gmail.com' },
+      update: {
+        password: hashedPassword,
+        role: 'SUPER_ADMIN',
+        active: true
+      },
+      create: {
+        email: 'mundoia.help@gmail.com',
+        password: hashedPassword,
+        name: 'Super Admin',
+        role: 'SUPER_ADMIN',
+        tenantId: tenant.id,
+        storeId: store.id,
+        active: true
+      }
+    });
+    
+    await prisma.$disconnect();
+    
+    res.json({ 
+      success: true, 
+      message: 'Admin creado',
+      email: 'mundoia.help@gmail.com',
+      password: 'Lauti10b12RR!!'
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
