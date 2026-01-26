@@ -1054,7 +1054,7 @@ function TurnosPageContent() {
             </SelectContent>
           </Select>
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-[140px] dark:bg-zinc-800 dark:border-zinc-700">
+            <SelectTrigger className="w-[160px] dark:bg-zinc-800 dark:border-zinc-700">
               <User className="h-4 w-4 mr-2 text-zinc-400" />
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>

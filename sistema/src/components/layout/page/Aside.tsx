@@ -216,9 +216,34 @@ function Aside() {
 
       {/* Menu principal */}
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-        {getMenuForLocale(locale).map((item, i) => (
-          <NavItem key={i} href={item.href} icon={item.icon} label={item.text} labelKey={item.textKey} requiresBasic={item.requiresBasic} requiresPro={item.requiresPro} />
-        ))}
+        {getMenuForLocale(locale).map((item, i) => {
+          // Filtrar por rol si tiene restricción de visible
+          if (item.visible && item.visible.length > 0) {
+            const user = localStorage.getItem('user');
+            if (user) {
+              try {
+                const parsed = JSON.parse(user);
+                const userRole = parsed.role;
+                // Si el item tiene restricción de visible y el usuario no está en la lista, no mostrar
+                if (!item.visible.includes(userRole)) {
+                  return null;
+                }
+              } catch {}
+            }
+          }
+          
+          return (
+            <NavItem 
+              key={i} 
+              href={item.href} 
+              icon={item.icon} 
+              label={item.text} 
+              labelKey={item.textKey} 
+              requiresBasic={item.requiresBasic} 
+              requiresPro={item.requiresPro} 
+            />
+          );
+        })}
         {isAdmin && !isSuperAdmin && (
           <NavItem href="/usuarios" icon={UsersIcon} label="Usuarios" labelKey="nav.users" />
         )}

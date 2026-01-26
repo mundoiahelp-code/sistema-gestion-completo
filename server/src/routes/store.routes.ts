@@ -8,9 +8,9 @@ router.use(authenticate);
 
 router.get('/', getStores);
 router.get('/:id', getStore);
-router.post('/', authorize('ADMIN'), createStore);
-router.put('/:id', authorize('ADMIN', 'MANAGER'), updateStore);
-router.patch('/:id', authorize('ADMIN', 'MANAGER'), updateStore);
+router.post('/', authorize('ADMIN', 'MANAGER', 'SELLER'), createStore);
+router.put('/:id', authorize('ADMIN', 'MANAGER', 'SELLER'), updateStore);
+router.patch('/:id', authorize('ADMIN', 'MANAGER', 'SELLER'), updateStore);
 router.delete('/:id', authorize('ADMIN'), deleteStore);
 
 export default router;

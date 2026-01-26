@@ -69,7 +69,7 @@ export const Menu: IMenu[] = [
     textKey: 'nav.crm',
     icon: MessageCircleIcon,
     global: true,
-    visible: [],
+    visible: [Role.Admin], // Solo ADMIN puede ver CRM
     href: '/crm',
     featureFlag: 'crm',
     requiresBasic: true, // Básico: puede escanear QR y ver mensajes. Pro: + bot IA

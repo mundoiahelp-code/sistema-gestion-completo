@@ -86,7 +86,9 @@ export default function Users() {
       .then((res) => {
         const users = (res.data.users || res.data || []).map((user: any) => ({
           ...user,
-          preferences: user.preferences || { colorIcon: 'blue' },
+          preferences: { 
+            colorIcon: user.avatarColor || 'blue' 
+          },
         }));
         setData(users);
         setFilteredData(users);
