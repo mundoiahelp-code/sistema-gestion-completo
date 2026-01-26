@@ -26,6 +26,7 @@ import tenantRoutes from './routes/tenant.routes';
 import systemRoutes from './routes/system.routes';
 import paymentRoutes from './routes/payment.routes';
 import auditRoutes from './routes/audit.routes';
+import testRoutes from './routes/test.routes';
 import { whatsappService } from './services/whatsapp.service';
 import { broadcastService } from './services/broadcast.service';
 import { instagramService } from './services/instagram.service';
@@ -109,6 +110,7 @@ app.use('/api/tenants', tenantRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/test', testRoutes);
 
 // Servir archivos estáticos (fotos de productos)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
