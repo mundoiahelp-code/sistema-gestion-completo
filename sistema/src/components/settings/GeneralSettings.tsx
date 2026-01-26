@@ -25,6 +25,7 @@ import useGetUserInfo from '@/hooks/useGetUserInfo';
 import useSonner from '@/hooks/useSonner';
 import { colorClass } from '@/lib/preferences';
 import { useTranslation } from '@/i18n/I18nProvider';
+import LogoSettings from './LogoSettings';
 
 export default function GeneralSettings() {
   const user = useGetUserInfo();
@@ -153,6 +154,9 @@ export default function GeneralSettings() {
 
   return (
     <div className='space-y-6'>
+      {/* Logo del Negocio - Solo para ADMIN */}
+      {user.role === 'ADMIN' && <LogoSettings />}
+
       {/* Información Personal */}
       <Card>
         <CardHeader>
