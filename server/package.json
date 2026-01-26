@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "npx prisma generate",
-    "start": "npx prisma migrate deploy && npx tsx src/index.ts",
+    "start": "npx prisma migrate deploy && node init-production-db.js && npx tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "migrate": "npx prisma migrate deploy"
   },
