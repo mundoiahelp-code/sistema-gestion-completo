@@ -28,9 +28,11 @@ const loadConfig = () => {
 
 // Función genérica para enviar emails con Resend
 const sendEmail = async (to: string, subject: string, html: string) => {
-  const fromEmail = process.env.RESEND_FROM || 'MundoIAple <onboarding@resend.dev>';
+  // En desarrollo o si no hay dominio verificado, usar el dominio de prueba de Resend
+  const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
   
   console.log(`📧 Enviando email a: ${to}`);
+  console.log(`📧 From: ${fromEmail}`);
   console.log(`📧 Subject: ${subject}`);
   
   if (!resend) {
@@ -48,7 +50,8 @@ const sendEmail = async (to: string, subject: string, html: string) => {
     console.log(`✅ Email enviado exitosamente:`, result);
     return true;
   } catch (error: any) {
-    console.error(`❌ Error Resend:`, error.message);
+    console.error(`❌ Error Resend:`, error);
+    console.error(`❌ Error details:`, JSON.stringify(error, null, 2));
     throw error;
   }
 };
