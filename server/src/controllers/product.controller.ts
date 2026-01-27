@@ -326,7 +326,12 @@ export const lookupImei = async (req: AuthRequest, res: Response) => {
           details: existingProduct.description,
           exists: true,
           productId: existingProduct.id,
-          store: existingProduct.store?.name
+          store: existingProduct.store?.name,
+          storeId: existingProduct.storeId,
+          reserved: existingProduct.reserved,
+          stock: existingProduct.stock,
+          condition: existingProduct.condition,
+          name: existingProduct.name
         }
       });
     }
