@@ -63,7 +63,14 @@ export default function ImeiScanner({
           // Validar que sea un IMEI (15 dígitos) o aceptar si tiene entre 14-16
           if (cleanText.length >= 14 && cleanText.length <= 16) {
             const imei = cleanText.slice(0, 15); // Tomar los primeros 15
+            console.log('✅ IMEI escaneado:', imei);
             onScan(imei);
+            
+            // También disparar evento global para que lo escuchen otros componentes
+            window.dispatchEvent(new CustomEvent('imei-scanned', { 
+              detail: { imei } 
+            }));
+            
             stopScanner();
             setIsOpen(false);
           }
@@ -198,7 +205,14 @@ export default function ImeiScanner({
                     disabled={manualImei.length !== 15}
                     onClick={() => {
                       if (manualImei.length === 15) {
+                        console.log('✅ IMEI manual:', manualImei);
                         onScan(manualImei);
+                        
+                        // También disparar evento global
+                        window.dispatchEvent(new CustomEvent('imei-scanned', { 
+                          detail: { imei: manualImei } 
+                        }));
+                        
                         setIsOpen(false);
                         setManualImei('');
                         setManualMode(false);
