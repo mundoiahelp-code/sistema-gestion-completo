@@ -154,9 +154,6 @@ export default function GeneralSettings() {
 
   return (
     <div className='space-y-6'>
-      {/* Logo del Negocio - Solo para ADMIN */}
-      {user.role === 'ADMIN' && <LogoSettings />}
-
       {/* Información Personal */}
       <Card>
         <CardHeader>
@@ -305,6 +302,9 @@ export default function GeneralSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Logo del Negocio - Solo para ADMIN */}
+      {user.role === 'ADMIN' && <LogoSettings />}
     </div>
   );
 }

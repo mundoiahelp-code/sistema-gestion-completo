@@ -25,6 +25,7 @@ const Login = () => {
   const [errorRequest, setErrorRequest] = useState<string>('');
   const [rememberEmail, setRememberEmail] = useState<string>('');
   const [tenantName, setTenantName] = useState<string>('');
+  const [tenantLogo, setTenantLogo] = useState<string>('');
 
   const params = useSearchParams();
 
@@ -93,6 +94,13 @@ const Login = () => {
           localStorage.setItem('tenantName', user.tenant.name);
         }
         
+        // Guardar logo del tenant
+        if (user.tenant?.customLogo) {
+          localStorage.setItem('tenantLogo', user.tenant.customLogo);
+        } else {
+          localStorage.removeItem('tenantLogo');
+        }
+        
         // Guardar locale del tenant - esto determina el idioma del sistema
         if (user.tenant?.locale) {
           localStorage.setItem('app_locale', user.tenant.locale);
@@ -158,6 +166,12 @@ const Login = () => {
     if (savedTenantName) {
       setTenantName(savedTenantName);
     }
+    
+    // Cargar logo del tenant si existe
+    const savedTenantLogo = localStorage.getItem('tenantLogo');
+    if (savedTenantLogo) {
+      setTenantLogo(savedTenantLogo);
+    }
   }, []);
 
   return (
@@ -168,22 +182,33 @@ const Login = () => {
           {/* Logo y título */}
           <div className='text-center mb-8'>
             <div className='inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-2xl mb-4'>
-              {/* Logo negro para modo claro */}
-              <Image
-                src={'/images/logo_apple_black.png'}
-                width={40}
-                height={40}
-                alt='Logo'
-                className='block dark:hidden'
-              />
-              {/* Logo blanco para modo oscuro */}
-              <Image
-                src={'/images/logo_apple.png'}
-                width={40}
-                height={40}
-                alt='Logo'
-                className='hidden dark:block'
-              />
+              {tenantLogo ? (
+                /* Logo personalizado del tenant */
+                <img
+                  src={tenantLogo}
+                  alt='Logo'
+                  className='w-12 h-12 object-contain'
+                />
+              ) : (
+                <>
+                  {/* Logo negro para modo claro */}
+                  <Image
+                    src={'/images/logo_apple_black.png'}
+                    width={40}
+                    height={40}
+                    alt='Logo'
+                    className='block dark:hidden'
+                  />
+                  {/* Logo blanco para modo oscuro */}
+                  <Image
+                    src={'/images/logo_apple.png'}
+                    width={40}
+                    height={40}
+                    alt='Logo'
+                    className='hidden dark:block'
+                  />
+                </>
+              )}
             </div>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-zinc-100 mb-2'>
               {tenantName 

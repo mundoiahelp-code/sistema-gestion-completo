@@ -179,35 +179,50 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         throw new Error('Error al guardar configuración del negocio');
       }
 
-      // 2. Actualizar sucursal principal y crear nuevas
-      const storesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (storesRes.ok) {
-        const { stores: existingStores } = await storesRes.json();
+      // 2. Crear/actualizar sucursales
+      for (let i = 0; i < data.stores.length; i++) {
+        const storeData = data.stores[i];
         
-        // Actualizar la primera sucursal (la que ya existe)
-        if (existingStores.length > 0 && data.stores[0]) {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores/${existingStores[0].id}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify(data.stores[0])
+        if (i === 0) {
+          // Actualizar la primera sucursal si existe, o crearla
+          const storesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
+            headers: { Authorization: `Bearer ${token}` }
           });
-        }
-
-        // Crear sucursales adicionales
-        for (let i = 1; i < data.stores.length; i++) {
+          
+          if (storesRes.ok) {
+            const { stores: existingStores } = await storesRes.json();
+            
+            if (existingStores.length > 0) {
+              // Actualizar la primera sucursal existente
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores/${existingStores[0].id}`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(storeData)
+              });
+            } else {
+              // No hay sucursales, crear la primera
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(storeData)
+              });
+            }
+          }
+        } else {
+          // Crear sucursales adicionales
           await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify(data.stores[i])
+            body: JSON.stringify(storeData)
           });
         }
       }

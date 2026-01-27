@@ -30,6 +30,7 @@ function Aside() {
   const [userColor, setUserColor] = useState('blue');
   const [showThemeConfirm, setShowThemeConfirm] = useState(false);
   const [tenantName, setTenantName] = useState('');
+  const [tenantLogo, setTenantLogo] = useState('');
   const [plan, setPlan] = useState<PlanType>('trial');
   const { theme, setTheme } = useTheme();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,6 +64,11 @@ function Aside() {
     const savedTenantName = localStorage.getItem('tenantName');
     if (savedTenantName) {
       setTenantName(savedTenantName);
+    }
+    // Cargar logo del tenant
+    const savedTenantLogo = localStorage.getItem('tenantLogo');
+    if (savedTenantLogo) {
+      setTenantLogo(savedTenantLogo);
     }
   };
 
@@ -192,24 +198,35 @@ function Aside() {
       {/* Logo */}
       <div className="p-4">
         <Link href="/" className="flex items-center gap-2">
-          {/* Logo negro para modo claro */}
-          <Image
-            src="/images/logo_apple_black.png"
-            alt="iPhone Zone Sur"
-            height={28}
-            width={28}
-            priority
-            className="block dark:hidden"
-          />
-          {/* Logo blanco para modo oscuro */}
-          <Image
-            src="/images/logo_apple.png"
-            alt="iPhone Zone Sur"
-            height={28}
-            width={28}
-            priority
-            className="hidden dark:block"
-          />
+          {tenantLogo ? (
+            /* Logo personalizado del tenant */
+            <img
+              src={tenantLogo}
+              alt={tenantName || 'Logo'}
+              className="h-7 w-7 object-contain"
+            />
+          ) : (
+            <>
+              {/* Logo negro para modo claro */}
+              <Image
+                src="/images/logo_apple_black.png"
+                alt="iPhone Zone Sur"
+                height={28}
+                width={28}
+                priority
+                className="block dark:hidden"
+              />
+              {/* Logo blanco para modo oscuro */}
+              <Image
+                src="/images/logo_apple.png"
+                alt="iPhone Zone Sur"
+                height={28}
+                width={28}
+                priority
+                className="hidden dark:block"
+              />
+            </>
+          )}
           <span className="font-semibold text-sm text-[#0d0d0d] dark:text-white">{tenantName || 'Mi Negocio'}</span>
         </Link>
       </div>
