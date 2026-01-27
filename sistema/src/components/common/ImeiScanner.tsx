@@ -43,18 +43,28 @@ export default function ImeiScanner({
           Html5QrcodeSupportedFormats.EAN_8,
           Html5QrcodeSupportedFormats.ITF,
           Html5QrcodeSupportedFormats.CODABAR,
-          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
         ],
-        verbose: false,
+        verbose: true, // Activar logs para debug
       });
       scannerRef.current = scanner;
 
       await scanner.start(
         { facingMode: 'environment' },
         {
-          fps: 30, // Aumentar FPS para mejor detección
-          qrbox: { width: 300, height: 120 }, // Área más grande
-          aspectRatio: 2.5, // Mejor para códigos de barras horizontales
+          fps: 10, // FPS más bajo para mejor precisión
+          qrbox: function(viewfinderWidth, viewfinderHeight) {
+            // Cuadro adaptativo para códigos de barras horizontales
+            const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+            const qrboxSize = Math.floor(minEdgeSize * 0.8);
+            return {
+              width: qrboxSize,
+              height: Math.floor(qrboxSize * 0.4) // Más ancho que alto para códigos de barras
+            };
+          },
+          aspectRatio: 2.5,
+          disableFlip: false, // Permitir flip de imagen
         },
         (decodedText) => {
           // Limpiar el texto y extraer solo números
@@ -162,18 +172,24 @@ export default function ImeiScanner({
                 )}
 
                 {/* Instrucciones */}
-                <div className="text-center text-sm text-zinc-500 space-y-2">
+                <div className="text-center text-sm space-y-3">
                   {isScanning ? (
                     <>
                       <p className="text-green-500 font-semibold animate-pulse">
-                        📷 Cámara activa - Apuntá al código de barras
+                        📷 Cámara activa
                       </p>
-                      <p className="text-xs">El IMEI está en la caja o en Ajustes → General → Información</p>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs space-y-1">
+                        <p className="font-semibold text-blue-700 dark:text-blue-300">💡 Tips para escanear:</p>
+                        <p className="text-blue-600 dark:text-blue-400">• Mantené el código horizontal</p>
+                        <p className="text-blue-600 dark:text-blue-400">• Acercá/alejá hasta que esté enfocado</p>
+                        <p className="text-blue-600 dark:text-blue-400">• Asegurate que haya buena luz</p>
+                        <p className="text-blue-600 dark:text-blue-400">• El código debe estar dentro del cuadro</p>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <p>Apuntá la cámara al código de barras del IMEI</p>
-                      <p className="text-xs">El IMEI está en la caja o en Ajustes → General → Información</p>
+                      <p className="text-zinc-500">Apuntá la cámara al código de barras del IMEI</p>
+                      <p className="text-xs text-zinc-400">El IMEI está en la caja o en Ajustes → General → Información</p>
                     </>
                   )}
                 </div>
