@@ -193,6 +193,7 @@ export default function AddProduct() {
   const [selectedSeries, setSelectedSeries] = useState('');
   const [availableStorages, setAvailableStorages] = useState<string[]>([]);
   const [availableColors, setAvailableColors] = useState<string[]>([]);
+  const [searchingImei, setSearchingImei] = useState(false);
 
   // Cargar tiendas al abrir el modal
   useEffect(() => {
