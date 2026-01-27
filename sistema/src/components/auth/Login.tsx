@@ -221,7 +221,7 @@ const Login = () => {
           </div>
 
           {/* Formulario */}
-          <form className='space-y-5' onSubmit={handleLogIn}>
+          <form className='space-y-5' onSubmit={handleLogIn} autoComplete='on'>
             {/* Email */}
             <div className='space-y-2'>
               <Label htmlFor='email' className='text-sm font-medium text-gray-700 dark:text-zinc-300'>
@@ -229,7 +229,9 @@ const Login = () => {
               </Label>
               <Input
                 id='email'
+                name='email'
                 type='email'
+                autoComplete='username email'
                 className='h-11 border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100 focus:border-gray-900 dark:focus:border-zinc-500 focus:ring-gray-900 dark:focus:ring-zinc-500 rounded-lg'
                 placeholder='ejemplo@correo.com'
                 required
@@ -259,7 +261,9 @@ const Login = () => {
               <div className='relative'>
                 <Input
                   id='password'
+                  name='password'
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete='current-password'
                   className='h-11 border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100 focus:border-gray-900 dark:focus:border-zinc-500 focus:ring-gray-900 dark:focus:ring-zinc-500 rounded-lg pr-11'
                   placeholder='••••••••'
                   required
