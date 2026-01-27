@@ -52,18 +52,21 @@ export default function ImeiScanner({
       await scanner.start(
         { facingMode: 'environment' },
         {
-          fps: 10,
-          qrbox: { width: 280, height: 100 },
+          fps: 30, // Aumentar FPS para mejor detección
+          qrbox: { width: 300, height: 120 }, // Área más grande
+          aspectRatio: 2.5, // Mejor para códigos de barras horizontales
         },
         (decodedText) => {
           // Limpiar el texto y extraer solo números
           const cleanText = decodedText.replace(/\D/g, '');
-          console.log('Escaneado:', decodedText, '-> Limpio:', cleanText);
+          console.log('📱 Escaneado:', decodedText);
+          console.log('🔢 Limpio:', cleanText);
+          console.log('📏 Longitud:', cleanText.length);
           
-          // Validar que sea un IMEI (15 dígitos) o aceptar si tiene entre 14-16
-          if (cleanText.length >= 14 && cleanText.length <= 16) {
+          // Validar que sea un IMEI (15 dígitos) o aceptar si tiene entre 13-16
+          if (cleanText.length >= 13 && cleanText.length <= 16) {
             const imei = cleanText.slice(0, 15); // Tomar los primeros 15
-            console.log('✅ IMEI escaneado:', imei);
+            console.log('✅ IMEI detectado:', imei);
             onScan(imei);
             
             // También disparar evento global para que lo escuchen otros componentes
@@ -73,9 +76,16 @@ export default function ImeiScanner({
             
             stopScanner();
             setIsOpen(false);
+          } else {
+            console.log('⚠️ Longitud incorrecta, esperando más dígitos...');
           }
         },
-        () => {} // Ignorar errores de escaneo continuo
+        (errorMessage) => {
+          // Silenciar errores de escaneo continuo
+          if (!errorMessage.includes('NotFoundException')) {
+            console.log('Scanner error:', errorMessage);
+          }
+        }
       );
 
       setIsScanning(true);
@@ -153,8 +163,19 @@ export default function ImeiScanner({
 
                 {/* Instrucciones */}
                 <div className="text-center text-sm text-zinc-500 space-y-2">
-                  <p>Apuntá la cámara al código de barras del IMEI</p>
-                  <p className="text-xs">El IMEI está en la caja o en Ajustes → General → Información</p>
+                  {isScanning ? (
+                    <>
+                      <p className="text-green-500 font-semibold animate-pulse">
+                        📷 Cámara activa - Apuntá al código de barras
+                      </p>
+                      <p className="text-xs">El IMEI está en la caja o en Ajustes → General → Información</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>Apuntá la cámara al código de barras del IMEI</p>
+                      <p className="text-xs">El IMEI está en la caja o en Ajustes → General → Información</p>
+                    </>
+                  )}
                 </div>
 
                 {/* Botón para modo manual */}
