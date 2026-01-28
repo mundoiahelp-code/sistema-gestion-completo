@@ -34,6 +34,20 @@ export default function AddManually({ addOne }: Props) {
     addOne(imei.value);
     setOpenDialog(false);
     imei.onChange('');
+    setError('');
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const cleanText = text.replace(/\D/g, '').slice(0, 15);
+      imei.onChange(cleanText);
+      if (cleanText.length === 15) {
+        setError('');
+      }
+    } catch (err) {
+      console.error('Error al pegar:', err);
+    }
   };
 
   return (
@@ -49,15 +63,48 @@ export default function AddManually({ addOne }: Props) {
           <DialogHeader>
             {isSpanish ? 'Agregar IMEI manualmente' : 'Add IMEI Manually'}
           </DialogHeader>
-          <Input
-            {...imei}
-            placeholder='012345678901234'
-            maxLength={15}
-            className='md:w-1/2'
-          />
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                {...imei}
+                placeholder='012345678901234'
+                maxLength={15}
+                className='flex-1'
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && imei.value.length === 15) {
+                    handleAddManually();
+                  }
+                }}
+              />
+              <Button
+                variant="outline"
+                onClick={handlePaste}
+                type="button"
+              >
+                📋 Pegar
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {imei.value.length}/15 dígitos
+              {imei.value.length === 15 && ' ✅'}
+            </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs">
+              <p className="font-semibold text-blue-700 dark:text-blue-300 mb-1">
+                💡 Tip rápido:
+              </p>
+              <p className="text-blue-600 dark:text-blue-400">
+                1. Abrí la cámara del iPhone<br/>
+                2. Apuntá al código de barras<br/>
+                3. Tocá el número que aparece arriba<br/>
+                4. Copialo<br/>
+                5. Volvé acá y hacé click en "Pegar"
+              </p>
+            </div>
+          </div>
           {error && <p className='text-sm text-red-600'>* {error}</p>}
           <DialogFooter>
-            <Button onClick={handleAddManually}>
+            <Button onClick={handleAddManually} disabled={imei.value.length !== 15}>
               {isSpanish ? 'Agregar' : 'Add'}
             </Button>
           </DialogFooter>

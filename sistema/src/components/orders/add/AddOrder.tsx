@@ -153,8 +153,9 @@ export default function AddOrder() {
             <Scan addOne={handleAddImei} />
             <div className="flex gap-2 items-center mb-3">
               <AddManually addOne={handleAddImei} />
-              <ImeiOCRScanner onScan={handleAddImei} />
-              <ImeiScanner onScan={handleAddImei} />
+              <span className="text-xs text-muted-foreground">
+                💡 Tip: Usá la cámara del iPhone para leer el código, copiá el número y pegalo aquí
+              </span>
             </div>
             {phones.length > 0 && (
               <>
