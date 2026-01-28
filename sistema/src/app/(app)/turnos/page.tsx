@@ -803,6 +803,17 @@ function TurnosPageContent() {
   const validateSchedule = (): { valid: boolean; message: string } => {
     if (!newData.storeId || !newData.date || !newData.time) return { valid: true, message: '' };
     
+    // Validar que no sea un horario pasado
+    const now = new Date();
+    const appointmentDateTime = new Date(`${newData.date}T${newData.time}:00`);
+    
+    if (appointmentDateTime < now) {
+      return {
+        valid: false,
+        message: `No podés crear un turno en un horario que ya pasó. Seleccioná una fecha y hora futura.`
+      };
+    }
+    
     const store = stores.find(s => s.id === newData.storeId);
     if (!store) return { valid: true, message: '' };
     
@@ -2149,18 +2160,22 @@ function TurnosPageContent() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-yellow-500">
               <Clock className="h-5 w-5" />
-              Horario fuera de rango
+              {scheduleWarningMsg.includes('ya pasó') ? 'Horario inválido' : 'Horario fuera de rango'}
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-zinc-300">{scheduleWarningMsg}</p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setScheduleWarningOpen(false)}>Cancelar</Button>
-            <Button onClick={() => doCreateAppointment(true)} disabled={newLoading} className="bg-yellow-600 hover:bg-yellow-700">
-              {newLoading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <Check className="h-4 w-4 mr-1" />}
-              Crear igual
+            <Button variant="outline" onClick={() => setScheduleWarningOpen(false)}>
+              {scheduleWarningMsg.includes('ya pasó') ? 'Entendido' : 'Cancelar'}
             </Button>
+            {!scheduleWarningMsg.includes('ya pasó') && (
+              <Button onClick={() => doCreateAppointment(true)} disabled={newLoading} className="bg-yellow-600 hover:bg-yellow-700">
+                {newLoading ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <Check className="h-4 w-4 mr-1" />}
+                Crear igual
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
