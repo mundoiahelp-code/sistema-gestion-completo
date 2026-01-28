@@ -151,12 +151,7 @@ export default function AddOrder() {
 
           <TabsContent value="phones">
             <Scan addOne={handleAddImei} />
-            <div className="flex gap-2 items-center mb-3">
-              <AddManually addOne={handleAddImei} />
-              <span className="text-xs text-muted-foreground">
-                💡 Tip: Usá la cámara del iPhone para leer el código, copiá el número y pegalo aquí
-              </span>
-            </div>
+            <AddManually addOne={handleAddImei} />
             {phones.length > 0 && (
               <>
                 <TableProducts data={phones} models={models} iphonesLS={iphonesLS} />

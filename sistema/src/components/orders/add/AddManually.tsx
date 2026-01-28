@@ -189,20 +189,7 @@ export default function AddManually({ addOne }: Props) {
               </div>
             )}
 
-            {!showConfirmation && imei.value.length < 15 && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs">
-                <p className="font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                  💡 Tip rápido:
-                </p>
-                <p className="text-blue-600 dark:text-blue-400">
-                  1. Abrí la cámara del iPhone<br/>
-                  2. Apuntá al código de barras<br/>
-                  3. Tocá el número que aparece arriba<br/>
-                  4. Copialo<br/>
-                  5. Volvé acá y hacé click en "Pegar"
-                </p>
-              </div>
-            )}
+
           </div>
           {error && <p className='text-sm text-red-600'>* {error}</p>}
           <DialogFooter className="gap-2">
