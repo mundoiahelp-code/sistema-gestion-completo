@@ -26,27 +26,54 @@ export default function ImeiOCRScanner({
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
       });
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        // Esperar a que el video esté listo y empezar a escanear
+        videoRef.current.onloadedmetadata = () => {
+          startContinuousScanning();
+        };
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      alert('No se pudo acceder a la cámara. Verificá los permisos.');
+      setDetectedText('❌ No se pudo acceder a la cámara');
     }
   };
 
   const stopCamera = () => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
+    setIsScanning(false);
+  };
+
+  const startContinuousScanning = () => {
+    setIsScanning(true);
+    setDetectedText('🔍 Buscando IMEI...');
+    
+    // Escanear cada 2 segundos
+    scanIntervalRef.current = setInterval(() => {
+      if (!isProcessing) {
+        captureAndProcess();
+      }
+    }, 2000);
   };
 
   const captureAndProcess = async () => {
@@ -66,29 +93,75 @@ export default function ImeiOCRScanner({
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
 
+    // Mejorar contraste y brillo para mejor OCR
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    // Aumentar contraste
+    const contrast = 1.5;
+    const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+    
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = factor * (data[i] - 128) + 128;     // R
+      data[i + 1] = factor * (data[i + 1] - 128) + 128; // G
+      data[i + 2] = factor * (data[i + 2] - 128) + 128; // B
+    }
+    
+    context.putImageData(imageData, 0, 0);
+
     try {
-      // Procesar con OCR
+      // Procesar con OCR - configuración optimizada para velocidad
       const result = await Tesseract.recognize(
         canvas,
         'eng',
         {
-          logger: (m) => {
-            if (m.status === 'recognizing text') {
-              setDetectedText(`Leyendo texto... ${Math.round(m.progress * 100)}%`);
-            }
-          }
+          logger: () => {}, // Sin logs para más velocidad
+          tessedit_char_whitelist: '0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
         }
       );
 
       const text = result.data.text;
-      console.log('📝 Texto detectado:', text);
+      console.log('📝 Texto completo detectado:', text);
 
-      // Buscar secuencias de 15 dígitos (IMEI)
-      const imeiPattern = /\b\d{15}\b/g;
-      const matches = text.match(imeiPattern);
+      // Limpiar el texto: quitar espacios, guiones, puntos
+      const cleanText = text.replace(/[\s\-\.]/g, '');
+      console.log('🧹 Texto limpio:', cleanText);
 
-      if (matches && matches.length > 0) {
-        const imei = matches[0];
+      // Buscar TODAS las secuencias de dígitos (no solo 15)
+      const allNumbers = cleanText.match(/\d+/g) || [];
+      console.log('🔢 Números encontrados:', allNumbers);
+
+      // Buscar secuencias de exactamente 15 dígitos
+      let imei = null;
+      
+      // Primero buscar 15 dígitos exactos
+      for (const num of allNumbers) {
+        if (num.length === 15) {
+          imei = num;
+          break;
+        }
+      }
+
+      // Si no encuentra 15 exactos, buscar en el texto completo sin espacios
+      if (!imei) {
+        const imeiPattern = /\d{15}/g;
+        const matches = cleanText.match(imeiPattern);
+        if (matches && matches.length > 0) {
+          imei = matches[0];
+        }
+      }
+
+      // Si aún no encuentra, buscar números largos y tomar los primeros 15 dígitos
+      if (!imei) {
+        for (const num of allNumbers) {
+          if (num.length >= 15) {
+            imei = num.slice(0, 15);
+            break;
+          }
+        }
+      }
+
+      if (imei) {
         console.log('✅ IMEI encontrado:', imei);
         setDetectedText(`✅ IMEI detectado: ${imei}`);
         
@@ -100,8 +173,9 @@ export default function ImeiOCRScanner({
           setDetectedText('');
         }, 1000);
       } else {
-        setDetectedText('❌ No se detectó un IMEI válido. Intentá de nuevo.');
-        setTimeout(() => setDetectedText(''), 2000);
+        console.log('❌ No se encontró IMEI. Números detectados:', allNumbers);
+        setDetectedText('❌ No se detectó un IMEI de 15 dígitos. Intentá de nuevo con mejor luz.');
+        setTimeout(() => setDetectedText(''), 3000);
       }
     } catch (error) {
       console.error('Error en OCR:', error);
@@ -156,9 +230,9 @@ export default function ImeiOCRScanner({
               
               {/* Guía visual */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="border-2 border-green-500 border-dashed rounded-lg w-4/5 h-24 flex items-center justify-center">
+                <div className="border-2 border-green-500 border-dashed rounded-lg w-4/5 h-3/4 flex items-center justify-center">
                   <span className="text-green-500 text-xs bg-black/50 px-2 py-1 rounded">
-                    Centrá el número del IMEI aquí
+                    Enfocá toda la etiqueta aquí
                   </span>
                 </div>
               </div>
@@ -170,44 +244,24 @@ export default function ImeiOCRScanner({
             {/* Estado */}
             {detectedText && (
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+                <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                   {detectedText}
                 </p>
               </div>
             )}
 
             {/* Instrucciones */}
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg text-xs space-y-1">
-              <p className="font-semibold text-yellow-700 dark:text-yellow-300">
-                📸 Instrucciones:
+            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg text-xs space-y-1">
+              <p className="font-semibold text-green-700 dark:text-green-300">
+                ⚡ Escaneo automático activado
               </p>
-              <p className="text-yellow-600 dark:text-yellow-400">
-                1. Centrá el número del IMEI en el cuadro verde<br/>
-                2. Mantené el celular quieto y enfocado<br/>
-                3. Asegurate que haya buena luz<br/>
-                4. Click en "Capturar y leer"
+              <p className="text-green-600 dark:text-green-400">
+                • Enfocá toda la etiqueta en el cuadro<br/>
+                • Mantené el celular quieto<br/>
+                • El sistema detectará el IMEI automáticamente<br/>
+                • Asegurate que haya buena luz
               </p>
             </div>
-
-            {/* Botón de captura */}
-            <Button
-              onClick={captureAndProcess}
-              disabled={isProcessing || !stream}
-              className="w-full"
-              size="lg"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Procesando...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Capturar y leer IMEI
-                </>
-              )}
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
