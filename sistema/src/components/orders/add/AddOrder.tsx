@@ -37,6 +37,7 @@ import { toTitleCase } from '@/helpers/toTitleCase';
 import AddAccessoryForm from './AddAccessoryForm';
 import { API } from '@/config/api';
 import ImeiScanner from '@/components/common/ImeiScanner';
+import ImeiOCRScanner from '@/components/common/ImeiOCRScanner';
 
 export default function AddOrder() {
   const { state, dispatch } = useContext(OrderContext);
@@ -152,6 +153,7 @@ export default function AddOrder() {
             <Scan addOne={handleAddImei} />
             <div className="flex gap-2 items-center mb-3">
               <AddManually addOne={handleAddImei} />
+              <ImeiOCRScanner onScan={handleAddImei} />
               <ImeiScanner onScan={handleAddImei} />
             </div>
             {phones.length > 0 && (

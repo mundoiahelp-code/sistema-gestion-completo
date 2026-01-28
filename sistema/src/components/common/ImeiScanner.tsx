@@ -77,12 +77,10 @@ export default function ImeiScanner({
           if (cleanText.length >= 13 && cleanText.length <= 16) {
             const imei = cleanText.slice(0, 15); // Tomar los primeros 15
             console.log('✅ IMEI detectado:', imei);
-            onScan(imei);
             
-            // También disparar evento global para que lo escuchen otros componentes
-            window.dispatchEvent(new CustomEvent('imei-scanned', { 
-              detail: { imei } 
-            }));
+            // Simular escritura rápida en el campo
+            // Esto hace que el sistema lo detecte como si lo hubieras escrito
+            onScan(imei);
             
             stopScanner();
             setIsOpen(false);
@@ -184,6 +182,19 @@ export default function ImeiScanner({
                         <p className="text-blue-600 dark:text-blue-400">• Acercá/alejá hasta que esté enfocado</p>
                         <p className="text-blue-600 dark:text-blue-400">• Asegurate que haya buena luz</p>
                         <p className="text-blue-600 dark:text-blue-400">• El código debe estar dentro del cuadro</p>
+                      </div>
+                      
+                      {/* Alternativa con cámara nativa */}
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg text-xs">
+                        <p className="font-semibold text-yellow-700 dark:text-yellow-300 mb-1">
+                          ⚡ Alternativa más rápida:
+                        </p>
+                        <p className="text-yellow-600 dark:text-yellow-400">
+                          1. Abrí la app Cámara del iPhone<br/>
+                          2. Apuntá al código de barras<br/>
+                          3. Tocá el número que aparece arriba<br/>
+                          4. Copialo y pegalo en "Escribir manualmente"
+                        </p>
                       </div>
                     </>
                   ) : (
