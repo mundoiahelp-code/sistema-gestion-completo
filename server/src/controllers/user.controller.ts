@@ -351,11 +351,12 @@ export const updateAvatarColor = async (req: AuthRequest, res: Response) => {
   try {
     const { color } = req.body;
 
-    const validColors = ['black', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'gray', 'indigo'];
+    const validColors = ['black', 'red', 'blue', 'green', 'yellow', 'violet', 'pink', 'orange', 'darkGray', 'darkBlue'];
     
     if (!color || !validColors.includes(color)) {
       return res.status(400).json({ 
-        error: 'Color inválido' 
+        error: 'Color inválido',
+        validColors 
       });
     }
 
