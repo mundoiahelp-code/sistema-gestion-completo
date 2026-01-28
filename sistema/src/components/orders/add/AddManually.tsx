@@ -53,7 +53,7 @@ export default function AddManually({ addOne }: Props) {
   return (
     <p className='text-center text-base text-zinc-400 font-light'>
       {isSpanish 
-        ? 'Para agregar un producto ingresá su IMEI manualmente o con scanner USB haciendo '
+        ? 'PEscaneá el código de barras o agregá el producto manualmente haciendo '
         : 'To add a product enter its IMEI manually or with USB scanner by '}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogTrigger className='underline'>

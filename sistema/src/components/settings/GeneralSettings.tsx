@@ -40,6 +40,11 @@ export default function GeneralSettings() {
   const [colorLoading, setColorLoading] = useState<boolean>(false);
   const [colorActive, setColorActive] = useState(user.avatarColor || user.preferences?.colorIcon || 'black');
 
+  // Sincronizar colorActive cuando cambia el usuario
+  useEffect(() => {
+    setColorActive(user.avatarColor || user.preferences?.colorIcon || 'black');
+  }, [user.avatarColor, user.preferences?.colorIcon]);
+
   const name = useField({
     type: 'text',
     initialValue: '',

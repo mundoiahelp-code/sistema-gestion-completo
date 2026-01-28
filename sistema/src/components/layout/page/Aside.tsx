@@ -48,7 +48,8 @@ function Aside() {
         setIsAdmin(parsed.role === 'ADMIN' || parsed.role === 'SUPER_ADMIN');
         setIsSuperAdmin(parsed.role === 'SUPER_ADMIN');
         setUserName(parsed.name || 'Usuario');
-        setUserColor(parsed.preferences?.colorIcon || 'blue');
+        // Priorizar avatarColor sobre preferences.colorIcon
+        setUserColor(parsed.avatarColor || parsed.preferences?.colorIcon || 'blue');
         setUserRole(parsed.role === 'SUPER_ADMIN' ? 'Dueño' : parsed.role === 'ADMIN' ? 'Admin' : 'Usuario');
       } catch {}
     }

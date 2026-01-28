@@ -56,27 +56,6 @@ export default function Users() {
   const isAdmin = userRole === Role.Admin || userRole === 'ADMIN';
 
   useEffect(() => {
-    // Verificar rol directamente desde localStorage para evitar problemas de timing
-    let shouldRedirect = false;
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
-        const user = JSON.parse(storedUser);
-        const role = user?.role || '';
-        const isAdminCheck = role === 'ADMIN' || role === Role.Admin || role.toUpperCase?.() === 'ADMIN';
-        if (!isAdminCheck) {
-          shouldRedirect = true;
-        }
-      }
-    } catch (e) {
-      console.error('Error checking admin:', e);
-    }
-
-    if (shouldRedirect) {
-      window.location.href = '/inicio';
-      return;
-    }
-    
     const token = Cookies.get('accessToken') || localStorage.getItem('accessToken');
     axios.get(`${API}/users`, {
       headers: {
@@ -87,7 +66,7 @@ export default function Users() {
         const users = (res.data.users || res.data || []).map((user: any) => ({
           ...user,
           preferences: { 
-            colorIcon: user.avatarColor || 'blue' 
+            colorIcon: user.avatarColor || user.preferences?.colorIcon || 'blue' 
           },
         }));
         setData(users);
