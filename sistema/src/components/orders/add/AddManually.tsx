@@ -28,63 +28,22 @@ export default function AddManually({ addOne }: Props) {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [error, setError] = useState('');
-  const [lookingUp, setLookingUp] = useState(false);
-  const [imeiInfo, setImeiInfo] = useState<any>(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-
-  // Buscar info del IMEI cuando se completan 15 dígitos
-  useEffect(() => {
-    if (imei.value.length === 15) {
-      lookupImei(imei.value);
-    } else {
-      setImeiInfo(null);
-      setShowConfirmation(false);
-    }
-  }, [imei.value]);
-
-  const lookupImei = async (imeiValue: string) => {
-    setLookingUp(true);
-    setError('');
-    try {
-      const token = Cookies.get('token');
-      const response = await axios.get(`${API}/products/imei/${imeiValue}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const { found, data } = response.data;
-      
-      if (found && data) {
-        setImeiInfo(data);
-        setShowConfirmation(true);
-      } else {
-        setError(isSpanish ? 'IMEI no reconocido. Verificá que esté correcto.' : 'IMEI not recognized. Please verify.');
-      }
-    } catch (error) {
-      console.error('Error looking up IMEI:', error);
-      setError(isSpanish ? 'Error al buscar IMEI' : 'Error looking up IMEI');
-    } finally {
-      setLookingUp(false);
-    }
-  };
 
   const handleAddManually = () => {
     if (imei.value.length !== 15) {
       return setError(isSpanish ? 'El IMEI debe tener 15 dígitos' : 'IMEI must have 15 digits');
     }
 
+    // Agregar directamente sin búsqueda
     addOne(imei.value);
     setOpenDialog(false);
     imei.onChange('');
     setError('');
-    setImeiInfo(null);
-    setShowConfirmation(false);
   };
 
   const handleCancel = () => {
     imei.onChange('');
     setError('');
-    setImeiInfo(null);
-    setShowConfirmation(false);
   };
 
   const handlePaste = async () => {
@@ -122,7 +81,7 @@ export default function AddManually({ addOne }: Props) {
                 className='flex-1'
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && imei.value.length === 15 && showConfirmation) {
+                  if (e.key === 'Enter' && imei.value.length === 15) {
                     handleAddManually();
                   }
                 }}
@@ -136,77 +95,19 @@ export default function AddManually({ addOne }: Props) {
               </Button>
             </div>
             
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">
-                {imei.value.length}/15 dígitos
-              </p>
-              {lookingUp && (
-                <span className="text-xs text-blue-600 animate-pulse">
-                  🔍 Buscando...
-                </span>
-              )}
-              {imei.value.length === 15 && !lookingUp && imeiInfo && (
-                <span className="text-xs text-green-600">
-                  ✅ IMEI reconocido
-                </span>
-              )}
-            </div>
-
-            {/* Cuadro de confirmación */}
-            {showConfirmation && imeiInfo && (
-              <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-lg p-4 space-y-2">
-                <p className="font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
-                  ✅ {isSpanish ? 'IMEI Encontrado' : 'IMEI Found'}
-                </p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <p className="text-muted-foreground text-xs">{isSpanish ? 'Modelo' : 'Model'}:</p>
-                    <p className="font-semibold">{imeiInfo.model || 'N/A'}</p>
-                  </div>
-                  {imeiInfo.storage && (
-                    <div>
-                      <p className="text-muted-foreground text-xs">{isSpanish ? 'Capacidad' : 'Storage'}:</p>
-                      <p className="font-semibold">{imeiInfo.storage}</p>
-                    </div>
-                  )}
-                  {imeiInfo.color && (
-                    <div>
-                      <p className="text-muted-foreground text-xs">{isSpanish ? 'Color' : 'Color'}:</p>
-                      <p className="font-semibold">{imeiInfo.color}</p>
-                    </div>
-                  )}
-                  {imeiInfo.exists && (
-                    <div className="col-span-2">
-                      <p className="text-yellow-600 dark:text-yellow-400 text-xs">
-                        ⚠️ {isSpanish ? 'Este IMEI ya existe en' : 'This IMEI already exists in'} {imeiInfo.store}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  {isSpanish ? '¿Es correcto? Confirmá para continuar.' : 'Is this correct? Confirm to continue.'}
-                </p>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground">
+              {imei.value.length}/15 dígitos
+            </p>
 
 
           </div>
           {error && <p className='text-sm text-red-600'>* {error}</p>}
-          <DialogFooter className="gap-2">
-            {showConfirmation && (
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                type="button"
-              >
-                {isSpanish ? 'Cancelar' : 'Cancel'}
-              </Button>
-            )}
+          <DialogFooter>
             <Button 
               onClick={handleAddManually} 
-              disabled={imei.value.length !== 15 || !showConfirmation || lookingUp}
+              disabled={imei.value.length !== 15}
             >
-              {isSpanish ? 'Confirmar y Agregar' : 'Confirm and Add'}
+              {isSpanish ? 'Agregar' : 'Add'}
             </Button>
           </DialogFooter>
         </DialogContent>
