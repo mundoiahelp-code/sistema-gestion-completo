@@ -9,7 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScanLine, Camera, Loader2, CheckCircle } from 'lucide-react';
+import { Camera, Loader2, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ImeiOCRScannerProps {
   onScan: (imei: string) => void;
@@ -22,12 +23,32 @@ export default function ImeiOCRScanner({
 }: ImeiOCRScannerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [detectedText, setDetectedText] = useState('');
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [lastScannedImei, setLastScannedImei] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const workerRef = useRef<Tesseract.Worker | null>(null);
+
+  // Inicializar worker de Tesseract una sola vez
+  useEffect(() => {
+    const initWorker = async () => {
+      const worker = await Tesseract.createWorker('eng', 1, {
+        logger: () => {},
+      });
+      await worker.setParameters({
+        tessedit_char_whitelist: '0123456789',
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+      });
+      workerRef.current = worker;
+    };
+    initWorker();
+
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, []);
 
   const startCamera = async () => {
     try {
@@ -41,146 +62,76 @@ export default function ImeiOCRScanner({
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        // Esperar a que el video esté listo y empezar a escanear
-        videoRef.current.onloadedmetadata = () => {
-          startContinuousScanning();
-        };
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      setDetectedText('❌ No se pudo acceder a la cámara');
+      toast.error('No se pudo acceder a la cámara');
     }
   };
 
   const stopCamera = () => {
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
-    setIsScanning(false);
   };
 
-  const startContinuousScanning = () => {
-    setIsScanning(true);
-    setDetectedText('🔍 Buscando IMEI...');
-    
-    // Escanear cada 2 segundos
-    scanIntervalRef.current = setInterval(() => {
-      if (!isProcessing) {
-        captureAndProcess();
-      }
-    }, 2000);
-  };
-
-  const captureAndProcess = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
+  const processFrame = async () => {
+    if (!videoRef.current || !canvasRef.current || !workerRef.current || isProcessing) return;
 
     setIsProcessing(true);
-    setDetectedText('Procesando imagen...');
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-
-    if (!context) return;
-
-    // Capturar frame del video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
-
-    // Mejorar contraste y brillo para mejor OCR
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    
-    // Aumentar contraste
-    const contrast = 1.5;
-    const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-    
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = factor * (data[i] - 128) + 128;     // R
-      data[i + 1] = factor * (data[i + 1] - 128) + 128; // G
-      data[i + 2] = factor * (data[i + 2] - 128) + 128; // B
-    }
-    
-    context.putImageData(imageData, 0, 0);
 
     try {
-      // Procesar con OCR - configuración optimizada para velocidad
-      const result = await Tesseract.recognize(
-        canvas,
-        'eng',
-        {
-          logger: () => {}, // Sin logs para más velocidad
-          tessedit_char_whitelist: '0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-        }
-      );
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      if (!context) return;
 
-      const text = result.data.text;
-      console.log('📝 Texto completo detectado:', text);
+      // Capturar frame
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
 
-      // Limpiar el texto: quitar espacios, guiones, puntos
-      const cleanText = text.replace(/[\s\-\.]/g, '');
-      console.log('🧹 Texto limpio:', cleanText);
-
-      // Buscar TODAS las secuencias de dígitos (no solo 15)
-      const allNumbers = cleanText.match(/\d+/g) || [];
-      console.log('🔢 Números encontrados:', allNumbers);
-
-      // Buscar secuencias de exactamente 15 dígitos
-      let imei = null;
+      // Convertir a escala de grises y aumentar contraste
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
       
-      // Primero buscar 15 dígitos exactos
-      for (const num of allNumbers) {
-        if (num.length === 15) {
-          imei = num;
-          break;
-        }
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        const value = avg > 128 ? 255 : 0; // Binarizar
+        data[i] = data[i + 1] = data[i + 2] = value;
       }
+      
+      context.putImageData(imageData, 0, 0);
 
-      // Si no encuentra 15 exactos, buscar en el texto completo sin espacios
-      if (!imei) {
-        const imeiPattern = /\d{15}/g;
-        const matches = cleanText.match(imeiPattern);
-        if (matches && matches.length > 0) {
-          imei = matches[0];
-        }
-      }
+      // Reconocer texto
+      const result = await workerRef.current.recognize(canvas);
+      const text = result.data.text.replace(/\s/g, '');
+      
+      console.log('Texto detectado:', text);
 
-      // Si aún no encuentra, buscar números largos y tomar los primeros 15 dígitos
-      if (!imei) {
-        for (const num of allNumbers) {
-          if (num.length >= 15) {
-            imei = num.slice(0, 15);
-            break;
-          }
-        }
-      }
-
-      if (imei) {
-        console.log('✅ IMEI encontrado:', imei);
-        setDetectedText(`✅ IMEI detectado: ${imei}`);
+      // Buscar IMEI (15 dígitos consecutivos)
+      const imeiMatch = text.match(/\d{15}/);
+      
+      if (imeiMatch) {
+        const imei = imeiMatch[0];
         
-        // Esperar 1 segundo para que el usuario vea el resultado
-        setTimeout(() => {
-          onScan(imei);
-          stopCamera();
-          setIsOpen(false);
-          setDetectedText('');
-        }, 1000);
-      } else {
-        console.log('❌ No se encontró IMEI. Números detectados:', allNumbers);
-        setDetectedText('❌ No se detectó un IMEI de 15 dígitos. Intentá de nuevo con mejor luz.');
-        setTimeout(() => setDetectedText(''), 3000);
+        // Evitar duplicados
+        if (imei !== lastScannedImei) {
+          console.log('✅ IMEI encontrado:', imei);
+          setLastScannedImei(imei);
+          toast.success(`IMEI detectado: ${imei}`);
+          
+          setTimeout(() => {
+            onScan(imei);
+            stopCamera();
+            setIsOpen(false);
+            setLastScannedImei('');
+          }, 500);
+        }
       }
     } catch (error) {
       console.error('Error en OCR:', error);
-      setDetectedText('❌ Error al procesar. Intentá de nuevo.');
-      setTimeout(() => setDetectedText(''), 2000);
     } finally {
       setIsProcessing(false);
     }
@@ -189,13 +140,13 @@ export default function ImeiOCRScanner({
   useEffect(() => {
     if (isOpen) {
       startCamera();
-    } else {
-      stopCamera();
+      // Escanear cada 1.5 segundos
+      const interval = setInterval(processFrame, 1500);
+      return () => {
+        clearInterval(interval);
+        stopCamera();
+      };
     }
-
-    return () => {
-      stopCamera();
-    };
   }, [isOpen]);
 
   return (
@@ -203,7 +154,7 @@ export default function ImeiOCRScanner({
       <button
         onClick={() => setIsOpen(true)}
         className={`p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors ${className}`}
-        title="Escanear IMEI con OCR"
+        title="Escanear IMEI"
       >
         <Camera className="h-5 w-5 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300" />
       </button>
@@ -211,9 +162,19 @@ export default function ImeiOCRScanner({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="dark:bg-zinc-900 dark:border-zinc-800 max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Camera className="h-5 w-5" />
-              Escanear número de IMEI
+            <DialogTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Escanear IMEI
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </DialogTitle>
           </DialogHeader>
 
@@ -228,39 +189,33 @@ export default function ImeiOCRScanner({
                 className="w-full h-full object-cover"
               />
               
-              {/* Guía visual */}
+              {/* Overlay de escaneo */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="border-2 border-green-500 border-dashed rounded-lg w-4/5 h-3/4 flex items-center justify-center">
-                  <span className="text-green-500 text-xs bg-black/50 px-2 py-1 rounded">
-                    Enfocá toda la etiqueta aquí
-                  </span>
-                </div>
+                <div className="border-4 border-green-500 rounded-lg w-4/5 h-3/4 animate-pulse" />
               </div>
+
+              {/* Indicador de procesamiento */}
+              {isProcessing && (
+                <div className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs flex items-center gap-2">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Leyendo...
+                </div>
+              )}
             </div>
 
-            {/* Canvas oculto para captura */}
             <canvas ref={canvasRef} className="hidden" />
 
-            {/* Estado */}
-            {detectedText && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-                <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                  {detectedText}
-                </p>
-              </div>
-            )}
-
             {/* Instrucciones */}
-            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg text-xs space-y-1">
-              <p className="font-semibold text-green-700 dark:text-green-300">
-                ⚡ Escaneo automático activado
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-2">
+              <p className="font-semibold text-blue-700 dark:text-blue-300 text-sm">
+                📸 Instrucciones:
               </p>
-              <p className="text-green-600 dark:text-green-400">
-                • Enfocá toda la etiqueta en el cuadro<br/>
-                • Mantené el celular quieto<br/>
-                • El sistema detectará el IMEI automáticamente<br/>
-                • Asegurate que haya buena luz
-              </p>
+              <ul className="text-blue-600 dark:text-blue-400 text-xs space-y-1">
+                <li>• Enfocá la etiqueta completa en el cuadro verde</li>
+                <li>• Mantené el celular quieto 2-3 segundos</li>
+                <li>• Asegurate que haya buena luz</li>
+                <li>• El sistema detectará el IMEI automáticamente</li>
+              </ul>
             </div>
           </div>
         </DialogContent>
