@@ -1,9 +1,8 @@
 /**
- * Servicio de consulta de IMEI usando web scraping de IMEI.info
+ * Servicio de consulta de IMEI usando web scraping simple de IMEI.info
  */
 
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 interface ImeiInfo {
   model: string;
@@ -14,7 +13,7 @@ interface ImeiInfo {
   source: string;
 }
 
-// Scraping de IMEI.info (la que funciona según tu screenshot)
+// Scraping simple de IMEI.info usando regex (sin dependencias extra)
 async function scrapeImeiInfo(imei: string): Promise<ImeiInfo | null> {
   try {
     console.log(`🔍 Scraping IMEI.info para: ${imei}`);
@@ -28,15 +27,17 @@ async function scrapeImeiInfo(imei: string): Promise<ImeiInfo | null> {
       }
     });
 
-    const $ = cheerio.load(response.data);
+    const html = response.data;
     
-    // Buscar el título del modelo (ej: "IPHONE 14 PRO")
-    const modelTitle = $('h1').first().text().trim();
+    // Buscar el título del modelo usando regex (ej: <h1>IPHONE 14 PRO</h1>)
+    const h1Match = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
     
-    if (modelTitle && modelTitle.length > 0) {
-      // Limpiar y formatear el modelo
-      let model = modelTitle
-        .replace(/\s+/g, ' ')
+    if (h1Match && h1Match[1]) {
+      // Limpiar HTML tags y formatear
+      let model = h1Match[1]
+        .replace(/<[^>]*>/g, '') // Remover tags HTML
+        .replace(/&nbsp;/g, ' ') // Remover &nbsp;
+        .replace(/\s+/g, ' ') // Normalizar espacios
         .trim();
       
       // Capitalizar correctamente (iPhone en vez de IPHONE)
