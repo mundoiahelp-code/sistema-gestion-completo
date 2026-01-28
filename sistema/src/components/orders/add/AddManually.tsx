@@ -1,6 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { API } from '@/config/api';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +28,44 @@ export default function AddManually({ addOne }: Props) {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [error, setError] = useState('');
+  const [lookingUp, setLookingUp] = useState(false);
+  const [imeiInfo, setImeiInfo] = useState<any>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  // Buscar info del IMEI cuando se completan 15 dígitos
+  useEffect(() => {
+    if (imei.value.length === 15) {
+      lookupImei(imei.value);
+    } else {
+      setImeiInfo(null);
+      setShowConfirmation(false);
+    }
+  }, [imei.value]);
+
+  const lookupImei = async (imeiValue: string) => {
+    setLookingUp(true);
+    setError('');
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.get(`${API}/products/imei/${imeiValue}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const { found, data } = response.data;
+      
+      if (found && data) {
+        setImeiInfo(data);
+        setShowConfirmation(true);
+      } else {
+        setError(isSpanish ? 'IMEI no reconocido. Verificá que esté correcto.' : 'IMEI not recognized. Please verify.');
+      }
+    } catch (error) {
+      console.error('Error looking up IMEI:', error);
+      setError(isSpanish ? 'Error al buscar IMEI' : 'Error looking up IMEI');
+    } finally {
+      setLookingUp(false);
+    }
+  };
 
   const handleAddManually = () => {
     if (imei.value.length !== 15) {
@@ -35,6 +76,15 @@ export default function AddManually({ addOne }: Props) {
     setOpenDialog(false);
     imei.onChange('');
     setError('');
+    setImeiInfo(null);
+    setShowConfirmation(false);
+  };
+
+  const handleCancel = () => {
+    imei.onChange('');
+    setError('');
+    setImeiInfo(null);
+    setShowConfirmation(false);
   };
 
   const handlePaste = async () => {
@@ -72,7 +122,7 @@ export default function AddManually({ addOne }: Props) {
                 className='flex-1'
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && imei.value.length === 15) {
+                  if (e.key === 'Enter' && imei.value.length === 15 && showConfirmation) {
                     handleAddManually();
                   }
                 }}
@@ -85,27 +135,91 @@ export default function AddManually({ addOne }: Props) {
                 📋 Pegar
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {imei.value.length}/15 dígitos
-              {imei.value.length === 15 && ' ✅'}
-            </p>
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs">
-              <p className="font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                💡 Tip rápido:
+            
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {imei.value.length}/15 dígitos
               </p>
-              <p className="text-blue-600 dark:text-blue-400">
-                1. Abrí la cámara del iPhone<br/>
-                2. Apuntá al código de barras<br/>
-                3. Tocá el número que aparece arriba<br/>
-                4. Copialo<br/>
-                5. Volvé acá y hacé click en "Pegar"
-              </p>
+              {lookingUp && (
+                <span className="text-xs text-blue-600 animate-pulse">
+                  🔍 Buscando...
+                </span>
+              )}
+              {imei.value.length === 15 && !lookingUp && imeiInfo && (
+                <span className="text-xs text-green-600">
+                  ✅ IMEI reconocido
+                </span>
+              )}
             </div>
+
+            {/* Cuadro de confirmación */}
+            {showConfirmation && imeiInfo && (
+              <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-lg p-4 space-y-2">
+                <p className="font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
+                  ✅ {isSpanish ? 'IMEI Encontrado' : 'IMEI Found'}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">{isSpanish ? 'Modelo' : 'Model'}:</p>
+                    <p className="font-semibold">{imeiInfo.model || 'N/A'}</p>
+                  </div>
+                  {imeiInfo.storage && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">{isSpanish ? 'Capacidad' : 'Storage'}:</p>
+                      <p className="font-semibold">{imeiInfo.storage}</p>
+                    </div>
+                  )}
+                  {imeiInfo.color && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">{isSpanish ? 'Color' : 'Color'}:</p>
+                      <p className="font-semibold">{imeiInfo.color}</p>
+                    </div>
+                  )}
+                  {imeiInfo.exists && (
+                    <div className="col-span-2">
+                      <p className="text-yellow-600 dark:text-yellow-400 text-xs">
+                        ⚠️ {isSpanish ? 'Este IMEI ya existe en' : 'This IMEI already exists in'} {imeiInfo.store}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  {isSpanish ? '¿Es correcto? Confirmá para continuar.' : 'Is this correct? Confirm to continue.'}
+                </p>
+              </div>
+            )}
+
+            {!showConfirmation && imei.value.length < 15 && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs">
+                <p className="font-semibold text-blue-700 dark:text-blue-300 mb-1">
+                  💡 Tip rápido:
+                </p>
+                <p className="text-blue-600 dark:text-blue-400">
+                  1. Abrí la cámara del iPhone<br/>
+                  2. Apuntá al código de barras<br/>
+                  3. Tocá el número que aparece arriba<br/>
+                  4. Copialo<br/>
+                  5. Volvé acá y hacé click en "Pegar"
+                </p>
+              </div>
+            )}
           </div>
           {error && <p className='text-sm text-red-600'>* {error}</p>}
-          <DialogFooter>
-            <Button onClick={handleAddManually} disabled={imei.value.length !== 15}>
-              {isSpanish ? 'Agregar' : 'Add'}
+          <DialogFooter className="gap-2">
+            {showConfirmation && (
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                type="button"
+              >
+                {isSpanish ? 'Cancelar' : 'Cancel'}
+              </Button>
+            )}
+            <Button 
+              onClick={handleAddManually} 
+              disabled={imei.value.length !== 15 || !showConfirmation || lookingUp}
+            >
+              {isSpanish ? 'Confirmar y Agregar' : 'Confirm and Add'}
             </Button>
           </DialogFooter>
         </DialogContent>
