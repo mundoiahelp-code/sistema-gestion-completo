@@ -1,9 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
-import { API } from '@/config/api';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -34,14 +31,8 @@ export default function AddManually({ addOne }: Props) {
       return setError(isSpanish ? 'El IMEI debe tener 15 dígitos' : 'IMEI must have 15 digits');
     }
 
-    // Agregar directamente sin búsqueda
     addOne(imei.value);
     setOpenDialog(false);
-    imei.onChange('');
-    setError('');
-  };
-
-  const handleCancel = () => {
     imei.onChange('');
     setError('');
   };
@@ -62,15 +53,15 @@ export default function AddManually({ addOne }: Props) {
   return (
     <p className='text-center text-base text-zinc-400 font-light'>
       {isSpanish 
-        ? 'Para agregar un producto escanea su IMEI o manualmente haciendo '
-        : 'To add a product scan its IMEI or manually by '}
+        ? 'Para agregar un producto ingresá su IMEI manualmente o con scanner USB haciendo '
+        : 'To add a product enter its IMEI manually or with USB scanner by '}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogTrigger className='underline'>
           {isSpanish ? 'Click Aquí' : 'Clicking Here'}
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            {isSpanish ? 'Agregar IMEI manualmente' : 'Add IMEI Manually'}
+            {isSpanish ? 'Agregar IMEI' : 'Add IMEI'}
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
@@ -91,15 +82,13 @@ export default function AddManually({ addOne }: Props) {
                 onClick={handlePaste}
                 type="button"
               >
-                📋 Pegar
+                📋
               </Button>
             </div>
             
             <p className="text-xs text-muted-foreground">
               {imei.value.length}/15 dígitos
             </p>
-
-
           </div>
           {error && <p className='text-sm text-red-600'>* {error}</p>}
           <DialogFooter>

@@ -71,58 +71,9 @@ export default function AddOrder() {
       return handleErrorSonner(locale === 'es' ? 'El IMEI ya esta agregado!' : 'IMEI already added!');
     }
 
-    // Buscar información del IMEI
-    setLookingUp(true);
-    try {
-      const token = Cookies.get('accessToken');
-      const response = await axios.get(`${API}/products/imei/${imei}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const { found, data, source } = response.data;
-
-      if (found && data) {
-        // Si ya existe en la base de datos, avisar
-        if (data.exists) {
-          handleErrorSonner(locale === 'es' 
-            ? `Este IMEI ya existe en ${data.store || 'el sistema'}` 
-            : `This IMEI already exists in ${data.store || 'the system'}`);
-          return;
-        }
-
-        // Agregar con datos autocompletados
-        dispatch({
-          type: OrderTypes.PRODUCT_ADD_WITH_DATA,
-          payload: {
-            imei,
-            phoneData: {
-              model: data.model || '',
-              color: data.color || '',
-              storage: data.storage || '',
-              battery: data.battery || 0,
-              price: data.price || 0,
-              details: data.details || '',
-            },
-          },
-        });
-        handleSuccessSonner(
-          source === 'tac'
-            ? (locale === 'es' ? `IMEI detectado: ${data.model}` : `IMEI detected: ${data.model}`)
-            : (locale === 'es' ? 'IMEI cargado con datos' : 'IMEI loaded with data')
-        );
-      } else {
-        // Si no se encuentra, agregar solo el IMEI
-        dispatch({ type: OrderTypes.PRODUCT_ADD, payload: { imei } });
-        handleSuccessSonner(locale === 'es' ? 'IMEI cargado - completá los datos manualmente' : 'IMEI loaded - fill in details manually');
-      }
-    } catch (error) {
-      console.error('Error looking up IMEI:', error);
-      // Si hay error, agregar solo el IMEI
-      dispatch({ type: OrderTypes.PRODUCT_ADD, payload: { imei } });
-      handleSuccessSonner(locale === 'es' ? 'IMEI cargado' : 'IMEI loaded');
-    } finally {
-      setLookingUp(false);
-    }
+    // Agregar IMEI directamente sin búsqueda
+    dispatch({ type: OrderTypes.PRODUCT_ADD, payload: { imei } });
+    handleSuccessSonner(locale === 'es' ? 'IMEI agregado' : 'IMEI added');
   };
 
   if (!models || loadingStores) return <LoadingPage />;
@@ -131,12 +82,6 @@ export default function AddOrder() {
     <Card>
       <CardHeader className="font-light text-lg md:text-xl pb-2">
         {locale === 'es' ? 'Nuevo ingreso' : 'New Entry'}
-        {lookingUp && (
-          <span className="text-sm text-blue-500 ml-2">
-            <LoaderIcon className="h-4 w-4 animate-spin inline mr-1" />
-            {locale === 'es' ? 'Buscando IMEI...' : 'Looking up IMEI...'}
-          </span>
-        )}
       </CardHeader>
       <CardContent className="px-3 md:px-6">
         <Tabs
