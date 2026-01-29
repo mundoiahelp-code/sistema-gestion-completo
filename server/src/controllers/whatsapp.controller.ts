@@ -222,10 +222,48 @@ export const sendRepairMessage = async (req: AuthRequest, res: Response) => {
 };
 
 export const logout = async (req: AuthRequest, res: Response) => {
-  res.json({ 
-    success: true,
-    message: 'Para desconectar WhatsApp, detené el bot'
-  });
+  try {
+    const tenantId = req.user?.tenantId;
+    
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.json({ 
+        success: false,
+        message: 'Bot de WhatsApp no configurado'
+      });
+    }
+    
+    const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { id: true }
+    });
+    
+    if (!tenant) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Tenant no encontrado'
+      });
+    }
+    
+    const botUrl = BOT_URL;
+    
+    // Llamar al bot para que cierre la sesión
+    const response = await axios.post(
+      `${botUrl}/api/logout`,
+      { tenantId: tenant.id },
+      { timeout: 10000 }
+    );
+    
+    res.json({ 
+      success: true,
+      message: 'Sesión de WhatsApp cerrada correctamente'
+    });
+  } catch (error: any) {
+    console.error('Error cerrando sesión de WhatsApp:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.response?.data?.error || 'Error cerrando sesión'
+    });
+  }
 };
 
 export const disconnect = async (req: Request, res: Response) => {

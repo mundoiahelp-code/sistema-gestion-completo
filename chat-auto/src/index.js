@@ -219,6 +219,35 @@ class LumiBot {
       }
     });
 
+    // Endpoint para cerrar sesión de WhatsApp
+    app.post('/api/logout', async (req, res) => {
+      try {
+        console.log(`🚪 [${this.tenantName}] Cerrando sesión de WhatsApp...`);
+        
+        if (this.whatsapp?.sock) {
+          // Cerrar la conexión de WhatsApp
+          await this.whatsapp.sock.logout();
+          console.log(`✅ [${this.tenantName}] Sesión cerrada correctamente`);
+          
+          res.json({ 
+            success: true, 
+            message: 'Sesión de WhatsApp cerrada correctamente' 
+          });
+        } else {
+          res.json({ 
+            success: false, 
+            message: 'No hay sesión activa de WhatsApp' 
+          });
+        }
+      } catch (error) {
+        console.error(`❌ [${this.tenantName}] Error cerrando sesión:`, error);
+        res.status(500).json({ 
+          success: false, 
+          error: 'Error cerrando sesión de WhatsApp' 
+        });
+      }
+    });
+
     app.listen(this.botPort, () => {
       console.log(`🌐 [${this.tenantName}] API del bot escuchando en puerto ${this.botPort}`);
     });
