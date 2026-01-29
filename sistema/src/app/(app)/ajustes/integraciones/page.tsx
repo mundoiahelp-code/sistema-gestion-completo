@@ -9,9 +9,6 @@ import UpgradePrompt from '@/components/common/UpgradePrompt';
 import { Card } from '@/components/ui/card';
 import { Instagram } from 'lucide-react';
 
-// Forzar renderizado dinámico
-export const dynamic = 'force-dynamic';
-
 export default function IntegracionesPage() {
   const { t, locale } = useTranslation();
   const { canAccess, loading } = usePlan();
