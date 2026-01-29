@@ -21,6 +21,7 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
     const users = await prisma.user.findMany({
       where: {
         tenantId, // FILTRAR POR TENANT
+        active: true, // SOLO USUARIOS ACTIVOS
         OR: [
           { name: { contains: search as string } },
           { email: { contains: search as string } }
@@ -44,6 +45,7 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
     const total = await prisma.user.count({
       where: {
         tenantId, // FILTRAR POR TENANT
+        active: true, // SOLO USUARIOS ACTIVOS
         OR: [
           { name: { contains: search as string } },
           { email: { contains: search as string } }

@@ -11,6 +11,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import StoreAdd from './StoreAdd';
 import useCookie from '@/hooks/useCookie';
@@ -117,6 +127,10 @@ export default function StoresList({ data }: Props) {
   const [showConfig, setShowConfig] = useState(false);
   const [editData, setEditData] = useState<Partial<Store>>({});
   const [dayEnabled, setDayEnabled] = useState<Record<string, boolean>>({});
+  
+  // Estado para confirmación de eliminación
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [storeToDelete, setStoreToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const [accessToken] = useCookie('accessToken', false);
   const { handleErrorSonner, handleSuccessSonner } = useSonner();
@@ -154,10 +168,15 @@ export default function StoresList({ data }: Props) {
   };
 
   const handleDelete = (storeId: string, storeName: string) => {
-    if (!confirm(t('stores.deleteConfirm').replace('{name}', storeName))) return;
+    setStoreToDelete({ id: storeId, name: storeName });
+    setShowDeleteConfirm(true);
+  };
+  
+  const confirmDelete = () => {
+    if (!storeToDelete) return;
 
     const config: AxiosRequestConfig = {
-      url: `${API}/stores/${storeId}`,
+      url: `${API}/stores/${storeToDelete.id}`,
       method: 'DELETE',
       headers: { Authorization: `Bearer ${accessToken}` },
     };
@@ -166,8 +185,10 @@ export default function StoresList({ data }: Props) {
     axios(config)
       .then(() => {
         handleSuccessSonner(t('stores.storeDeleted'));
-        setStores(prev => prev.filter(s => s.id !== storeId));
+        setStores(prev => prev.filter(s => s.id !== storeToDelete.id));
         setSelectedStore(null);
+        setShowDeleteConfirm(false);
+        setStoreToDelete(null);
       })
       .catch((err) => {
         handleErrorSonner(err.response?.data?.error || t('stores.errorDeletingStore'));
@@ -766,6 +787,34 @@ export default function StoresList({ data }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Dialog de confirmación de eliminación */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('stores.deleteConfirm').replace('{name}', storeToDelete?.name || '')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('stores.deleteWarning') || 'Esta acción no se puede deshacer. La sucursal será eliminada permanentemente del sistema.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteConfirm(false);
+              setStoreToDelete(null);
+            }}>
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
