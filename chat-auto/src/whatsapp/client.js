@@ -16,12 +16,19 @@ class WhatsAppClient {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.currentQR = null;
+    this.messageHandler = null; // Handler para procesar mensajes
     
     // MULTI-TENANT: Usar carpeta de auth específica por tenant
     this.tenantId = process.env.TENANT_ID || 'default';
     this.authFolder = this.tenantId === 'default' ? 'auth_info' : `auth_sessions/${this.tenantId}`;
     
     console.log(`📁 Usando carpeta de autenticación: ${this.authFolder}`);
+  }
+
+  // Método para setear el handler de mensajes
+  setMessageHandler(handler) {
+    this.messageHandler = handler;
+    console.log('✅ MessageHandler configurado');
   }
 
   // Método para eliminar la sesión guardada
@@ -132,6 +139,70 @@ class WhatsAppClient {
       });
 
       this.sock.ev.on('creds.update', saveCreds);
+
+      // IMPORTANTE: Registrar eventos de mensajes AQUÍ, no en setupEventListeners
+      this.sock.ev.on('messages.upsert', async ({ messages }) => {
+        console.log(`📨 [TENANT: ${this.tenantId}] Evento messages.upsert - ${messages.length} mensajes`);
+        
+        for (const message of messages) {
+          try {
+            console.log(`📨 Mensaje recibido:`, {
+              fromMe: message.key.fromMe,
+              remoteJid: message.key.remoteJid,
+              hasText: !!(message.message?.conversation || message.message?.extendedTextMessage?.text)
+            });
+            
+            // Ignorar mensajes propios
+            if (message.key.fromMe) {
+              console.log(`⏭️  Ignorando mensaje propio`);
+              continue;
+            }
+
+            // Ignorar mensajes de grupos
+            if (message.key.remoteJid.includes('@g.us')) {
+              console.log(`⏭️  Ignorando mensaje de grupo`);
+              continue;
+            }
+
+            // Obtener texto del mensaje
+            const messageText = message.message?.conversation ||
+                              message.message?.extendedTextMessage?.text;
+
+            if (!messageText) {
+              console.log(`⏭️  Mensaje sin texto`);
+              continue;
+            }
+
+            // Obtener número de teléfono
+            let phoneNumber = message.key.remoteJid;
+            
+            // Si el número viene con @lid, intentar obtener el número real
+            if (phoneNumber.includes('@lid')) {
+              const participant = message.key.participant || message.participant;
+              if (participant && !participant.includes('@lid')) {
+                phoneNumber = participant;
+                console.log('📱 Usando número del participante:', phoneNumber);
+              } else {
+                console.log('⚠️ Mensaje con @lid sin número real, ignorando');
+                continue;
+              }
+            }
+            
+            console.log('📱 Número procesado:', phoneNumber);
+            console.log('💬 Texto:', messageText);
+
+            // Aquí es donde se debe llamar al messageHandler
+            // Pero como estamos dentro del cliente, necesitamos pasar el handler desde afuera
+            if (this.messageHandler) {
+              await this.messageHandler(phoneNumber, messageText, this);
+            } else {
+              console.log('⚠️ No hay messageHandler configurado');
+            }
+          } catch (error) {
+            console.error('❌ Error procesando mensaje:', error);
+          }
+        }
+      });
 
       return this.sock;
     } catch (error) {

@@ -93,6 +93,11 @@ class LumiBot {
       this.whatsapp = new WhatsAppClient();
       await this.whatsapp.initialize();
 
+      // 6. Configurar el handler de mensajes en el cliente de WhatsApp
+      this.whatsapp.setMessageHandler(async (phoneNumber, messageText, whatsappClient) => {
+        await this.messageHandler.handleMessage(phoneNumber, messageText, whatsappClient);
+      });
+
       // 6. Inicializar servicio de seguimiento (solo si usa sheets)
       let followupService = null;
       if (!this.useBackend && this.sheets) {
@@ -124,9 +129,6 @@ class LumiBot {
         backendIntegration,
         mercadoPago
       );
-
-      // 10. Configurar event listeners
-      this.setupEventListeners();
 
       console.log('\n✅ Lumi Bot iniciado correctamente!');
       console.log(`📊 Modo: ${this.useBackend ? 'Backend API' : 'Google Sheets'}`);
@@ -262,54 +264,6 @@ class LumiBot {
     app.listen(this.botPort, () => {
       console.log(`🌐 [${this.tenantName}] API del bot escuchando en puerto ${this.botPort}`);
     });
-  }
-
-  setupEventListeners() {
-    const sock = this.whatsapp.getSocket();
-
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-      for (const message of messages) {
-        // Ignorar mensajes propios
-        if (message.key.fromMe) continue;
-
-        // Ignorar mensajes de grupos
-        if (message.key.remoteJid.includes('@g.us')) continue;
-
-        // Obtener texto del mensaje
-        const messageText = message.message?.conversation ||
-                          message.message?.extendedTextMessage?.text;
-
-        if (!messageText) continue;
-
-        // Obtener número de teléfono
-        let phoneNumber = message.key.remoteJid;
-        
-        // Si el número viene con @lid, intentar obtener el número real del participante
-        if (phoneNumber.includes('@lid')) {
-          // Intentar obtener el número del participante o del pushName
-          const participant = message.key.participant || message.participant;
-          if (participant && !participant.includes('@lid')) {
-            phoneNumber = participant;
-            console.log('📱 Usando número del participante:', phoneNumber);
-          } else {
-            // Si no hay participante válido, saltar este mensaje
-            console.log('⚠️ Mensaje con @lid sin número real, ignorando:', phoneNumber);
-            continue;
-          }
-        }
-        
-        // Log para debug
-        console.log('📱 Número procesado:', phoneNumber);
-
-        // Procesar mensaje
-        await this.messageHandler.handleMessage(
-          phoneNumber,
-          messageText,
-          this.whatsapp
-        );
-      }
-    });
-  }
 }
 
 // Iniciar el bot
