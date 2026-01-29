@@ -36,15 +36,14 @@ export const getStatus = async (req: AuthRequest, res: Response) => {
     // Usar URL del bot configurada
     const botUrl = BOT_URL;
     
-    const response = await axios.get(`${botUrl}/api/health`, { 
+    const response = await axios.get(`${botUrl}/api/qr`, { 
       timeout: 5000,
-      params: { tenantId: tenant.id }
+      headers: { 'X-Tenant-ID': tenant.id }
     });
     
     res.json({ 
       connected: response.data.connected || false,
-      tenantId: response.data.tenantId,
-      tenantName: response.data.tenantName
+      phone: response.data.phone
     });
   } catch (error: any) {
     console.error('Error obteniendo estado de WhatsApp:', error);
@@ -89,7 +88,7 @@ export const getQRCode = async (req: AuthRequest, res: Response) => {
     
     const response = await axios.get(`${botUrl}/api/qr`, { 
       timeout: 5000,
-      params: { tenantId: tenant.id }
+      headers: { 'X-Tenant-ID': tenant.id }
     });
     
     res.json(response.data);
@@ -158,8 +157,11 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     
     const response = await axios.post(
       `${botUrl}/api/send-message`,
-      { phone, message, tenantId: tenant.id },
-      { timeout: 10000 }
+      { phone, message },
+      { 
+        timeout: 10000,
+        headers: { 'X-Tenant-ID': tenant.id }
+      }
     );
     
     res.json(response.data);
@@ -249,8 +251,11 @@ export const logout = async (req: AuthRequest, res: Response) => {
     // Llamar al bot para que cierre la sesión
     const response = await axios.post(
       `${botUrl}/api/logout`,
-      { tenantId: tenant.id },
-      { timeout: 10000 }
+      {},
+      { 
+        timeout: 10000,
+        headers: { 'X-Tenant-ID': tenant.id }
+      }
     );
     
     res.json({ 
@@ -299,15 +304,20 @@ export const reconnect = async (req: AuthRequest, res: Response) => {
     
     const botUrl = BOT_URL;
     
-    // Simplemente verificar que el bot esté corriendo
-    await axios.get(`${botUrl}/api/health`, { 
-      timeout: 5000,
-      params: { tenantId: tenant.id }
-    });
+    // Llamar al endpoint /connect del bot para iniciar la conexión
+    const response = await axios.post(
+      `${botUrl}/api/connect`,
+      {},
+      { 
+        timeout: 5000,
+        headers: { 'X-Tenant-ID': tenant.id }
+      }
+    );
     
     res.json({ 
       success: true,
-      message: 'Bot de WhatsApp activo. Escaneá el QR para conectar.'
+      message: 'Conexión iniciada. Escaneá el QR para conectar.',
+      data: response.data
     });
   } catch (error: any) {
     console.error('Error reconectando WhatsApp:', error);
@@ -319,4 +329,4 @@ export const reconnect = async (req: AuthRequest, res: Response) => {
       needsSetup: error.code === 'ECONNREFUSED'
     });
   }
-};
+};;
