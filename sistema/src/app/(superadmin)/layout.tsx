@@ -118,8 +118,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               {/* User info */}
               <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-zinc-700">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">{userName}</p>
-                  <p className="text-xs text-zinc-500">Super Admin</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">Lautaro Barberis</p>
+                  <p className="text-xs text-zinc-500">Dueño</p>
                 </div>
                 <button
                   onClick={handleLogout}

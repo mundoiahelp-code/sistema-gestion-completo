@@ -87,6 +87,9 @@ export default function SuperAdminPanel() {
   const [showIAModal, setShowIAModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showToggleAIModal, setShowToggleAIModal] = useState(false);
+  const [showChangePlanModal, setShowChangePlanModal] = useState(false);
+  const [newPlan, setNewPlan] = useState<string>('');
+  const [changePlanPassword, setChangePlanPassword] = useState('');
   const [aiToggleAction, setAiToggleAction] = useState<boolean>(false);
   const [aiTogglePassword, setAiTogglePassword] = useState('');
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -143,6 +146,7 @@ export default function SuperAdminPanel() {
   };
 
   const getDaysLeft = (expiresDate: string) => {
+    if (!expiresDate) return null;
     const expires = new Date(expiresDate);
     const now = new Date();
     const diff = expires.getTime() - now.getTime();
@@ -398,6 +402,55 @@ export default function SuperAdminPanel() {
     }
   };
 
+  const handleChangePlan = async () => {
+    if (!selectedTenant || !newPlan) {
+      toast.error('Selecciona un plan');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      // Verificar contraseña
+      const verifyRes = await fetch(`${API}/auth/verify-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ password: changePlanPassword })
+      });
+      
+      const verifyData = await verifyRes.json();
+      if (!verifyData.valid) {
+        toast.error('Contraseña incorrecta');
+        setProcessing(false);
+        return;
+      }
+
+      // Cambiar plan
+      const res = await fetch(`${API}/tenants/${selectedTenant.id}/plan`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ plan: newPlan }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        toast.error(errorData.error || 'Error al cambiar plan');
+        setProcessing(false);
+        return;
+      }
+
+      toast.success(`Plan cambiado a ${newPlan.toUpperCase()}`);
+      setShowChangePlanModal(false);
+      setChangePlanPassword('');
+      setNewPlan('');
+      await fetchTenants();
+    } catch (error) {
+      console.error('Error al cambiar plan:', error);
+      toast.error('Error al cambiar plan');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!selectedTenant) return;
     
@@ -464,53 +517,53 @@ export default function SuperAdminPanel() {
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 max-w-[1400px] mx-auto space-y-6">
       {/* Stats */}
-      <div className="flex flex-wrap gap-3">
-        <Card className="flex-1 min-w-[200px]">
-          <CardContent className="p-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Total</p>
-                <p className="text-xl font-bold">{stats.total}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Total</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <Building2 className="w-6 h-6 text-zinc-400" />
+              <Building2 className="w-8 h-8 text-zinc-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="flex-1 min-w-[200px]">
-          <CardContent className="p-3">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Activos</p>
-                <p className="text-xl font-bold">{stats.active}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Activos</p>
+                <p className="text-2xl font-bold">{stats.active}</p>
               </div>
-              <Zap className="w-6 h-6 text-green-500" />
+              <Zap className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="flex-1 min-w-[200px]">
-          <CardContent className="p-3">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">En Trial</p>
-                <p className="text-xl font-bold">{stats.trial}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">En Trial</p>
+                <p className="text-2xl font-bold">{stats.trial}</p>
               </div>
-              <Clock className="w-6 h-6 text-yellow-500" />
+              <Clock className="w-8 h-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="flex-1 min-w-[200px]">
-          <CardContent className="p-3">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Facturación Mes</p>
-                <p className="text-xl font-bold">${monthlyRevenue.toLocaleString('es-AR')}</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Facturación Mes</p>
+                <p className="text-2xl font-bold">${monthlyRevenue.toLocaleString('es-AR')}</p>
               </div>
-              <DollarSign className="w-6 h-6 text-green-500" />
+              <DollarSign className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -542,6 +595,7 @@ export default function SuperAdminPanel() {
           <TableHeader>
             <TableRow>
               <TableHead>Negocio</TableHead>
+              <TableHead>Teléfono</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Días restantes</TableHead>
@@ -559,6 +613,9 @@ export default function SuperAdminPanel() {
               return (
                 <TableRow key={tenant.id}>
                   <TableCell className="font-medium">{tenant.name}</TableCell>
+                  <TableCell className="text-sm text-zinc-600 dark:text-zinc-400">
+                    {tenant.phone || '-'}
+                  </TableCell>
                   <TableCell>
                     <Badge 
                       variant="outline"
@@ -597,6 +654,18 @@ export default function SuperAdminPanel() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setSelectedTenant(tenant);
+                          setNewPlan(tenant.plan);
+                          setShowChangePlanModal(true);
+                        }}
+                        title="Cambiar plan"
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -1054,6 +1123,80 @@ export default function SuperAdminPanel() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
               Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Cambiar Plan */}
+      <Dialog open={showChangePlanModal} onOpenChange={setShowChangePlanModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Cambiar Plan
+            </DialogTitle>
+            <DialogDescription>
+              {selectedTenant?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                Plan actual: <span className="font-semibold">{selectedTenant?.plan.toUpperCase()}</span>
+              </p>
+              <div className="space-y-2">
+                <Button
+                  variant={newPlan === 'trial' ? 'default' : 'outline'}
+                  className="w-full justify-start"
+                  onClick={() => setNewPlan('trial')}
+                >
+                  <span className="flex-1 text-left">Trial (14 días gratis)</span>
+                  {newPlan === 'trial' && <span className="text-xs">✓</span>}
+                </Button>
+                <Button
+                  variant={newPlan === 'basic' ? 'default' : 'outline'}
+                  className="w-full justify-start"
+                  onClick={() => setNewPlan('basic')}
+                >
+                  <span className="flex-1 text-left">Básico</span>
+                  {newPlan === 'basic' && <span className="text-xs">✓</span>}
+                </Button>
+                <Button
+                  variant={newPlan === 'pro' ? 'default' : 'outline'}
+                  className="w-full justify-start"
+                  onClick={() => setNewPlan('pro')}
+                >
+                  <span className="flex-1 text-left">Profesional</span>
+                  {newPlan === 'pro' && <span className="text-xs">✓</span>}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <Input
+                type="password"
+                placeholder="Tu contraseña para confirmar"
+                value={changePlanPassword}
+                onChange={(e) => setChangePlanPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowChangePlanModal(false);
+              setChangePlanPassword('');
+              setNewPlan('');
+            }}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleChangePlan}
+              disabled={processing || !changePlanPassword || !newPlan || newPlan === selectedTenant?.plan}
+            >
+              {processing ? 'Cambiando...' : 'Cambiar Plan'}
             </Button>
           </DialogFooter>
         </DialogContent>

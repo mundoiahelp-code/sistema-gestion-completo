@@ -11,6 +11,19 @@ export default function RootPage() {
   useEffect(() => {
     const token = Cookies.get('accessToken') || Cookies.get('token');
     if (token) {
+      // Verificar si es SUPER_ADMIN
+      const user = localStorage.getItem('user');
+      if (user) {
+        try {
+          const parsed = JSON.parse(user);
+          if (parsed.role === 'SUPER_ADMIN') {
+            router.push('/panel');
+            return;
+          }
+        } catch (e) {
+          // Si hay error parseando, continuar normal
+        }
+      }
       router.push('/inicio');
     } else {
       router.push('/iniciar-sesion');
