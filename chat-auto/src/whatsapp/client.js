@@ -6,6 +6,8 @@ import makeWASocket, {
 import { Boom } from '@hapi/boom';
 import pino from 'pino';
 import qrcode from 'qrcode-terminal';
+import fs from 'fs';
+import path from 'path';
 
 class WhatsAppClient {
   constructor() {
@@ -20,6 +22,27 @@ class WhatsAppClient {
     this.authFolder = this.tenantId === 'default' ? 'auth_info' : `auth_sessions/${this.tenantId}`;
     
     console.log(`📁 Usando carpeta de autenticación: ${this.authFolder}`);
+  }
+
+  // Método para eliminar la sesión guardada
+  async deleteSession() {
+    try {
+      if (fs.existsSync(this.authFolder)) {
+        // Eliminar todos los archivos de la carpeta de autenticación
+        const files = fs.readdirSync(this.authFolder);
+        for (const file of files) {
+          fs.unlinkSync(path.join(this.authFolder, file));
+        }
+        // Eliminar la carpeta
+        fs.rmdirSync(this.authFolder);
+        console.log(`🗑️  Sesión eliminada: ${this.authFolder}`);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error eliminando sesión:', error);
+      throw error;
+    }
   }
 
   async initialize() {

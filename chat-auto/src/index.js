@@ -225,20 +225,31 @@ class LumiBot {
         console.log(`🚪 [${this.tenantName}] Cerrando sesión de WhatsApp...`);
         
         if (this.whatsapp?.sock) {
-          // Cerrar la conexión de WhatsApp
-          await this.whatsapp.sock.logout();
-          console.log(`✅ [${this.tenantName}] Sesión cerrada correctamente`);
-          
-          res.json({ 
-            success: true, 
-            message: 'Sesión de WhatsApp cerrada correctamente' 
-          });
-        } else {
-          res.json({ 
-            success: false, 
-            message: 'No hay sesión activa de WhatsApp' 
-          });
+          try {
+            // Intentar cerrar la conexión de WhatsApp
+            await this.whatsapp.sock.logout();
+            console.log(`✅ [${this.tenantName}] Logout ejecutado`);
+          } catch (error) {
+            console.log(`⚠️  [${this.tenantName}] Error en logout (continuando con limpieza):`, error.message);
+          }
         }
+        
+        // IMPORTANTE: Eliminar la sesión guardada para evitar reconexión automática
+        try {
+          await this.whatsapp.deleteSession();
+          console.log(`🗑️  [${this.tenantName}] Sesión eliminada del disco`);
+        } catch (error) {
+          console.error(`❌ [${this.tenantName}] Error eliminando sesión:`, error);
+        }
+        
+        // Limpiar el socket
+        this.whatsapp.sock = null;
+        this.whatsapp.currentQR = null;
+        
+        res.json({ 
+          success: true, 
+          message: 'Sesión de WhatsApp cerrada y eliminada correctamente' 
+        });
       } catch (error) {
         console.error(`❌ [${this.tenantName}] Error cerrando sesión:`, error);
         res.status(500).json({ 
