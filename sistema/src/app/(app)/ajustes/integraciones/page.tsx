@@ -9,6 +9,9 @@ import UpgradePrompt from '@/components/common/UpgradePrompt';
 import useGetUserInfo from '@/hooks/useGetUserInfo';
 import { Role } from '@/enums/role.enum';
 
+// Forzar renderizado dinámico (no pre-render)
+export const dynamic = 'force-dynamic';
+
 export default function IntegracionesPage() {
   const { t, locale } = useTranslation();
   const { canAccess, loading } = usePlan();
