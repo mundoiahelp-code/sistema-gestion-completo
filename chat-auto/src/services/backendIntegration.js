@@ -419,14 +419,28 @@ class BackendIntegration {
     }
   }
 
-  // Verificar si el bot está activo
+  // Verificar si el bot está activo Y si el plan permite bot IA
   async isBotActive() {
     try {
+      // Verificar plan del tenant
+      const tenant = await this.getTenantConfig();
+      if (!tenant) {
+        console.log('⚠️  No se pudo obtener config del tenant');
+        return false;
+      }
+
+      // Solo plan PRO tiene bot IA automático
+      if (tenant.plan !== 'pro') {
+        console.log(`⚠️  Plan ${tenant.plan} no tiene bot IA (solo PRO)`);
+        return false;
+      }
+
+      // Verificar si el bot está activo en la configuración
       const config = await this.getBotConfig();
       return config?.isActive || false;
     } catch (error) {
       console.error('Error verificando estado del bot:', error.message);
-      return true; // Por defecto activo si hay error
+      return false; // Por defecto INACTIVO si hay error
     }
   }
 

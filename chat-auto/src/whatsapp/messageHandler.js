@@ -27,10 +27,20 @@ class MessageHandler {
         return await this.handleAdminCommand(messageText, phoneNumber, whatsappClient);
       }
 
+      // IMPORTANTE: Siempre guardar el mensaje en el backend, incluso si el bot está pausado
+      let botActive = true;
       if (this.backend) {
-        const isBotActive = await this.backend.isBotActive();
-        if (!isBotActive) {
-          console.log('🤖 Bot pausado, no respondiendo');
+        botActive = await this.backend.isBotActive();
+        
+        // Si el bot está pausado o el plan no tiene bot IA, solo guardar el mensaje y salir
+        if (!botActive) {
+          console.log('🤖 Bot inactivo (plan sin bot IA o pausado) - guardando en CRM sin responder');
+          try {
+            await this.backend.logChatMessage(phoneNumber, messageText, '', 'RECIBIDO', 'pending');
+            console.log('✅ Mensaje guardado en CRM');
+          } catch (error) {
+            console.error('❌ Error guardando mensaje:', error.message);
+          }
           return;
         }
 
