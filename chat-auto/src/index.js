@@ -264,6 +264,7 @@ class LumiBot {
     app.listen(this.botPort, () => {
       console.log(`🌐 [${this.tenantName}] API del bot escuchando en puerto ${this.botPort}`);
     });
+  }
 }
 
 // Iniciar el bot
