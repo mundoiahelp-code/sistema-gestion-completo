@@ -3,18 +3,27 @@ import { AuthRequest } from '../middleware/auth';
 import axios from 'axios';
 
 // Proxy controller para conectar con el bot de WhatsApp (chat-auto)
-// El bot corre en un puerto separado (por defecto 3001)
+// El bot debe correr en un servidor separado
 
-const BOT_URL = process.env.BOT_API_URL || 'http://localhost:3001';
+const BOT_URL = process.env.BOT_API_URL || process.env.WHATSAPP_BOT_URL || 'http://localhost:3001';
 
 export const getStatus = async (req: AuthRequest, res: Response) => {
   try {
     const tenantId = req.user?.tenantId;
     
-    // Obtener el puerto del bot desde la configuración del tenant
+    // Verificar si hay URL del bot configurada
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.json({ 
+        connected: false,
+        message: 'Bot de WhatsApp no configurado. Configurá WHATSAPP_BOT_URL en las variables de entorno.',
+        needsSetup: true
+      });
+    }
+    
+    // Obtener configuración del tenant
     const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { botPort: true, botEnabled: true }
+      select: { botPort: true, botEnabled: true, id: true }
     });
     
     if (!tenant?.botEnabled) {
@@ -24,19 +33,27 @@ export const getStatus = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    const botUrl = tenant.botPort ? `http://localhost:${tenant.botPort}` : BOT_URL;
+    // Usar URL del bot configurada
+    const botUrl = BOT_URL;
     
-    const response = await axios.get(`${botUrl}/api/health`, { timeout: 5000 });
+    const response = await axios.get(`${botUrl}/api/health`, { 
+      timeout: 5000,
+      params: { tenantId: tenant.id }
+    });
+    
     res.json({ 
       connected: response.data.connected || false,
       tenantId: response.data.tenantId,
       tenantName: response.data.tenantName
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error obteniendo estado de WhatsApp:', error);
     res.json({ 
       connected: false,
-      message: 'No se pudo conectar con el bot de WhatsApp'
+      message: error.code === 'ECONNREFUSED' 
+        ? 'El bot de WhatsApp no está corriendo. Inicialo en el servidor configurado.'
+        : 'No se pudo conectar con el bot de WhatsApp',
+      needsSetup: error.code === 'ECONNREFUSED'
     });
   }
 };
@@ -45,34 +62,56 @@ export const getQRCode = async (req: AuthRequest, res: Response) => {
   try {
     const tenantId = req.user?.tenantId;
     
+    // Verificar si hay URL del bot configurada
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.json({ 
+        connected: false,
+        qrCode: null,
+        message: 'Bot de WhatsApp no configurado. Configurá WHATSAPP_BOT_URL en las variables de entorno.',
+        needsSetup: true
+      });
+    }
+    
     const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { botPort: true, botEnabled: true }
+      select: { botPort: true, botEnabled: true, id: true }
     });
     
     if (!tenant?.botEnabled) {
       return res.json({ 
         connected: false,
+        qrCode: null,
         message: 'Bot de WhatsApp deshabilitado para este tenant'
       });
     }
     
-    const botUrl = tenant.botPort ? `http://localhost:${tenant.botPort}` : BOT_URL;
+    const botUrl = BOT_URL;
     
-    const response = await axios.get(`${botUrl}/api/qr`, { timeout: 5000 });
+    const response = await axios.get(`${botUrl}/api/qr`, { 
+      timeout: 5000,
+      params: { tenantId: tenant.id }
+    });
+    
     res.json(response.data);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error obteniendo QR de WhatsApp:', error);
     res.json({ 
       connected: false,
       qrCode: null,
-      message: 'No se pudo obtener el código QR'
+      message: error.code === 'ECONNREFUSED'
+        ? 'El bot de WhatsApp no está corriendo. Inicialo en el servidor configurado.'
+        : 'No se pudo obtener el código QR',
+      needsSetup: error.code === 'ECONNREFUSED'
     });
   }
 };
 
 export const getConnectionStatus = async (req: Request, res: Response) => {
   try {
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.json({ connected: false, needsSetup: true });
+    }
+    
     const response = await axios.get(`${BOT_URL}/api/health`, { timeout: 5000 });
     res.json({ 
       connected: response.data.connected || false
@@ -96,9 +135,16 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       });
     }
     
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Bot de WhatsApp no configurado'
+      });
+    }
+    
     const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { botPort: true, botEnabled: true }
+      select: { botPort: true, botEnabled: true, id: true }
     });
     
     if (!tenant?.botEnabled) {
@@ -108,11 +154,11 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    const botUrl = tenant.botPort ? `http://localhost:${tenant.botPort}` : BOT_URL;
+    const botUrl = BOT_URL;
     
     const response = await axios.post(
       `${botUrl}/api/send-message`,
-      { phone, message },
+      { phone, message, tenantId: tenant.id },
       { timeout: 10000 }
     );
     
@@ -138,9 +184,16 @@ export const sendRepairMessage = async (req: AuthRequest, res: Response) => {
       });
     }
     
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Bot de WhatsApp no configurado'
+      });
+    }
+    
     const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { botPort: true, botEnabled: true }
+      select: { botPort: true, botEnabled: true, id: true }
     });
     
     if (!tenant?.botEnabled) {
@@ -150,11 +203,11 @@ export const sendRepairMessage = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    const botUrl = tenant.botPort ? `http://localhost:${tenant.botPort}` : BOT_URL;
+    const botUrl = BOT_URL;
     
     const response = await axios.post(
       `${botUrl}/api/send-message`,
-      { phone, message },
+      { phone, message, tenantId: tenant.id },
       { timeout: 10000 }
     );
     
@@ -169,27 +222,10 @@ export const sendRepairMessage = async (req: AuthRequest, res: Response) => {
 };
 
 export const logout = async (req: AuthRequest, res: Response) => {
-  try {
-    const tenantId = req.user?.tenantId;
-    
-    const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
-      where: { id: tenantId },
-      select: { botPort: true }
-    });
-    
-    const botUrl = tenant?.botPort ? `http://localhost:${tenant.botPort}` : BOT_URL;
-    
-    // El bot no tiene endpoint de logout, simplemente retornar éxito
-    res.json({ 
-      success: true,
-      message: 'Para desconectar WhatsApp, detené el bot'
-    });
-  } catch (error) {
-    res.json({ 
-      success: false,
-      message: 'Error al desconectar'
-    });
-  }
+  res.json({ 
+    success: true,
+    message: 'Para desconectar WhatsApp, detené el bot'
+  });
 };
 
 export const disconnect = async (req: Request, res: Response) => {
@@ -203,9 +239,17 @@ export const reconnect = async (req: AuthRequest, res: Response) => {
   try {
     const tenantId = req.user?.tenantId;
     
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.json({ 
+        success: false,
+        message: 'Bot de WhatsApp no configurado. Configurá WHATSAPP_BOT_URL en las variables de entorno.',
+        needsSetup: true
+      });
+    }
+    
     const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { botPort: true, botEnabled: true }
+      select: { botPort: true, botEnabled: true, id: true }
     });
     
     if (!tenant?.botEnabled) {
@@ -215,20 +259,26 @@ export const reconnect = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    const botUrl = tenant.botPort ? `http://localhost:${tenant.botPort}` : BOT_URL;
+    const botUrl = BOT_URL;
     
     // Simplemente verificar que el bot esté corriendo
-    await axios.get(`${botUrl}/api/health`, { timeout: 5000 });
+    await axios.get(`${botUrl}/api/health`, { 
+      timeout: 5000,
+      params: { tenantId: tenant.id }
+    });
     
     res.json({ 
       success: true,
       message: 'Bot de WhatsApp activo. Escaneá el QR para conectar.'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error reconectando WhatsApp:', error);
     res.json({ 
       success: false,
-      message: 'No se pudo conectar con el bot. Asegurate de que esté corriendo.'
+      message: error.code === 'ECONNREFUSED'
+        ? 'El bot de WhatsApp no está corriendo. Inicialo en el servidor configurado.'
+        : 'No se pudo conectar con el bot. Asegurate de que esté corriendo.',
+      needsSetup: error.code === 'ECONNREFUSED'
     });
   }
 };
