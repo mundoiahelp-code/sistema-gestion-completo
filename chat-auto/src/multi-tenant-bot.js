@@ -19,13 +19,20 @@ console.log(`🌐 Backend: ${BACKEND_URL}`);
 // Mapa de conexiones: { tenantId: { sock, qr, phone } }
 const connections = new Map();
 
+// Normalizar número de teléfono
+function normalizePhone(phone) {
+  return phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '').replace(/\D/g, '');
+}
+
 // Función para guardar mensaje en el backend
 async function saveMessage(tenantId, phone, message, response = '') {
   try {
+    const cleanPhone = normalizePhone(phone);
+    
     const result = await axios.post(
       `${BACKEND_URL}/bot/messages`,
       {
-        customerPhone: phone,
+        customerPhone: cleanPhone,
         message: message,
         response: response,
         intent: 'RECIBIDO',
@@ -40,7 +47,7 @@ async function saveMessage(tenantId, phone, message, response = '') {
       }
     );
     
-    console.log(`✅ [${tenantId}] Guardado en CRM`);
+    console.log(`✅ [${tenantId}] Guardado: ${cleanPhone} - "${message.substring(0, 30)}..."`);
     return true;
   } catch (error) {
     console.error(`❌ [${tenantId}] Error guardando:`, error.response?.data || error.message);
@@ -159,10 +166,11 @@ async function initWhatsAppForTenant(tenantId) {
           }
         }
 
-        console.log(`📨 [${tenantId}] ${phone}: ${text}`);
+        const cleanPhone = normalizePhone(phone);
+        console.log(`📨 [${tenantId}] ${cleanPhone}: ${text}`);
 
         // Guardar en backend
-        await saveMessage(tenantId, phone, text);
+        await saveMessage(tenantId, cleanPhone, text);
 
       } catch (error) {
         console.error(`❌ [${tenantId}] Error procesando mensaje:`, error.message);
@@ -264,10 +272,11 @@ app.post('/api/send-message', async (req, res) => {
     return res.status(400).json({ error: 'phone y message requeridos' });
   }
 
-  const sent = await sendMessage(tenantId, phone, message);
+  const cleanPhone = normalizePhone(phone);
+  const sent = await sendMessage(tenantId, cleanPhone, message);
   
   if (sent) {
-    await saveMessage(tenantId, phone, '[CRM]', message);
+    await saveMessage(tenantId, cleanPhone, '[CRM]', message);
     res.json({ success: true });
   } else {
     res.status(500).json({ success: false });
