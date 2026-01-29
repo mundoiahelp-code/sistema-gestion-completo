@@ -428,7 +428,7 @@ function CRMPageContent() {
 
   const loadConversations = async () => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/bot/messages`, {
         params: { platform },
         headers: { Authorization: `Bearer ${token}` },
@@ -516,7 +516,7 @@ function CRMPageContent() {
     setNewMessage('');
 
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       
       // Determinar endpoint según la plataforma
       const endpoint = platform === 'instagram' 
@@ -567,7 +567,7 @@ function CRMPageContent() {
 
   const updateChatCategory = async (phone: string, category: string | null) => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/bot/messages/category`,
         { phone, category: category || null },
@@ -615,7 +615,7 @@ function CRMPageContent() {
     if (!conv) return;
 
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/bot/messages/resolved`,
         { phone, resolved: !conv.resolved },
@@ -634,7 +634,7 @@ function CRMPageContent() {
 
   const saveNotes = async (phone: string, notes: string) => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/bot/messages/notes`,
         { phone, notes },
@@ -724,7 +724,7 @@ function CRMPageContent() {
   // Guardar nombre del cliente
   const saveClientName = async (phone: string, newName: string) => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       
       // Si el nombre está vacío, eliminar el nombre y volver al número
       const finalName = newName.trim() || null;
@@ -751,7 +751,7 @@ function CRMPageContent() {
   // Eliminar chat
   const deleteChat = async (phone: string) => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       
       console.log('🗑️ Eliminando chat:', phone);
       
