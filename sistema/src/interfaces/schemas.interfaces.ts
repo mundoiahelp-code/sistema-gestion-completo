@@ -105,7 +105,8 @@ export interface ISale {
     battery: number;
     price: number;
   }[];
-  totalAmount: number;
+  total: number; // Campo del backend (Prisma)
+  totalAmount: number; // Campo legacy
   notes: string;
   createdAt: Date;
   updatedAt: Date;

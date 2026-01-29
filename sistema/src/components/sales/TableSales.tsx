@@ -61,7 +61,7 @@ export default function TableSales({ data, pagination, query }: Props) {
   // Calcular total de la página (solo para admin)
   const totalMonto = !isSeller ? filteredData
     .filter((s) => !s.cancelled)
-    .reduce((sum, s) => sum + (s.totalAmount || s.amounts?.total || 0), 0) : 0;
+    .reduce((sum, s) => sum + (s.total || s.totalAmount || s.amounts?.total || 0), 0) : 0;
 
   // Exportar ventas a Excel
   const handleExportPDF = async () => {
@@ -287,7 +287,7 @@ export default function TableSales({ data, pagination, query }: Props) {
                       <span className={twMerge(
                         item.cancelled ? 'text-gray-400 line-through' : 'text-green-600 font-semibold'
                       )}>
-                        ${(item.totalAmount || item.amounts?.total || 0).toLocaleString()}
+                        ${(item.total || item.totalAmount || item.amounts?.total || 0).toLocaleString()}
                       </span>
                     </TableCell>
                   )}
@@ -339,7 +339,7 @@ export default function TableSales({ data, pagination, query }: Props) {
                     'text-base font-semibold',
                     item.cancelled ? 'text-gray-400 line-through' : 'text-green-600'
                   )}>
-                    ${(item.totalAmount || item.amounts?.total || 0).toLocaleString()}
+                    ${(item.total || item.totalAmount || item.amounts?.total || 0).toLocaleString()}
                   </span>
                 )}
               </div>
