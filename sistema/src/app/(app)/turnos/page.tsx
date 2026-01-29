@@ -810,7 +810,7 @@ function TurnosPageContent() {
     if (appointmentDateTime < now) {
       return {
         valid: false,
-        message: `No podés crear un turno en un horario que ya pasó. Seleccioná una fecha y hora futura.`
+        message: `⚠️ Estás creando un turno en un horario que ya pasó (${newData.date} a las ${newData.time}). ¿Querés crearlo igual?`
       };
     }
     
@@ -837,7 +837,7 @@ function TurnosPageContent() {
     if (!dayHours) {
       return { 
         valid: false, 
-        message: `${store.name} está cerrado los ${dayNames[dayOfWeek]}s. Querés crear el turno igual?` 
+        message: `${store.name} está cerrado los ${dayNames[dayOfWeek]}s. ¿Querés crear el turno igual?` 
       };
     }
     
@@ -846,7 +846,7 @@ function TurnosPageContent() {
     if (newData.time < openTime || newData.time >= closeTime) {
       return { 
         valid: false, 
-        message: `El horario de ${store.name} los ${dayNames[dayOfWeek]}s es de ${openTime} a ${closeTime}. Querés crear el turno a las ${newData.time} igual?` 
+        message: `El horario de ${store.name} los ${dayNames[dayOfWeek]}s es de ${openTime} a ${closeTime}. ¿Querés crear el turno a las ${newData.time} igual?` 
       };
     }
     
