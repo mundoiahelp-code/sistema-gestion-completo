@@ -146,9 +146,13 @@ class WhatsAppClient {
         
         for (const message of messages) {
           try {
+            // Log completo del mensaje para debugging
+            console.log(`📨 Mensaje completo:`, JSON.stringify(message, null, 2));
+            
             console.log(`📨 Mensaje recibido:`, {
               fromMe: message.key.fromMe,
               remoteJid: message.key.remoteJid,
+              messageKeys: Object.keys(message.message || {}),
               hasText: !!(message.message?.conversation || message.message?.extendedTextMessage?.text)
             });
             
@@ -164,12 +168,14 @@ class WhatsAppClient {
               continue;
             }
 
-            // Obtener texto del mensaje
+            // Obtener texto del mensaje - MEJORADO para soportar más tipos
             const messageText = message.message?.conversation ||
-                              message.message?.extendedTextMessage?.text;
+                              message.message?.extendedTextMessage?.text ||
+                              message.message?.imageMessage?.caption ||
+                              message.message?.videoMessage?.caption;
 
             if (!messageText) {
-              console.log(`⏭️  Mensaje sin texto`);
+              console.log(`⏭️  Mensaje sin texto - Tipo:`, Object.keys(message.message || {}));
               continue;
             }
 
