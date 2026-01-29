@@ -157,16 +157,38 @@ async function initWhatsAppForTenant(tenantId) {
         let phone = msg.key.remoteJid;
         console.log(`🔍 [${tenantId}] Número RAW:`, phone);
         console.log(`🔍 [${tenantId}] Participant:`, msg.key.participant);
-        console.log(`🔍 [${tenantId}] Message keys:`, Object.keys(msg.message || {}));
         
-        // Manejar @lid
+        // Si viene con @lid, intentar obtener el número real
         if (phone?.includes('@lid')) {
-          const match = phone.match(/^(\d+)@lid/);
-          if (match) {
-            phone = match[1] + '@s.whatsapp.net';
-            console.log(`🔄 [${tenantId}] Convertido de @lid a:`, phone);
-          } else {
-            continue;
+          console.log(`⚠️  [${tenantId}] Detectado @lid, intentando obtener número real...`);
+          
+          try {
+            // Intentar obtener info del contacto
+            const [contactInfo] = await sock.onWhatsApp(phone.replace('@lid', ''));
+            if (contactInfo?.jid) {
+              phone = contactInfo.jid;
+              console.log(`✅ [${tenantId}] Número real obtenido:`, phone);
+            } else {
+              // Si no se puede obtener, usar el @lid convertido
+              const match = phone.match(/^(\d+)@lid/);
+              if (match) {
+                phone = match[1] + '@s.whatsapp.net';
+                console.log(`🔄 [${tenantId}] Usando @lid convertido:`, phone);
+              } else {
+                console.log(`❌ [${tenantId}] No se pudo procesar @lid`);
+                continue;
+              }
+            }
+          } catch (error) {
+            console.log(`❌ [${tenantId}] Error obteniendo número real:`, error.message);
+            // Fallback: usar el @lid convertido
+            const match = phone.match(/^(\d+)@lid/);
+            if (match) {
+              phone = match[1] + '@s.whatsapp.net';
+              console.log(`🔄 [${tenantId}] Fallback a @lid convertido:`, phone);
+            } else {
+              continue;
+            }
           }
         }
 
