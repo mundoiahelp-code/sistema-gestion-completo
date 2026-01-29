@@ -5,8 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/simple-bot.js",
-    "dev": "node --watch src/simple-bot.js",
+    "start": "node src/multi-tenant-bot.js",
+    "dev": "node --watch src/multi-tenant-bot.js",
+    "simple": "node src/simple-bot.js",
     "old": "node src/index.js"
   },
   "dependencies": {

@@ -9,7 +9,7 @@ import axios from 'axios';
 import express from 'express';
 
 // Configuración
-const TENANT_ID = process.env.TENANT_ID || '64670744-ed81-4eaa-b0b4-6a6871e7cd10';
+const TENANT_ID = process.env.TENANT_ID || '33d198fb-a291-4855-8afb-2927d1ff5e72';
 const BACKEND_URL = process.env.BACKEND_URL || 'https://distcba.gestion-completo.production-88bc.up.railway.app';
 const BOT_PORT = process.env.BOT_API_PORT || 3001;
 
