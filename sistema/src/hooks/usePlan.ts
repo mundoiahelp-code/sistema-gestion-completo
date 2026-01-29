@@ -25,9 +25,9 @@ const planFeatures: Record<PlanType, PlanFeatures> = {
     maxStores: 2,
   },
   basic: {
-    crm: true, // Básico puede ver CRM y conectar WhatsApp para mensajes
-    bot: false, // Pero NO tiene bot IA
-    integrations: false, // NO tiene acceso a Ajustes > Integraciones (eso es para bot)
+    crm: true, // Puede ver CRM y conectar WhatsApp manualmente
+    bot: false, // NO tiene bot IA automático
+    integrations: true, // Puede conectar WhatsApp desde Integraciones (sin bot)
     onlineTurnos: false,
     advancedReports: false,
     maxUsers: 8,
@@ -35,8 +35,8 @@ const planFeatures: Record<PlanType, PlanFeatures> = {
   },
   pro: {
     crm: true,
-    bot: true,
-    integrations: true, // Puede configurar bot desde Ajustes > Integraciones
+    bot: true, // Tiene bot IA que responde automáticamente
+    integrations: true, // Puede configurar WhatsApp + Bot IA
     onlineTurnos: true,
     advancedReports: true,
     maxUsers: 18,
