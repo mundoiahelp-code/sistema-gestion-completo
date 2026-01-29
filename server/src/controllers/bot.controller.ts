@@ -262,10 +262,18 @@ export class BotController {
   // Registrar nuevo mensaje de chat
   static async logChatMessage(req: AuthRequest, res: Response) {
     try {
+      console.log('📥 [logChatMessage] Request recibido');
+      console.log('📥 Headers:', JSON.stringify(req.headers, null, 2));
+      console.log('📥 Body:', JSON.stringify(req.body, null, 2));
+      console.log('📥 User:', JSON.stringify(req.user, null, 2));
+      
       const tenantId = req.user?.tenantId;
       const { customerPhone, message, response, intent, status = 'responded', platform = 'whatsapp', sentBy } = req.body;
 
+      console.log(`📥 TenantId extraído: ${tenantId}`);
+
       if (!customerPhone || !message) {
+        console.error('❌ Faltan datos requeridos: customerPhone o message');
         return res.status(400).json({
           success: false,
           message: 'Teléfono del cliente y mensaje son requeridos'
