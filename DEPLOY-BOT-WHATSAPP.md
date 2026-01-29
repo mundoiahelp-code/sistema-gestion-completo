@@ -4,11 +4,73 @@ El bot de WhatsApp necesita correr en un servidor separado porque usa Baileys (c
 
 ## 📋 Requisitos
 
-- Servidor VPS (Ubuntu/Debian) o servicio como Render/Railway
+- Cuenta de Railway (gratis, $5 crédito/mes)
+- O servidor VPS (Ubuntu/Debian)
 - Node.js 18+
-- PM2 (para mantener el bot corriendo)
 
-## 🚀 Opción 1: VPS (Recomendado)
+## 🚀 Opción 1: Railway (GRATIS - Recomendado)
+
+### 1. Crear nuevo proyecto en Railway
+
+1. Ir a [railway.app](https://railway.app)
+2. Click en "New Project"
+3. Seleccionar "Deploy from GitHub repo"
+4. Elegir tu repositorio `sistema-gestion-completo`
+
+### 2. Configurar el servicio
+
+En la configuración del servicio:
+
+**Settings > General:**
+- Service Name: `whatsapp-bot`
+- Root Directory: `chat-auto`
+- Start Command: `npm start`
+
+**Settings > Variables:**
+
+Agregar estas variables de entorno:
+
+```
+TENANT_ID=64670744-ed81-4eaa-b0b4-6a6871e7cd10
+TENANT_NAME=VM Electronica
+BOT_API_PORT=3001
+USE_BACKEND=true
+BACKEND_URL=https://tu-backend.railway.app/api
+BOT_NAME=Lumi
+```
+
+**Solo para Plan Pro (con IA):**
+```
+ANTHROPIC_API_KEY=sk-ant-api03-tu-key-aqui
+```
+
+### 3. Deploy
+
+Railway desplegará automáticamente el bot.
+
+### 4. Obtener URL del bot
+
+Railway te dará una URL como: `https://whatsapp-bot-production-abc123.up.railway.app`
+
+### 5. Configurar el backend
+
+En tu proyecto del backend en Railway, agregar variable:
+
+```
+WHATSAPP_BOT_URL=https://whatsapp-bot-production-abc123.up.railway.app
+```
+
+### 6. Reiniciar el backend
+
+Railway reiniciará automáticamente después de agregar la variable.
+
+### 7. ¡Listo!
+
+Ahora podés ir al CRM y escanear el QR.
+
+---
+
+## 🚀 Opción 2: VPS (Para producción)
 
 ### 1. Conectar al VPS
 
@@ -86,7 +148,7 @@ pm2 logs whatsapp-bot
 
 El QR aparecerá en los logs. También podés acceder desde el CRM del sistema web.
 
-## 🌐 Opción 2: Render.com
+## 🌐 Opción 3: Render.com
 
 ### 1. Crear nuevo Web Service
 
@@ -207,9 +269,12 @@ Solución: Reiniciar el bot y escanear el QR nuevamente.
 
 ## 💰 Costos Estimados
 
+- **Railway**: GRATIS ($5 crédito/mes incluido)
 - **VPS básico**: $5-10/mes (DigitalOcean, Linode, Vultr)
 - **Render.com**: $7/mes (plan Starter)
 - **Anthropic API** (solo Plan Pro): $10-50/mes según uso
+
+**Recomendación**: Usar Railway para empezar (gratis), luego migrar a VPS si necesitás más recursos.
 
 ## 📝 Notas Importantes
 
