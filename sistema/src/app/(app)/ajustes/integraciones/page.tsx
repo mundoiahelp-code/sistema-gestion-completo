@@ -1,16 +1,13 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useTranslation } from '@/i18n/I18nProvider';
 import { usePlan } from '@/hooks/usePlan';
 import useGetUserInfo from '@/hooks/useGetUserInfo';
 import { Role } from '@/enums/role.enum';
-
-// Importar componentes dinámicamente para evitar problemas de SSR
-const WhatsAppSettings = dynamic(() => import('@/components/settings/WhatsAppSettings'), { ssr: false });
-const UpgradePrompt = dynamic(() => import('@/components/common/UpgradePrompt'), { ssr: false });
-const Card = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.Card })), { ssr: false });
-const Instagram = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Instagram })), { ssr: false });
+import WhatsAppSettings from '@/components/settings/WhatsAppSettings';
+import UpgradePrompt from '@/components/common/UpgradePrompt';
+import { Card } from '@/components/ui/card';
+import { Instagram } from 'lucide-react';
 
 // Forzar renderizado dinámico
 export const dynamic = 'force-dynamic';
