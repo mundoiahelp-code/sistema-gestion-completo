@@ -142,38 +142,63 @@ class WhatsAppClient {
 
       // IMPORTANTE: Registrar eventos de mensajes AQUÍ
       this.sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        console.log(`📨 Evento messages.upsert - tipo: ${type}, cantidad: ${messages.length}`);
+        
         // Solo procesar mensajes nuevos (notify)
-        if (type !== 'notify') return;
+        if (type !== 'notify') {
+          console.log(`⏭️  Ignorando tipo: ${type}`);
+          return;
+        }
         
         for (const message of messages) {
           try {
+            console.log('🔍 Procesando mensaje:', {
+              fromMe: message.key.fromMe,
+              remoteJid: message.key.remoteJid,
+              hasMessage: !!message.message,
+              messageKeys: message.message ? Object.keys(message.message) : []
+            });
+
             // Ignorar mensajes propios
-            if (message.key.fromMe) continue;
+            if (message.key.fromMe) {
+              console.log('⏭️  Ignorando mensaje propio');
+              continue;
+            }
 
             // Ignorar mensajes de grupos
-            if (message.key.remoteJid?.includes('@g.us')) continue;
+            if (message.key.remoteJid?.includes('@g.us')) {
+              console.log('⏭️  Ignorando mensaje de grupo');
+              continue;
+            }
 
-            // Ignorar mensajes de protocolo/sistema/metadata
-            if (!message.message) continue;
-            if (message.message.protocolMessage) continue;
-            if (message.message.senderKeyDistributionMessage) continue;
-            if (message.message.messageContextInfo && !message.message.conversation && !message.message.extendedTextMessage) continue;
+            // Verificar que tenga mensaje
+            if (!message.message) {
+              console.log('⏭️  No tiene message');
+              continue;
+            }
 
             // Extraer texto del mensaje
             let messageText = null;
             
             if (message.message.conversation) {
               messageText = message.message.conversation;
+              console.log('✅ Texto extraído de conversation');
             } else if (message.message.extendedTextMessage?.text) {
               messageText = message.message.extendedTextMessage.text;
+              console.log('✅ Texto extraído de extendedTextMessage');
             } else if (message.message.imageMessage?.caption) {
               messageText = message.message.imageMessage.caption;
+              console.log('✅ Texto extraído de imageMessage.caption');
             } else if (message.message.videoMessage?.caption) {
               messageText = message.message.videoMessage.caption;
+              console.log('✅ Texto extraído de videoMessage.caption');
             }
 
-            // Si no hay texto, ignorar silenciosamente
-            if (!messageText || messageText.trim() === '') continue;
+            // Si no hay texto, ignorar silenciosamente (puede ser sticker, audio, etc)
+            if (!messageText || messageText.trim() === '') {
+              console.log('⏭️  No hay texto en el mensaje');
+              continue;
+            }
 
             // Obtener número de teléfono
             let phoneNumber = message.key.remoteJid;
@@ -184,7 +209,8 @@ class WhatsAppClient {
               if (participant && !participant.includes('@lid')) {
                 phoneNumber = participant;
               } else {
-                continue; // No podemos procesar sin número válido
+                console.log('⏭️  Número con @lid sin participant válido');
+                continue;
               }
             }
             
@@ -193,9 +219,12 @@ class WhatsAppClient {
             // Llamar al handler
             if (this.messageHandler) {
               await this.messageHandler(phoneNumber, messageText, this);
+            } else {
+              console.log('⚠️  No hay messageHandler configurado');
             }
           } catch (error) {
             console.error('❌ Error procesando mensaje:', error.message);
+            console.error('Stack:', error.stack);
           }
         }
       });
