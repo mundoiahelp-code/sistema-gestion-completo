@@ -8,7 +8,6 @@ import { CheckCircle, XCircle, RefreshCw, LogOut, QrCode } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import Image from 'next/image';
 import { useTranslation } from '@/i18n/I18nProvider';
 
 const WhatsAppIcon = () => (
@@ -319,7 +318,8 @@ export default function WhatsAppSettings() {
             {qrCode ? (
               <>
                 <div className="relative flex justify-center p-4 bg-white dark:bg-zinc-800 rounded-lg">
-                  <Image src={qrCode} alt="QR Code" width={300} height={300} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={qrCode} alt="QR Code" width={300} height={300} className="rounded" />
                   
                   {/* Animación de éxito */}
                   {showSuccessAnimation && (
