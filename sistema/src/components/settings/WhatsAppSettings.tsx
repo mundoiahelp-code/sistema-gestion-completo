@@ -106,10 +106,10 @@ export default function WhatsAppSettings() {
       
       // Intentar obtener el QR varias veces
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 20; // Aumentado a 20 intentos
       
       while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 segundos entre intentos
         
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/whatsapp/qr`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -118,7 +118,10 @@ export default function WhatsAppSettings() {
         console.log('Intento', attempts + 1, '- Respuesta:', response.data);
 
         if (response.data.qrCode) {
-          setQrCode(response.data.qrCode);
+          // Convertir QR string a imagen base64
+          const QRCode = (await import('qrcode')).default;
+          const qrDataUrl = await QRCode.toDataURL(response.data.qrCode);
+          setQrCode(qrDataUrl);
           setError('');
           return;
         }
