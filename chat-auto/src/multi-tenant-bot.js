@@ -245,21 +245,9 @@ app.get('/api/qr', async (req, res) => {
   }
 
   if (conn.qr) {
-    // Convertir QR a base64 con opciones para reducir tamaño
-    try {
-      const qrImage = await qrcode.toDataURL(conn.qr, {
-        errorCorrectionLevel: 'L', // Nivel bajo de corrección de errores
-        type: 'image/png',
-        quality: 0.3,
-        margin: 1,
-        width: 256
-      });
-      res.json({ qrCode: qrImage, connected: false });
-    } catch (error) {
-      console.error(`❌ [${tenantId}] Error generando QR:`, error.message);
-      // Si falla, retornar el string crudo para que el frontend lo maneje
-      res.json({ qrCode: conn.qr, connected: false, raw: true });
-    }
+    // Retornar el QR string crudo para que el frontend lo convierta
+    // Esto evita el error "too big to be stored in a QR Code"
+    res.json({ qrCode: conn.qr, connected: false, raw: true });
   } else if (conn.sock?.user) {
     res.json({ connected: true, phone: conn.phone });
   } else {

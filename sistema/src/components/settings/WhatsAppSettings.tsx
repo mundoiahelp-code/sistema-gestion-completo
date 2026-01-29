@@ -118,12 +118,29 @@ export default function WhatsAppSettings() {
         console.log('Intento', attempts + 1, '- Respuesta:', response.data);
 
         if (response.data.qrCode) {
-          // Convertir QR string a imagen base64
+          // Convertir QR string a imagen base64 con opciones de compresión
           const QRCode = (await import('qrcode')).default;
-          const qrDataUrl = await QRCode.toDataURL(response.data.qrCode);
-          setQrCode(qrDataUrl);
-          setError('');
-          return;
+          try {
+            const qrDataUrl = await QRCode.toDataURL(response.data.qrCode, {
+              errorCorrectionLevel: 'L', // Nivel bajo de corrección
+              type: 'image/png',
+              quality: 0.3,
+              margin: 1,
+              width: 256,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            });
+            setQrCode(qrDataUrl);
+            setError('');
+            return;
+          } catch (qrError: any) {
+            console.error('Error generando QR:', qrError);
+            setShowQRDialog(false);
+            setError('Error al generar el código QR. Por favor, intentá de nuevo.');
+            return;
+          }
         }
         
         if (response.data.connected) {
