@@ -167,13 +167,6 @@ function CRMPageContent() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<{ phone: string; name: string } | null>(null);
   
-  // Estados para el modal de QR de WhatsApp
-  const [showWhatsAppQRModal, setShowWhatsAppQRModal] = useState(false);
-  const [qrCode, setQrCode] = useState<string | null>(null);
-  const [qrLoading, setQrLoading] = useState(false);
-  const [qrError, setQrError] = useState('');
-  const [showQRSuccessAnimation, setShowQRSuccessAnimation] = useState(false);
-  
   // Hook de plan para verificar features
   const { canAccess } = usePlan();
   const hasBot = canAccess('bot');
@@ -968,49 +961,18 @@ function CRMPageContent() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2 dark:text-zinc-100">WhatsApp Business</h2>
                 <p className="text-gray-600 dark:text-zinc-400 mb-4">
-                  {hasBot 
-                    ? 'Conectá tu WhatsApp para activar el CRM y el Asistente IA juntos'
-                    : 'Para gestionar tus mensajes de WhatsApp, primero debes vincular tu cuenta'
-                  }
+                  Para gestionar tus mensajes de WhatsApp, primero debes vincular tu cuenta
                 </p>
-                {hasBot ? (
-                  /* Plan Pro: Ir a Integraciones para conectar CRM + Bot juntos */
-                  <Button
-                    onClick={() => window.location.href = '/ajustes/integraciones'}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Ir a Integraciones
-                  </Button>
-                ) : (
-                  /* Plan Básico: Escanear QR directamente aquí (solo CRM) */
-                  <Button
-                    onClick={getWhatsAppQRCode}
-                    className="bg-green-600 hover:bg-green-700"
-                    disabled={qrLoading}
-                  >
-                    {qrLoading ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Conectando...
-                      </>
-                    ) : (
-                      <>
-                        <QrCode className="w-4 h-4 mr-2" />
-                        Vincular WhatsApp
-                      </>
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={() => window.location.href = '/ajustes/integraciones'}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Ir a Integraciones
+                </Button>
                 <p className="text-xs text-gray-500 dark:text-zinc-500 mt-4">
-                  {hasBot 
-                    ? 'Desde Integraciones podés conectar WhatsApp con el Asistente IA'
-                    : 'Escaneá el código QR con tu WhatsApp para conectar'
-                  }
+                  Conectá tu WhatsApp desde Ajustes → Integraciones
                 </p>
-                {qrError && (
-                  <p className="text-sm text-red-500 mt-2">{qrError}</p>
-                )}
               </div>
             </div>
           ) : (
@@ -1864,58 +1826,6 @@ function CRMPageContent() {
               {editingCategory ? 'Guardar' : 'Crear'}
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal del QR de WhatsApp */}
-      <Dialog open={showWhatsAppQRModal} onOpenChange={setShowWhatsAppQRModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <WhatsAppIcon />
-              Escanear código QR
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {qrCode ? (
-              <>
-                <div className="relative flex justify-center p-4 bg-white dark:bg-zinc-800 rounded-lg">
-                  <Image src={qrCode} alt="QR Code" width={300} height={300} />
-                  
-                  {/* Animación de éxito */}
-                  {showQRSuccessAnimation && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-zinc-800/90 rounded-lg animate-in fade-in zoom-in duration-300">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center animate-in zoom-in duration-500">
-                          <CheckCircle className="w-12 h-12 text-white" />
-                        </div>
-                        <p className="text-lg font-semibold text-green-700">¡Conectado!</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-zinc-400 space-y-2">
-                  <p className="font-medium">Pasos para conectar:</p>
-                  <ol className="list-decimal list-inside space-y-1">
-                    <li>Abrí WhatsApp en tu celular</li>
-                    <li>Andá a Configuración → Dispositivos vinculados</li>
-                    <li>Tocá en "Vincular un dispositivo"</li>
-                    <li>Escaneá este código QR</li>
-                  </ol>
-                </div>
-                <Alert>
-                  <AlertDescription className="text-xs">
-                    El código QR se actualiza automáticamente. Mantené esta ventana abierta mientras escaneás.
-                  </AlertDescription>
-                </Alert>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-8">
-                <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mb-4" />
-                <p className="text-sm text-gray-500">Generando código QR...</p>
-              </div>
-            )}
-          </div>
         </DialogContent>
       </Dialog>
 
