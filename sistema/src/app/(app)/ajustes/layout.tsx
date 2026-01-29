@@ -49,6 +49,13 @@ export default function SettingsLayout({
       adminOnly: true,
       showAlways: true 
     },
+    { 
+      name: isSpanish ? 'Integraciones' : 'Integrations', 
+      href: '/ajustes/integraciones', 
+      icon: Plug, 
+      adminOnly: true,
+      showAlways: true
+    },
   ];
 
   // Filter menu by role and features
