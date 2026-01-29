@@ -245,12 +245,20 @@ app.get('/api/qr', async (req, res) => {
   }
 
   if (conn.qr) {
-    // Convertir QR a base64
+    // Convertir QR a base64 con opciones para reducir tamaño
     try {
-      const qrImage = await qrcode.toDataURL(conn.qr);
+      const qrImage = await qrcode.toDataURL(conn.qr, {
+        errorCorrectionLevel: 'L', // Nivel bajo de corrección de errores
+        type: 'image/png',
+        quality: 0.3,
+        margin: 1,
+        width: 256
+      });
       res.json({ qrCode: qrImage, connected: false });
     } catch (error) {
-      res.json({ qrCode: conn.qr, connected: false });
+      console.error(`❌ [${tenantId}] Error generando QR:`, error.message);
+      // Si falla, retornar el string crudo para que el frontend lo maneje
+      res.json({ qrCode: conn.qr, connected: false, raw: true });
     }
   } else if (conn.sock?.user) {
     res.json({ connected: true, phone: conn.phone });
