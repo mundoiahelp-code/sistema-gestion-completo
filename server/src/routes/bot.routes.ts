@@ -8,6 +8,7 @@ const router = Router();
 // Rutas públicas para el bot (autenticación por tenant ID)
 router.get('/public/config', authenticateBot, BotController.getConfig);
 router.get('/public/stats', authenticateBot, BotController.getStats);
+router.post('/messages', authenticateBot, BotController.logChatMessage); // Mover aquí para que use authenticateBot
 
 // Rutas que requieren autenticación de usuario
 router.use(authenticate);
@@ -24,7 +25,6 @@ router.get('/intent-analysis', BotController.getIntentAnalysis);
 
 // Mensajes de chat
 router.get('/messages', BotController.getChatMessages);
-router.post('/messages', BotController.logChatMessage);
 
 // Actualizar propiedades de mensajes
 router.patch('/messages/category', BotController.updateCategory);
