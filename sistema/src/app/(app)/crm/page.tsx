@@ -689,21 +689,31 @@ function CRMPageContent() {
     // Limpiar el número primero
     const cleaned = phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '');
     
-    // Si es un número argentino (empieza con 549 y tiene 13 dígitos)
-    if (cleaned.startsWith('549') && cleaned.length === 13) {
-      // Formato: 549 11 6949 3281 -> +54 9 11 6949-3281
-      const country = cleaned.substring(0, 2);  // 54
-      const nine = cleaned.substring(2, 3);     // 9
-      const area = cleaned.substring(3, 5);     // 11
-      const first = cleaned.substring(5, 9);    // 6949
-      const second = cleaned.substring(9, 13);  // 3281
+    // Si es un número argentino (empieza con 54 y tiene 12-13 dígitos)
+    if (cleaned.startsWith('54') && (cleaned.length === 12 || cleaned.length === 13)) {
+      // Formato: 5491138514845 (13 dígitos) -> +54 9 11 3851-4845
+      // Formato: 549110178938964 (14 dígitos) -> +54 9 11 0178-938964
+      const country = '54';
+      const rest = cleaned.substring(2); // Quitar el 54
       
-      return `+${country} ${nine} ${area} ${first}-${second}`;
+      if (rest.startsWith('9')) {
+        // Tiene el 9 de celular
+        const nine = '9';
+        const area = rest.substring(1, 3); // 11
+        const number = rest.substring(3); // El resto del número
+        
+        // Dividir el número en dos partes
+        const half = Math.floor(number.length / 2);
+        const first = number.substring(0, half);
+        const second = number.substring(half);
+        
+        return `+${country} ${nine} ${area} ${first}-${second}`;
+      }
     }
     
-    // Si tiene otro formato, mostrar con + al inicio y espacios cada 4 dígitos
+    // Si tiene otro formato, mostrar con + al inicio
     if (cleaned.length > 0) {
-      return `+${cleaned.replace(/(\d{2})(\d{1})(\d{2})(\d{4})(\d{4})/, '$1 $2 $3 $4-$5')}`;
+      return `+${cleaned}`;
     }
     
     return cleaned;
