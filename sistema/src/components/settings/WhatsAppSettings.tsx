@@ -116,6 +116,8 @@ export default function WhatsAppSettings() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        console.log('Intento', attempts + 1, '- Respuesta:', response.data);
+
         if (response.data.qrCode) {
           setQrCode(response.data.qrCode);
           setError('');
@@ -134,9 +136,11 @@ export default function WhatsAppSettings() {
       
       setShowQRDialog(false);
       setError(t('settings.whatsappSettings.qrGenerateError'));
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error obteniendo QR:', error);
       setShowQRDialog(false);
-      setError(t('settings.whatsappSettings.qrError'));
+      const errorMsg = error.response?.data?.message || error.message || t('settings.whatsappSettings.qrError');
+      setError(errorMsg);
     }
   };
 
