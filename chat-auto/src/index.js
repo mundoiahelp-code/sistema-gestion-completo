@@ -93,11 +93,6 @@ class LumiBot {
       this.whatsapp = new WhatsAppClient();
       await this.whatsapp.initialize();
 
-      // 6. Configurar el handler de mensajes en el cliente de WhatsApp
-      this.whatsapp.setMessageHandler(async (phoneNumber, messageText, whatsappClient) => {
-        await this.messageHandler.handleMessage(phoneNumber, messageText, whatsappClient);
-      });
-
       // 6. Inicializar servicio de seguimiento (solo si usa sheets)
       let followupService = null;
       if (!this.useBackend && this.sheets) {
@@ -129,6 +124,11 @@ class LumiBot {
         backendIntegration,
         mercadoPago
       );
+
+      // 10. Configurar el handler de mensajes en el cliente de WhatsApp
+      this.whatsapp.setMessageHandler(async (phoneNumber, messageText, whatsappClient) => {
+        await this.messageHandler.handleMessage(phoneNumber, messageText, whatsappClient);
+      });
 
       console.log('\n✅ Lumi Bot iniciado correctamente!');
       console.log(`📊 Modo: ${this.useBackend ? 'Backend API' : 'Google Sheets'}`);
