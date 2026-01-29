@@ -64,15 +64,13 @@ class WhatsAppClient {
         syncFullHistory: false,
         markOnlineOnConnect: true,
         defaultQueryTimeoutMs: undefined,
-        getMessage: async () => undefined,
+        getMessage: async (key) => {
+          // Retornar undefined para mensajes que no tenemos en cache
+          return undefined;
+        },
         retryRequestDelayMs: 250,
         connectTimeoutMs: 60000,
         keepAliveIntervalMs: 30000,
-        emitOwnEvents: false,
-        fireInitQueries: true,
-        generateHighQualityLinkPreview: false,
-        syncFullHistory: false,
-        markOnlineOnConnect: false,
       });
 
       this.sock.ev.on('connection.update', async (update) => {
@@ -142,7 +140,7 @@ class WhatsAppClient {
 
       // IMPORTANTE: Registrar eventos de mensajes AQUÍ
       this.sock.ev.on('messages.upsert', async ({ messages, type }) => {
-        console.log(`📨 Evento messages.upsert - tipo: ${type}, cantidad: ${messages.length}`);
+        console.log(`📨 Evento: ${type}, mensajes: ${messages.length}`);
         
         // Solo procesar mensajes nuevos (notify)
         if (type !== 'notify') {
@@ -152,28 +150,37 @@ class WhatsAppClient {
         
         for (const message of messages) {
           try {
-            console.log('🔍 Procesando mensaje:', {
-              fromMe: message.key.fromMe,
-              remoteJid: message.key.remoteJid,
-              hasMessage: !!message.message,
-              messageKeys: message.message ? Object.keys(message.message) : []
-            });
-
             // Ignorar mensajes propios
             if (message.key.fromMe) {
-              console.log('⏭️  Ignorando mensaje propio');
+              console.log('⏭️  Mensaje propio');
               continue;
             }
 
             // Ignorar mensajes de grupos
             if (message.key.remoteJid?.includes('@g.us')) {
-              console.log('⏭️  Ignorando mensaje de grupo');
+              console.log('⏭️  Mensaje de grupo');
               continue;
             }
 
             // Verificar que tenga mensaje
             if (!message.message) {
-              console.log('⏭️  No tiene message');
+              console.log('⏭️  Sin message');
+              continue;
+            }
+
+            // IMPORTANTE: Ignorar eventos de protocolo/sistema que NO tienen texto
+            const messageKeys = Object.keys(message.message);
+            console.log('🔑 Keys:', messageKeys.join(', '));
+            
+            // Si SOLO tiene protocolMessage o messageContextInfo, ignorar
+            const hasOnlyMetadata = messageKeys.every(key => 
+              key === 'protocolMessage' || 
+              key === 'messageContextInfo' ||
+              key === 'senderKeyDistributionMessage'
+            );
+            
+            if (hasOnlyMetadata) {
+              console.log('⏭️  Solo metadata, sin texto');
               continue;
             }
 
@@ -182,21 +189,24 @@ class WhatsAppClient {
             
             if (message.message.conversation) {
               messageText = message.message.conversation;
-              console.log('✅ Texto extraído de conversation');
+              console.log('✅ Texto de conversation');
             } else if (message.message.extendedTextMessage?.text) {
               messageText = message.message.extendedTextMessage.text;
-              console.log('✅ Texto extraído de extendedTextMessage');
+              console.log('✅ Texto de extendedTextMessage');
             } else if (message.message.imageMessage?.caption) {
               messageText = message.message.imageMessage.caption;
-              console.log('✅ Texto extraído de imageMessage.caption');
+              console.log('✅ Texto de imageMessage');
             } else if (message.message.videoMessage?.caption) {
               messageText = message.message.videoMessage.caption;
-              console.log('✅ Texto extraído de videoMessage.caption');
+              console.log('✅ Texto de videoMessage');
+            } else {
+              console.log('⏭️  No hay texto extraíble');
+              continue;
             }
 
-            // Si no hay texto, ignorar silenciosamente (puede ser sticker, audio, etc)
+            // Si no hay texto, ignorar
             if (!messageText || messageText.trim() === '') {
-              console.log('⏭️  No hay texto en el mensaje');
+              console.log('⏭️  Texto vacío');
               continue;
             }
 
@@ -209,22 +219,21 @@ class WhatsAppClient {
               if (participant && !participant.includes('@lid')) {
                 phoneNumber = participant;
               } else {
-                console.log('⏭️  Número con @lid sin participant válido');
+                console.log('⏭️  @lid sin participant');
                 continue;
               }
             }
             
-            console.log(`💬 [${this.tenantId}] ${phoneNumber}: ${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}`);
+            console.log(`💬 [${this.tenantId}] ${phoneNumber}: "${messageText}"`);
 
             // Llamar al handler
             if (this.messageHandler) {
               await this.messageHandler(phoneNumber, messageText, this);
             } else {
-              console.log('⚠️  No hay messageHandler configurado');
+              console.log('⚠️  Sin messageHandler');
             }
           } catch (error) {
-            console.error('❌ Error procesando mensaje:', error.message);
-            console.error('Stack:', error.stack);
+            console.error('❌ Error:', error.message);
           }
         }
       });
