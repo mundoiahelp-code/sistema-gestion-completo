@@ -213,14 +213,26 @@ class WhatsAppClient {
             // Obtener número de teléfono
             let phoneNumber = message.key.remoteJid;
             
-            // Limpiar número si viene con @lid
+            // Si viene con @lid, intentar extraer el número real
             if (phoneNumber?.includes('@lid')) {
+              console.log('⚠️  Número con @lid:', phoneNumber);
+              
+              // Intentar obtener del participant
               const participant = message.key.participant || message.participant;
               if (participant && !participant.includes('@lid')) {
                 phoneNumber = participant;
+                console.log('✅ Usando participant:', phoneNumber);
               } else {
-                console.log('⏭️  @lid sin participant');
-                continue;
+                // Si no hay participant, extraer el número del @lid
+                // Formato: 123456789@lid -> usar el número antes del @
+                const match = phoneNumber.match(/^(\d+)@lid/);
+                if (match) {
+                  phoneNumber = match[1] + '@s.whatsapp.net';
+                  console.log('✅ Extraído de @lid:', phoneNumber);
+                } else {
+                  console.log('❌ No se pudo extraer número de @lid');
+                  continue;
+                }
               }
             }
             
