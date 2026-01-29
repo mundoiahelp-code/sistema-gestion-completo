@@ -48,10 +48,9 @@ class MessageHandler {
           console.log('🤖 Bot inactivo - mensaje guardado, sin respuesta automática');
           return;
         }
-      }
 
-      // Si llegamos aquí, el bot está activo y debe responder
-      console.log('🤖 Bot activo - generando respuesta...');
+        // Si llegamos aquí, el bot está activo y debe responder
+        console.log('🤖 Bot activo - generando respuesta...');
 
         const isWithinHours = await this.backend.isWithinWorkingHours();
         if (!isWithinHours) {
