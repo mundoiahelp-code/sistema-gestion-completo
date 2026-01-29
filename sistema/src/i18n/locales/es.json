@@ -457,7 +457,8 @@
     "errorTransferring": "Error al trasladar el producto",
     "productFound": "Producto encontrado",
     "currentStore": "Tienda actual",
-    "productNotFound": "Producto no encontrado"
+    "productNotFound": "Producto no encontrado",
+    "deleteWarning": "Esta acción no se puede deshacer. La sucursal será eliminada permanentemente del sistema."
   },
   "users": {
     "title": "Usuarios",

@@ -457,7 +457,8 @@
     "errorTransferring": "Error transferring the product",
     "productFound": "Product found",
     "currentStore": "Current store",
-    "productNotFound": "Product not found"
+    "productNotFound": "Product not found",
+    "deleteWarning": "This action cannot be undone. The store will be permanently deleted from the system."
   },
   "users": {
     "title": "Users",
