@@ -16,8 +16,11 @@ export const authenticateBot = async (
     const tenantId = req.headers['x-tenant-id'] as string;
 
     if (!tenantId) {
+      console.error('❌ Falta X-Tenant-ID header');
       return res.status(401).json({ error: 'X-Tenant-ID header requerido' });
     }
+
+    console.log(`🔍 Buscando tenant: ${tenantId}`);
 
     // Verificar que el tenant existe
     const tenant = await prisma.tenant.findUnique({
@@ -31,8 +34,17 @@ export const authenticateBot = async (
     });
 
     if (!tenant) {
+      console.error(`❌ Tenant no encontrado: ${tenantId}`);
+      // Listar los primeros 5 tenants para debug
+      const tenants = await prisma.tenant.findMany({
+        take: 5,
+        select: { id: true, name: true }
+      });
+      console.log('📋 Tenants disponibles:', tenants.map(t => `${t.name} (${t.id})`).join(', '));
       return res.status(401).json({ error: 'Tenant no encontrado' });
     }
+
+    console.log(`✅ Tenant encontrado: ${tenant.name} (${tenant.plan})`);
 
     // Agregar tenant al request
     (req as any).tenant = tenant;
