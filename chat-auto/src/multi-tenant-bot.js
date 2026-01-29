@@ -153,14 +153,18 @@ async function initWhatsAppForTenant(tenantId) {
 
         if (!text) continue;
 
-        // Obtener número
+        // Obtener número - LOG DETALLADO
         let phone = msg.key.remoteJid;
+        console.log(`🔍 [${tenantId}] Número RAW:`, phone);
+        console.log(`🔍 [${tenantId}] Participant:`, msg.key.participant);
+        console.log(`🔍 [${tenantId}] Message keys:`, Object.keys(msg.message || {}));
         
         // Manejar @lid
         if (phone?.includes('@lid')) {
           const match = phone.match(/^(\d+)@lid/);
           if (match) {
             phone = match[1] + '@s.whatsapp.net';
+            console.log(`🔄 [${tenantId}] Convertido de @lid a:`, phone);
           } else {
             continue;
           }
