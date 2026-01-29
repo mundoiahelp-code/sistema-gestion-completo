@@ -21,7 +21,7 @@ class MessageHandler {
 
   async handleMessage(phoneNumber, messageText, whatsappClient) {
     try {
-      console.log(`📩 Mensaje de ${phoneNumber}: ${messageText}`);
+      console.log(`📩 [${phoneNumber}] ${messageText.substring(0, 100)}${messageText.length > 100 ? '...' : ''}`);
 
       if (messageText.startsWith('!')) {
         return await this.handleAdminCommand(messageText, phoneNumber, whatsappClient);
@@ -77,7 +77,7 @@ class MessageHandler {
       }
 
       const intent = await this.ai.analyzeIntent(messageText);
-      console.log(`🎯 Intención detectada: ${intent}`);
+      console.log(`🎯 Intención: ${intent}`);
 
       let response;
       
@@ -161,14 +161,11 @@ class MessageHandler {
       this.conversations.addMessage(phoneNumber, 'assistant', response);
 
       if (this.backend) {
-        console.log('📝 Intentando guardar mensaje en backend...');
-        console.log('📝 Datos:', { phoneNumber, messageText, response, intent });
         try {
           await this.backend.logChatMessage(phoneNumber, messageText, response, intent, 'responded');
-          console.log('✅ Mensaje guardado en backend correctamente');
+          console.log('✅ Guardado en backend');
         } catch (error) {
-          console.error('❌ Error guardando mensaje en backend:', error);
-          console.error('❌ Detalles:', error.response?.data || error.message);
+          console.error('❌ Error guardando en backend:', error.message);
         }
       }
 

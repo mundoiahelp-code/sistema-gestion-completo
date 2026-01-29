@@ -140,72 +140,62 @@ class WhatsAppClient {
 
       this.sock.ev.on('creds.update', saveCreds);
 
-      // IMPORTANTE: Registrar eventos de mensajes AQUÍ, no en setupEventListeners
-      this.sock.ev.on('messages.upsert', async ({ messages }) => {
-        console.log(`📨 [TENANT: ${this.tenantId}] Evento messages.upsert - ${messages.length} mensajes`);
+      // IMPORTANTE: Registrar eventos de mensajes AQUÍ
+      this.sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        // Solo procesar mensajes nuevos (notify)
+        if (type !== 'notify') return;
         
         for (const message of messages) {
           try {
-            // Log completo del mensaje para debugging
-            console.log(`📨 Mensaje completo:`, JSON.stringify(message, null, 2));
-            
-            console.log(`📨 Mensaje recibido:`, {
-              fromMe: message.key.fromMe,
-              remoteJid: message.key.remoteJid,
-              messageKeys: Object.keys(message.message || {}),
-              hasText: !!(message.message?.conversation || message.message?.extendedTextMessage?.text)
-            });
-            
             // Ignorar mensajes propios
-            if (message.key.fromMe) {
-              console.log(`⏭️  Ignorando mensaje propio`);
-              continue;
-            }
+            if (message.key.fromMe) continue;
 
             // Ignorar mensajes de grupos
-            if (message.key.remoteJid.includes('@g.us')) {
-              console.log(`⏭️  Ignorando mensaje de grupo`);
-              continue;
+            if (message.key.remoteJid?.includes('@g.us')) continue;
+
+            // Ignorar mensajes de protocolo/sistema/metadata
+            if (!message.message) continue;
+            if (message.message.protocolMessage) continue;
+            if (message.message.senderKeyDistributionMessage) continue;
+            if (message.message.messageContextInfo && !message.message.conversation && !message.message.extendedTextMessage) continue;
+
+            // Extraer texto del mensaje
+            let messageText = null;
+            
+            if (message.message.conversation) {
+              messageText = message.message.conversation;
+            } else if (message.message.extendedTextMessage?.text) {
+              messageText = message.message.extendedTextMessage.text;
+            } else if (message.message.imageMessage?.caption) {
+              messageText = message.message.imageMessage.caption;
+            } else if (message.message.videoMessage?.caption) {
+              messageText = message.message.videoMessage.caption;
             }
 
-            // Obtener texto del mensaje - MEJORADO para soportar más tipos
-            const messageText = message.message?.conversation ||
-                              message.message?.extendedTextMessage?.text ||
-                              message.message?.imageMessage?.caption ||
-                              message.message?.videoMessage?.caption;
-
-            if (!messageText) {
-              console.log(`⏭️  Mensaje sin texto - Tipo:`, Object.keys(message.message || {}));
-              continue;
-            }
+            // Si no hay texto, ignorar silenciosamente
+            if (!messageText || messageText.trim() === '') continue;
 
             // Obtener número de teléfono
             let phoneNumber = message.key.remoteJid;
             
-            // Si el número viene con @lid, intentar obtener el número real
-            if (phoneNumber.includes('@lid')) {
+            // Limpiar número si viene con @lid
+            if (phoneNumber?.includes('@lid')) {
               const participant = message.key.participant || message.participant;
               if (participant && !participant.includes('@lid')) {
                 phoneNumber = participant;
-                console.log('📱 Usando número del participante:', phoneNumber);
               } else {
-                console.log('⚠️ Mensaje con @lid sin número real, ignorando');
-                continue;
+                continue; // No podemos procesar sin número válido
               }
             }
             
-            console.log('📱 Número procesado:', phoneNumber);
-            console.log('💬 Texto:', messageText);
+            console.log(`💬 [${this.tenantId}] ${phoneNumber}: ${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}`);
 
-            // Aquí es donde se debe llamar al messageHandler
-            // Pero como estamos dentro del cliente, necesitamos pasar el handler desde afuera
+            // Llamar al handler
             if (this.messageHandler) {
               await this.messageHandler(phoneNumber, messageText, this);
-            } else {
-              console.log('⚠️ No hay messageHandler configurado');
             }
           } catch (error) {
-            console.error('❌ Error procesando mensaje:', error);
+            console.error('❌ Error procesando mensaje:', error.message);
           }
         }
       });

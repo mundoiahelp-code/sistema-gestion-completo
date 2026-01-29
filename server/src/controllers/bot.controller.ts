@@ -262,18 +262,11 @@ export class BotController {
   // Registrar nuevo mensaje de chat
   static async logChatMessage(req: AuthRequest, res: Response) {
     try {
-      console.log('📥 [logChatMessage] Request recibido');
-      console.log('📥 Headers:', JSON.stringify(req.headers, null, 2));
-      console.log('📥 Body:', JSON.stringify(req.body, null, 2));
-      console.log('📥 User:', JSON.stringify(req.user, null, 2));
-      
       const tenantId = req.user?.tenantId;
       const { customerPhone, message, response, intent, status = 'responded', platform = 'whatsapp', sentBy } = req.body;
 
-      console.log(`📥 TenantId extraído: ${tenantId}`);
-
       if (!customerPhone || !message) {
-        console.error('❌ Faltan datos requeridos: customerPhone o message');
+        console.error('❌ Faltan datos: customerPhone o message');
         return res.status(400).json({
           success: false,
           message: 'Teléfono del cliente y mensaje son requeridos'
@@ -282,7 +275,6 @@ export class BotController {
 
       // Normalizar el número de teléfono
       const normalizedPhone = BotController.normalizePhoneNumber(customerPhone);
-      console.log(`📱 Número original: ${customerPhone} → Normalizado: ${normalizedPhone}`);
 
       // Buscar cliente por teléfono normalizado DENTRO DEL TENANT
       let client = await prisma.client.findFirst({
@@ -311,9 +303,11 @@ export class BotController {
           platform: platform || 'whatsapp',
           ...(client?.id && { client: { connect: { id: client.id } } }),
           ...(tenantId && { tenant: { connect: { id: tenantId } } }),
-          sentBy: sentBy || null, // Guardar quién envió el mensaje
+          sentBy: sentBy || null,
         }
       });
+
+      console.log(`✅ Mensaje guardado: ${normalizedPhone} (${intent})`);
 
       res.json({
         success: true,
@@ -321,7 +315,7 @@ export class BotController {
         chatMessage
       });
     } catch (error) {
-      console.error('Error registrando mensaje de chat:', error);
+      console.error('❌ Error registrando mensaje:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor'
