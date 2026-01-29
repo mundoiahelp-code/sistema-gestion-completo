@@ -46,7 +46,7 @@ export default function WhatsAppSettings() {
 
   const checkStatus = async () => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/whatsapp/status`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -80,7 +80,7 @@ export default function WhatsAppSettings() {
     setShowSuccessAnimation(false);
     
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       
       // Primero verificar el estado actual
       const statusResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/whatsapp/status`, {
@@ -149,7 +149,7 @@ export default function WhatsAppSettings() {
     setSuccess('');
 
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/reconnect`,
         {},
@@ -171,7 +171,7 @@ export default function WhatsAppSettings() {
 
   const handleLogout = async () => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/logout`,
         {},
