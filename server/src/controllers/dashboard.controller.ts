@@ -273,6 +273,10 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Dashboard error:', error);
-    res.status(400).json({ error: 'Error al obtener estadísticas' });
+    res.status(500).json({ 
+      error: 'Error al obtener estadísticas',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      details: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 };
