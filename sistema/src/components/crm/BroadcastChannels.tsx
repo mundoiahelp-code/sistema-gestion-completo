@@ -52,6 +52,8 @@ export default function BroadcastChannels() {
   const [sending, setSending] = useState<string | null>(null);
   const [groups, setGroups] = useState<Array<{ id: string; name: string; participants: number }>>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [channelToDelete, setChannelToDelete] = useState<BroadcastChannel | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -59,9 +61,9 @@ export default function BroadcastChannels() {
     type: 'GROUP' as 'GROUP' | 'BROADCAST_LIST',
     message: '',
     sendTime: '09:00',
-    sendStock: true,
+    sendStock: true, // Por defecto enviar stock
     enabled: true,
-    frequency: 1, // Cada cuántos días enviar
+    frequency: 1,
   });
 
   useEffect(() => {
@@ -163,8 +165,6 @@ export default function BroadcastChannels() {
   };
 
   const deleteChannel = async (id: string) => {
-    if (!confirm('¿Eliminar este canal?')) return;
-    
     try {
       const token = Cookies.get('token');
       await axios.delete(
@@ -173,6 +173,8 @@ export default function BroadcastChannels() {
       );
       toast.success('Canal eliminado');
       fetchChannels();
+      setDeleteDialogOpen(false);
+      setChannelToDelete(null);
     } catch (error) {
       toast.error('Error al eliminar canal');
     }
@@ -319,7 +321,10 @@ export default function BroadcastChannels() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deleteChannel(channel.id)}
+                    onClick={() => {
+                      setChannelToDelete(channel);
+                      setDeleteDialogOpen(true);
+                    }}
                     className="text-red-500 hover:text-red-600"
                     title="Eliminar"
                   >
@@ -456,39 +461,37 @@ export default function BroadcastChannels() {
                     El mensaje se enviará cada {formData.frequency} {formData.frequency === 1 ? 'día' : 'días'} a las {formData.sendTime}hs
                   </p>
                 </div>
-
-                <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                  <div>
-                    <div className="font-medium text-sm dark:text-zinc-100">Enviar stock automático</div>
-                    <div className="text-xs text-zinc-500">Incluye lista de productos disponibles</div>
-                  </div>
-                  <Switch
-                    checked={formData.sendStock}
-                    onCheckedChange={(v) => setFormData({...formData, sendStock: v})}
-                  />
-                </div>
               </>
             )}
 
-            <div>
-              <Label>Mensaje personalizado {!hasPro && '(opcional)'}</Label>
-              <Textarea
-                value={formData.message}
-                onChange={(e) => setFormData({...formData, message: e.target.value})}
-                placeholder={hasPro ? "Usá {stock} para insertar la lista de productos" : "Escribí el mensaje que querés enviar"}
-                className="mt-1 dark:bg-zinc-800"
-                rows={3}
+            {/* Checkbox para enviar lista de precios */}
+            <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+              <div>
+                <div className="font-medium text-sm dark:text-zinc-100">Enviar lista de precios</div>
+                <div className="text-xs text-zinc-500">Incluye stock de iPhones y accesorios</div>
+              </div>
+              <Switch
+                checked={formData.sendStock}
+                onCheckedChange={(v) => setFormData({...formData, sendStock: v})}
               />
-              {hasPro ? (
-                <p className="text-xs text-zinc-500 mt-1">
-                  Dejalo vacío para enviar solo el stock, o escribí un mensaje y usá {'{stock}'} donde quieras la lista
-                </p>
-              ) : (
-                <p className="text-xs text-zinc-500 mt-1">
-                  Este mensaje se enviará cuando hagas clic en "Enviar ahora"
-                </p>
-              )}
             </div>
+
+            {/* Mensaje personalizado - solo si NO envía stock */}
+            {!formData.sendStock && (
+              <div>
+                <Label>Mensaje personalizado</Label>
+                <Textarea
+                  value={formData.message}
+                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  placeholder="Escribí el mensaje que querés enviar"
+                  className="mt-1 dark:bg-zinc-800"
+                  rows={4}
+                />
+                <p className="text-xs text-zinc-500 mt-1">
+                  Este mensaje se enviará en lugar de la lista de precios
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -497,6 +500,47 @@ export default function BroadcastChannels() {
             </Button>
             <Button onClick={saveChannel} disabled={!formData.name || !formData.chatId}>
               {editingChannel ? 'Guardar' : 'Crear'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmación de eliminación */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="dark:bg-zinc-900 dark:border-zinc-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              Eliminar Canal
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="text-zinc-700 dark:text-zinc-300">
+              ¿Estás seguro de que querés eliminar el canal <span className="font-semibold">"{channelToDelete?.name}"</span>?
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+              Esta acción no se puede deshacer.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setChannelToDelete(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => channelToDelete && deleteChannel(channelToDelete.id)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar
             </Button>
           </DialogFooter>
         </DialogContent>

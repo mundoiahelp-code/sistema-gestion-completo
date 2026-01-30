@@ -110,7 +110,6 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
   try {
     const tenantId = req.user!.tenantId;
     const { id } = req.params;
-    const { message } = req.body;
 
     // Verificar que el canal pertenece al tenant
     const channel = await prisma.broadcastChannel.findFirst({
@@ -121,23 +120,35 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Canal no encontrado' });
     }
 
-    // Obtener stock si es necesario
-    let finalMessage = message || channel.message || '';
-    
-    if (finalMessage.includes('{stock}') || channel.sendStock) {
-      const stockText = await generateStockMessage(channel.tenantId);
-      finalMessage = finalMessage.replace('{stock}', stockText) || stockText;
-    }
+    // Si sendStock es true, enviar lista de precios (2 mensajes)
+    if (channel.sendStock) {
+      // Mensaje 1: iPhones
+      const phonesMessage = await generatePhonesStockMessage(tenantId);
+      const sent1 = await sendMessageToWhatsAppGroup(channel.chatId, phonesMessage, tenantId);
+      
+      if (!sent1) {
+        return res.status(500).json({ error: 'Error al enviar mensaje de iPhones' });
+      }
 
-    // Enviar via WhatsApp (se conecta al servicio de chat-auto multi-tenant)
-    const sent = await require('../services/whatsapp.service').whatsappService.sendMessageToGroup(
-      channel.chatId, 
-      finalMessage,
-      tenantId
-    );
-    
-    if (!sent) {
-      return res.status(500).json({ error: 'Error al enviar mensaje por WhatsApp' });
+      // Mensaje 2: Accesorios
+      const accessoriesMessage = await generateAccessoriesStockMessage(tenantId);
+      const sent2 = await sendMessageToWhatsAppGroup(channel.chatId, accessoriesMessage, tenantId);
+      
+      if (!sent2) {
+        return res.status(500).json({ error: 'Error al enviar mensaje de accesorios' });
+      }
+    } else {
+      // Enviar mensaje personalizado
+      const finalMessage = channel.message || '';
+      if (!finalMessage) {
+        return res.status(400).json({ error: 'No hay mensaje configurado' });
+      }
+
+      const sent = await sendMessageToWhatsAppGroup(channel.chatId, finalMessage, tenantId);
+      
+      if (!sent) {
+        return res.status(500).json({ error: 'Error al enviar mensaje' });
+      }
     }
 
     // Actualizar lastSent
@@ -149,7 +160,6 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
     res.json({ 
       success: true, 
       message: 'Mensaje enviado',
-      sentMessage: finalMessage,
       chatId: channel.chatId 
     });
   } catch (error) {
@@ -158,21 +168,21 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Generar mensaje de stock (formato igual a "Copiar Stock")
-async function generateStockMessage(tenantId: string): Promise<string> {
+// Generar mensaje de stock de iPhones
+async function generatePhonesStockMessage(tenantId: string): Promise<string> {
   const products = await prisma.product.findMany({
     where: {
       tenantId,
       active: true,
       stock: { gt: 0 },
-      reserved: { equals: 0 }, // Solo no reservados
+      reserved: { equals: 0 },
       category: 'PHONE',
     },
     orderBy: [{ model: 'asc' }, { storage: 'asc' }],
   });
 
   if (products.length === 0) {
-    return '💣 *STOCK DISPONIBLE ENTREGA INMEDIATA* 💣\n*RESERVAR ES COMPROMISO DE COMPRA*\n\nSin stock disponible por el momento';
+    return '⚡️ *IPHONES - STOCK DISPONIBLE* ⚡️\n*ENVIOS A TODO EL PAIS*\n\nSin stock disponible por el momento';
   }
 
   // Agrupar por modelo + storage
@@ -186,10 +196,9 @@ async function generateStockMessage(tenantId: string): Promise<string> {
     groupMap.get(key)!.push(p);
   });
 
-  let msg = '⚡️ *STOCK DISPONIBLE ENTREGA INMEDIATA* ⚡️\n';
+  let msg = '⚡️ *IPHONES - STOCK DISPONIBLE ENTREGA INMEDIATA* ⚡️\n';
   msg += '*ENVIOS A TODO EL PAIS*\n\n';
 
-  // Ordenar grupos por modelo
   const sortedGroups = Array.from(groupMap.entries()).sort((a, b) => {
     const modelA = a[1][0].model;
     const modelB = b[1][0].model;
@@ -204,7 +213,6 @@ async function generateStockMessage(tenantId: string): Promise<string> {
 
     let line = `· ${first.model} ${first.storage}`;
 
-    // Batería
     if (batteries.length > 0) {
       if (batteries[0] === batteries[batteries.length - 1]) {
         line += ` ${batteries[0]}%`;
@@ -213,14 +221,12 @@ async function generateStockMessage(tenantId: string): Promise<string> {
       }
     }
 
-    // Colores
     if (colors.length > 0) {
       line += ` (${colors.join('/')})`;
     }
 
     msg += line + '\n';
 
-    // Precio
     if (prices.length > 0) {
       if (prices[0] === prices[prices.length - 1]) {
         msg += `*${prices[0]} U$*\n`;
@@ -233,6 +239,62 @@ async function generateStockMessage(tenantId: string): Promise<string> {
   });
 
   return msg.trim();
+}
+
+// Generar mensaje de stock de accesorios
+async function generateAccessoriesStockMessage(tenantId: string): Promise<string> {
+  const accessories = await prisma.accessory.findMany({
+    where: {
+      tenantId,
+      active: true,
+      stock: { gt: 0 },
+    },
+    orderBy: { name: 'asc' },
+  });
+
+  if (accessories.length === 0) {
+    return '🎧 *ACCESORIOS - STOCK DISPONIBLE* 🎧\n*ENVIOS A TODO EL PAIS*\n\nSin stock disponible por el momento';
+  }
+
+  let msg = '🎧 *ACCESORIOS - STOCK DISPONIBLE* 🎧\n';
+  msg += '*ENVIOS A TODO EL PAIS*\n\n';
+
+  accessories.forEach(acc => {
+    msg += `· ${acc.name}`;
+    if (acc.stock) {
+      msg += ` (Stock: ${acc.stock})`;
+    }
+    if (acc.price) {
+      msg += ` - *${acc.price} U$*`;
+    }
+    msg += '\n';
+  });
+
+  return msg.trim();
+}
+
+// Enviar mensaje a grupo de WhatsApp via bot multi-tenant
+async function sendMessageToWhatsAppGroup(chatId: string, message: string, tenantId: string): Promise<boolean> {
+  try {
+    const axios = require('axios');
+    const BOT_URL = process.env.WHATSAPP_BOT_URL || 'http://localhost:3001';
+    
+    console.log(`📤 Enviando a grupo ${chatId} (tenant: ${tenantId})`);
+    
+    const response = await axios.post(
+      `${BOT_URL}/api/send-message`,
+      { phone: chatId, message },
+      { 
+        headers: { 'X-Tenant-ID': tenantId },
+        timeout: 10000 
+      }
+    );
+    
+    return response.data.success === true;
+  } catch (error: any) {
+    console.error('Error enviando a grupo:', error.message);
+    return false;
+  }
 }
 
 // Obtener grupos de WhatsApp (para selector)
