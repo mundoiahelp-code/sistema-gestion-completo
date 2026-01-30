@@ -447,13 +447,19 @@ function CRMPageContent() {
         const normalizedPhone = normalizePhoneNumber(msg.customerPhone);
         
         if (!grouped[normalizedPhone]) {
-          // Si tiene nombre del cliente, usarlo. Si no, usar el número formateado
+          // Si tiene nombre del cliente, usarlo. Si no, verificar si es número válido
           let displayName = normalizedPhone;
           if (msg.customerName && !msg.customerName.startsWith('Cliente')) {
             displayName = cleanClientName(msg.customerName);
           } else {
-            // Usar el número formateado como nombre predeterminado
-            displayName = formatPhoneNumber(normalizedPhone);
+            // Intentar formatear el número
+            const formattedPhone = formatPhoneNumber(normalizedPhone);
+            // Si es "Número privado", usar un nombre genérico
+            if (formattedPhone === 'Número privado') {
+              displayName = `Contacto ${normalizedPhone.substring(0, 8)}`;
+            } else {
+              displayName = formattedPhone;
+            }
           }
           
           grouped[normalizedPhone] = {
@@ -728,10 +734,14 @@ function CRMPageContent() {
     // Limpiar el número primero
     const cleaned = phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '');
     
+    // Si el número es muy largo (más de 15 dígitos), es un @lid encriptado
+    if (cleaned.length > 15) {
+      return 'Número privado';
+    }
+    
     // Si es un número argentino (empieza con 54 y tiene 12-13 dígitos)
     if (cleaned.startsWith('54') && (cleaned.length === 12 || cleaned.length === 13)) {
       // Formato: 5491138514845 (13 dígitos) -> +54 9 11 3851-4845
-      // Formato: 549110178938964 (14 dígitos) -> +54 9 11 0178-938964
       const country = '54';
       const rest = cleaned.substring(2); // Quitar el 54
       
@@ -750,12 +760,13 @@ function CRMPageContent() {
       }
     }
     
-    // Si tiene otro formato, mostrar con + al inicio
-    if (cleaned.length > 0) {
+    // Si tiene otro formato pero es válido (10-15 dígitos), mostrar con + al inicio
+    if (cleaned.length >= 10 && cleaned.length <= 15) {
       return `+${cleaned}`;
     }
     
-    return cleaned;
+    // Si no cumple ningún patrón, es probablemente un @lid
+    return 'Número privado';
   };
 
   // Copiar número de teléfono al portapapeles
@@ -1831,7 +1842,7 @@ function CRMPageContent() {
             </p>
             {!categoryToDelete?.isCustom && (
               <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
-                Esta es una categoría por defecto. Se ocultará pero podrás restaurarla desde el código.
+                Esta es una categoría por defecto. La podes volver a crear cuando quieras.
               </p>
             )}
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
