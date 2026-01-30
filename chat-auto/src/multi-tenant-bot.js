@@ -95,8 +95,10 @@ async function initWhatsAppForTenant(tenantId) {
     printQRInTerminal: false,
     syncFullHistory: false,
     markOnlineOnConnect: false,
-    // Habilitar store para guardar contactos
-    getMessage: async (key) => undefined,
+    // Habilitar getMessage para el store
+    getMessage: async (key) => {
+      return undefined;
+    },
   });
 
   const conn = {
@@ -159,14 +161,55 @@ async function initWhatsAppForTenant(tenantId) {
 
         if (!text) continue;
 
-        // Obtener JID original y nombre del contacto
-        const originalJid = msg.key.remoteJid; // Guardar el JID original SIEMPRE
+        // Obtener número real del contacto
+        let phoneNumber = null;
+        let originalJid = msg.key.remoteJid;
         let contactName = msg.pushName || msg.verifiedBizName || null;
         
-        // Usar el JID original como identificador (puede ser @lid o @s.whatsapp.net)
-        const cleanPhone = normalizePhone(originalJid);
+        console.log(`🔍 [${tenantId}] RAW JID:`, originalJid);
+        console.log(`🔍 [${tenantId}] pushName:`, contactName);
         
-        console.log(`� [${tenanttId}] ${contactName || cleanPhone}: ${text}`);
+        // MÉTODO 1: Si el JID es @s.whatsapp.net, ya tenemos el número
+        if (originalJid.includes('@s.whatsapp.net')) {
+          phoneNumber = originalJid.replace('@s.whatsapp.net', '');
+          console.log(`✅ [${tenantId}] Número directo:`, phoneNumber);
+        }
+        // MÉTODO 2: Si es @lid, intentar obtener del participant
+        else if (originalJid.includes('@lid')) {
+          console.log(`⚠️  [${tenantId}] Detectado @lid, buscando número real...`);
+          
+          // Intentar obtener del participant
+          if (msg.key.participant && !msg.key.participant.includes('@lid')) {
+            phoneNumber = msg.key.participant.replace('@s.whatsapp.net', '');
+            console.log(`✅ [${tenantId}] Número desde participant:`, phoneNumber);
+          }
+          
+          // MÉTODO 3: Intentar con onWhatsApp
+          if (!phoneNumber) {
+            try {
+              const lidNumber = originalJid.replace('@lid', '');
+              const result = await sock.onWhatsApp(lidNumber);
+              console.log(`🔍 [${tenantId}] onWhatsApp result:`, JSON.stringify(result));
+              
+              if (result && result.length > 0 && result[0].jid && !result[0].jid.includes('@lid')) {
+                phoneNumber = result[0].jid.replace('@s.whatsapp.net', '');
+                console.log(`✅ [${tenantId}] Número desde onWhatsApp:`, phoneNumber);
+              }
+            } catch (error) {
+              console.log(`⚠️  [${tenantId}] Error en onWhatsApp:`, error.message);
+            }
+          }
+          
+          // Si no pudimos obtener el número, usar el @lid como fallback
+          if (!phoneNumber) {
+            phoneNumber = originalJid.replace('@lid', '');
+            console.log(`⚠️  [${tenantId}] Usando @lid como fallback:`, phoneNumber);
+          }
+        }
+        
+        const cleanPhone = normalizePhone(phoneNumber || originalJid);
+        
+        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}, Message: ${text.substring(0, 30)}...`);
 
         // Guardar en backend con nombre Y JID original
         await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid);
