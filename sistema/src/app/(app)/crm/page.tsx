@@ -168,6 +168,10 @@ function CRMPageContent() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<{ phone: string; name: string } | null>(null);
   
+  // Estados para el modal de confirmación de eliminación de categoría
+  const [showDeleteCategoryConfirm, setShowDeleteCategoryConfirm] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ value: string; label: string; isCustom: boolean } | null>(null);
+  
   // Hook de plan para verificar features
   const { canAccess } = usePlan();
   const hasBot = canAccess('bot');
@@ -622,6 +626,27 @@ function CRMPageContent() {
     const updated = customCategories.filter(cat => cat.value !== value);
     setCustomCategories(updated);
     localStorage.setItem('crm_custom_categories', JSON.stringify(updated));
+    setShowDeleteCategoryConfirm(false);
+    setCategoryToDelete(null);
+  };
+
+  const hideDefaultCategory = (value: string) => {
+    const hidden = JSON.parse(localStorage.getItem('crm_hidden_categories') || '[]');
+    hidden.push(value);
+    localStorage.setItem('crm_hidden_categories', JSON.stringify(hidden));
+    setShowDeleteCategoryConfirm(false);
+    setCategoryToDelete(null);
+    window.location.reload();
+  };
+
+  const handleDeleteCategory = () => {
+    if (!categoryToDelete) return;
+    
+    if (categoryToDelete.isCustom) {
+      deleteCustomCategory(categoryToDelete.value);
+    } else {
+      hideDefaultCategory(categoryToDelete.value);
+    }
   };
 
   const toggleResolved = async (phone: string) => {
@@ -1139,19 +1164,12 @@ function CRMPageContent() {
                                       e.preventDefault();
                                       e.stopPropagation();
                                       const isCustom = customCategories.find(c => c.value === cat.value);
-                                      const message = isCustom 
-                                        ? `¿Eliminar la categoría "${cat.label}"?`
-                                        : `¿Eliminar la categoría por defecto "${cat.label}"? Esta acción no se puede deshacer.`;
-                                      if (confirm(message)) {
-                                        if (isCustom) {
-                                          deleteCustomCategory(cat.value);
-                                        } else {
-                                          const hidden = JSON.parse(localStorage.getItem('crm_hidden_categories') || '[]');
-                                          hidden.push(cat.value);
-                                          localStorage.setItem('crm_hidden_categories', JSON.stringify(hidden));
-                                          window.location.reload();
-                                        }
-                                      }
+                                      setCategoryToDelete({
+                                        value: cat.value,
+                                        label: cat.label,
+                                        isCustom: !!isCustom
+                                      });
+                                      setShowDeleteCategoryConfirm(true);
                                     }}
                                     className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded p-1 transition-colors shrink-0 ml-2"
                                     title="Eliminar categoría"
@@ -1466,17 +1484,16 @@ function CRMPageContent() {
                           className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
                           onClick={() => {
                             const isCustom = customCategories.find(c => c.value === cat.value);
-                            if (confirm(`¿Eliminar la categoría "${cat.label}"?`)) {
-                              if (isCustom) {
-                                deleteCustomCategory(cat.value);
-                              } else {
-                                const hidden = JSON.parse(localStorage.getItem('crm_hidden_categories') || '[]');
-                                hidden.push(cat.value);
-                                localStorage.setItem('crm_hidden_categories', JSON.stringify(hidden));
-                                window.location.reload();
-                              }
-                            }
+                            setCategoryToDelete({
+                              value: cat.value,
+                              label: cat.label,
+                              isCustom: !!isCustom
+                            });
+                            setShowDeleteCategoryConfirm(true);
                           }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -1795,6 +1812,52 @@ function CRMPageContent() {
                 }
               }}
             >
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmación de eliminación de categoría */}
+      <Dialog open={showDeleteCategoryConfirm} onOpenChange={setShowDeleteCategoryConfirm}>
+        <DialogContent className="dark:bg-zinc-900 dark:border-zinc-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              Eliminar Categoría
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="text-zinc-700 dark:text-zinc-300">
+              ¿Estás seguro de que querés eliminar la categoría <span className="font-semibold">"{categoryToDelete?.label}"</span>?
+            </p>
+            {!categoryToDelete?.isCustom && (
+              <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
+                Esta es una categoría por defecto. Se ocultará pero podrás restaurarla desde el código.
+              </p>
+            )}
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+              Los chats con esta categoría quedarán sin categoría asignada.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteCategoryConfirm(false);
+                setCategoryToDelete(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={handleDeleteCategory}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
               Eliminar
             </Button>
           </DialogFooter>
