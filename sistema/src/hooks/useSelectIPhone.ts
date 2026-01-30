@@ -7,14 +7,19 @@ const iphoneModels: {
   colors: string[];
   storages: string[];
 }[] = [
-  // iPhone 16 Series
-  { model: 'iPhone 16 Pro Max', colors: ['Titanio Natural', 'Titanio Negro', 'Titanio Blanco', 'Titanio Desierto'], storages: ['256gb', '512gb', '1tb'] },
-  { model: 'iPhone 16 Pro', colors: ['Titanio Natural', 'Titanio Negro', 'Titanio Blanco', 'Titanio Desierto'], storages: ['128gb', '256gb', '512gb', '1tb'] },
-  { model: 'iPhone 16 Plus', colors: ['Negro', 'Blanco', 'Rosa', 'Verde azulado', 'Ultramarino'], storages: ['128gb', '256gb', '512gb'] },
-  { model: 'iPhone 16', colors: ['Negro', 'Blanco', 'Rosa', 'Verde azulado', 'Ultramarino'], storages: ['128gb', '256gb', '512gb'] },
-  // iPhone 15 Series
-  { model: 'iPhone 15 Pro Max', colors: ['Titanio Natural', 'Titanio Azul', 'Titanio Blanco', 'Titanio Negro'], storages: ['256gb', '512gb', '1tb'] },
-  { model: 'iPhone 15 Pro', colors: ['Titanio Natural', 'Titanio Azul', 'Titanio Blanco', 'Titanio Negro'], storages: ['128gb', '256gb', '512gb', '1tb'] },
+  // iPhone 17 Series (2025)
+  { model: 'iPhone 17 Pro Max', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['256gb', '512gb', '1tb', '2tb'] },
+  { model: 'iPhone 17 Pro', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['128gb', '256gb', '512gb', '1tb'] },
+  { model: 'iPhone 17 Plus', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
+  { model: 'iPhone 17', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
+  // iPhone 16 Series (2024)
+  { model: 'iPhone 16 Pro Max', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['256gb', '512gb', '1tb'] },
+  { model: 'iPhone 16 Pro', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['128gb', '256gb', '512gb', '1tb'] },
+  { model: 'iPhone 16 Plus', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
+  { model: 'iPhone 16', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
+  // iPhone 15 Series (2023)
+  { model: 'iPhone 15 Pro Max', colors: ['Gris', 'Azul', 'Blanco', 'Negro'], storages: ['256gb', '512gb', '1tb'] },
+  { model: 'iPhone 15 Pro', colors: ['Gris', 'Azul', 'Blanco', 'Negro'], storages: ['128gb', '256gb', '512gb', '1tb'] },
   { model: 'iPhone 15 Plus', colors: ['Negro', 'Azul', 'Verde', 'Amarillo', 'Rosa'], storages: ['128gb', '256gb', '512gb'] },
   { model: 'iPhone 15', colors: ['Negro', 'Azul', 'Verde', 'Amarillo', 'Rosa'], storages: ['128gb', '256gb', '512gb'] },
   // iPhone 14 Series
@@ -56,6 +61,7 @@ const iphoneModels: {
 // Organizar modelos por serie
 const organizeModels = () => {
   const structure: { [key: string]: string[] } = {
+    '17': [],
     '16': [],
     '15': [],
     '14': [],
@@ -70,7 +76,8 @@ const organizeModels = () => {
 
   iphoneModels.forEach((phone) => {
     const model = phone.model;
-    if (model.includes('16')) structure['16'].push(model);
+    if (model.includes('17')) structure['17'].push(model);
+    else if (model.includes('16')) structure['16'].push(model);
     else if (model.includes('15')) structure['15'].push(model);
     else if (model.includes('14')) structure['14'].push(model);
     else if (model.includes('13')) structure['13'].push(model);
