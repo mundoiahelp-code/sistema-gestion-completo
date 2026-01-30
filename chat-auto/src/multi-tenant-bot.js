@@ -25,7 +25,7 @@ function normalizePhone(phone) {
 }
 
 // Función para guardar mensaje en el backend
-async function saveMessage(tenantId, phone, message, response = '') {
+async function saveMessage(tenantId, phone, message, response = '', contactName = null) {
   try {
     const cleanPhone = normalizePhone(phone);
     
@@ -33,6 +33,7 @@ async function saveMessage(tenantId, phone, message, response = '') {
       `${BACKEND_URL}/bot/messages`,
       {
         customerPhone: cleanPhone,
+        customerName: contactName, // Agregar nombre del contacto
         message: message,
         response: response,
         intent: 'RECIBIDO',
@@ -47,7 +48,7 @@ async function saveMessage(tenantId, phone, message, response = '') {
       }
     );
     
-    console.log(`✅ [${tenantId}] Guardado: ${cleanPhone} - "${message.substring(0, 30)}..."`);
+    console.log(`✅ [${tenantId}] Guardado: ${cleanPhone} (${contactName || 'Sin nombre'}) - "${message.substring(0, 30)}..."`);
     return true;
   } catch (error) {
     console.error(`❌ [${tenantId}] Error guardando:`, error.response?.data || error.message);
@@ -91,6 +92,10 @@ async function initWhatsAppForTenant(tenantId) {
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
+    syncFullHistory: false,
+    markOnlineOnConnect: false,
+    // Habilitar store para guardar contactos
+    getMessage: async (key) => undefined,
   });
 
   const conn = {
@@ -153,50 +158,65 @@ async function initWhatsAppForTenant(tenantId) {
 
         if (!text) continue;
 
-        // Obtener número - LOG DETALLADO
+        // Obtener número
         let phone = msg.key.remoteJid;
-        console.log(`🔍 [${tenantId}] Número RAW:`, phone);
-        console.log(`🔍 [${tenantId}] Participant:`, msg.key.participant);
+        let contactName = null;
         
-        // Si viene con @lid, intentar obtener el número real
+        console.log(`🔍 [${tenantId}] RAW:`, phone);
+        console.log(`🔍 [${tenantId}] pushName:`, msg.pushName);
+        console.log(`🔍 [${tenantId}] verifiedBizName:`, msg.verifiedBizName);
+        
+        // MÉTODO 1: Intentar obtener del participant (para mensajes de canales/comunidades)
+        if (msg.key.participant && !msg.key.participant.includes('@lid')) {
+          phone = msg.key.participant;
+          console.log(`✅ [${tenantId}] Número desde participant:`, phone);
+        }
+        
+        // MÉTODO 2: Si es @lid, intentar obtener info del contacto
         if (phone?.includes('@lid')) {
-          console.log(`⚠️  [${tenantId}] Detectado @lid, intentando obtener número real...`);
+          console.log(`⚠️  [${tenantId}] Detectado @lid`);
           
           try {
-            // Intentar obtener info del contacto
-            const [contactInfo] = await sock.onWhatsApp(phone.replace('@lid', ''));
-            if (contactInfo?.jid) {
-              phone = contactInfo.jid;
-              console.log(`✅ [${tenantId}] Número real obtenido:`, phone);
-            } else {
-              // Si no se puede obtener, usar el @lid convertido
-              const match = phone.match(/^(\d+)@lid/);
-              if (match) {
-                phone = match[1] + '@s.whatsapp.net';
-                console.log(`🔄 [${tenantId}] Usando @lid convertido:`, phone);
-              } else {
-                console.log(`❌ [${tenantId}] No se pudo procesar @lid`);
-                continue;
-              }
+            // Intentar obtener del store de contactos
+            const contactInfo = sock.store?.contacts?.[phone];
+            if (contactInfo?.id && !contactInfo.id.includes('@lid')) {
+              phone = contactInfo.id;
+              console.log(`✅ [${tenantId}] Número desde store:`, phone);
             }
           } catch (error) {
-            console.log(`❌ [${tenantId}] Error obteniendo número real:`, error.message);
-            // Fallback: usar el @lid convertido
-            const match = phone.match(/^(\d+)@lid/);
-            if (match) {
-              phone = match[1] + '@s.whatsapp.net';
-              console.log(`🔄 [${tenantId}] Fallback a @lid convertido:`, phone);
-            } else {
-              continue;
+            console.log(`⚠️  [${tenantId}] Error en store:`, error.message);
+          }
+          
+          // MÉTODO 3: Intentar con onWhatsApp
+          if (phone.includes('@lid')) {
+            try {
+              const lidNumber = phone.replace('@lid', '');
+              const result = await sock.onWhatsApp(lidNumber);
+              console.log(`🔍 [${tenantId}] onWhatsApp result:`, JSON.stringify(result));
+              
+              if (result && result.length > 0 && result[0].jid) {
+                phone = result[0].jid;
+                console.log(`✅ [${tenantId}] Número desde onWhatsApp:`, phone);
+              }
+            } catch (error) {
+              console.log(`⚠️  [${tenantId}] Error en onWhatsApp:`, error.message);
             }
           }
+          
+          // MÉTODO 4: Buscar en el mensaje si tiene info del remitente
+          if (phone.includes('@lid') && msg.message?.messageContextInfo?.deviceListMetadata) {
+            console.log(`🔍 [${tenantId}] deviceListMetadata:`, msg.message.messageContextInfo.deviceListMetadata);
+          }
         }
+        
+        // Obtener nombre del contacto
+        contactName = msg.pushName || msg.verifiedBizName || null;
 
         const cleanPhone = normalizePhone(phone);
-        console.log(`📨 [${tenantId}] ${cleanPhone}: ${text}`);
+        console.log(`📨 [${tenantId}] FINAL: ${cleanPhone} (${contactName || 'Sin nombre'}): ${text}`);
 
-        // Guardar en backend
-        await saveMessage(tenantId, cleanPhone, text);
+        // Guardar en backend con nombre
+        await saveMessage(tenantId, cleanPhone, text, '', contactName);
 
       } catch (error) {
         console.error(`❌ [${tenantId}] Error procesando mensaje:`, error.message);
