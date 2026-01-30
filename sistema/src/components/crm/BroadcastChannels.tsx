@@ -26,6 +26,7 @@ import {
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import { usePlan } from '@/hooks/usePlan';
 
 interface BroadcastChannel {
   id: string;
