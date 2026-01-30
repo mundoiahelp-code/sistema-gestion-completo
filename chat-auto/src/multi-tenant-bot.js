@@ -336,6 +336,25 @@ app.post('/api/logout', async (req, res) => {
 app.listen(BOT_PORT, () => {
   console.log(`🌐 API escuchando en puerto ${BOT_PORT}`);
   console.log(`📋 Esperando conexiones de tenants...`);
+  
+  // Reconectar sesiones existentes al iniciar
+  console.log('🔄 Buscando sesiones guardadas...');
+  if (fs.existsSync('auth_sessions')) {
+    const tenants = fs.readdirSync('auth_sessions');
+    console.log(`📁 Encontradas ${tenants.length} sesiones guardadas`);
+    
+    for (const tenantId of tenants) {
+      const sessionPath = `auth_sessions/${tenantId}`;
+      if (fs.existsSync(sessionPath) && fs.statSync(sessionPath).isDirectory()) {
+        console.log(`🔌 Reconectando tenant: ${tenantId}`);
+        initWhatsAppForTenant(tenantId).catch(err => {
+          console.error(`❌ Error reconectando ${tenantId}:`, err.message);
+        });
+      }
+    }
+  } else {
+    console.log('📁 No hay sesiones guardadas');
+  }
 });
 
 process.on('SIGINT', () => {
