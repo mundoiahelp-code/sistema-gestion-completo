@@ -25,7 +25,7 @@ function normalizePhone(phone) {
 }
 
 // Función para guardar mensaje en el backend
-async function saveMessage(tenantId, phone, message, response = '', contactName = null, originalJid = null) {
+async function saveMessage(tenantId, phone, message, response = '', contactName = null, originalJid = null, profilePicUrl = null) {
   try {
     const cleanPhone = normalizePhone(phone);
     
@@ -35,6 +35,7 @@ async function saveMessage(tenantId, phone, message, response = '', contactName 
         customerPhone: cleanPhone,
         customerName: contactName,
         originalJid: originalJid || phone, // Guardar el JID original para responder
+        profilePicUrl: profilePicUrl, // Guardar foto de perfil
         message: message,
         response: response,
         intent: 'RECIBIDO',
@@ -165,9 +166,12 @@ async function initWhatsAppForTenant(tenantId) {
         let phoneNumber = null;
         let originalJid = msg.key.remoteJid;
         let contactName = msg.pushName || msg.verifiedBizName || null;
+        let profilePicUrl = null;
         
+        console.log(`🔍 [${tenantId}] ========== NUEVO MENSAJE ==========`);
         console.log(`🔍 [${tenantId}] RAW JID:`, originalJid);
         console.log(`🔍 [${tenantId}] pushName:`, contactName);
+        console.log(`🔍 [${tenantId}] participant:`, msg.key.participant);
         
         // MÉTODO 1: Si el JID es @s.whatsapp.net, ya tenemos el número
         if (originalJid.includes('@s.whatsapp.net')) {
@@ -184,10 +188,11 @@ async function initWhatsAppForTenant(tenantId) {
             console.log(`✅ [${tenantId}] Número desde participant:`, phoneNumber);
           }
           
-          // MÉTODO 3: Intentar con onWhatsApp
+          // MÉTODO 3: Intentar con onWhatsApp usando el @lid
           if (!phoneNumber) {
             try {
               const lidNumber = originalJid.replace('@lid', '');
+              console.log(`🔍 [${tenantId}] Intentando onWhatsApp con:`, lidNumber);
               const result = await sock.onWhatsApp(lidNumber);
               console.log(`🔍 [${tenantId}] onWhatsApp result:`, JSON.stringify(result));
               
@@ -200,6 +205,16 @@ async function initWhatsAppForTenant(tenantId) {
             }
           }
           
+          // MÉTODO 4: Intentar buscar en contactos guardados
+          if (!phoneNumber && contactName) {
+            try {
+              console.log(`🔍 [${tenantId}] Buscando en contactos por nombre:`, contactName);
+              // Aquí podrías implementar búsqueda en contactos si tienes acceso
+            } catch (error) {
+              console.log(`⚠️  [${tenantId}] Error buscando contacto:`, error.message);
+            }
+          }
+          
           // Si no pudimos obtener el número, usar el @lid como fallback
           if (!phoneNumber) {
             phoneNumber = originalJid.replace('@lid', '');
@@ -207,12 +222,24 @@ async function initWhatsAppForTenant(tenantId) {
           }
         }
         
+        // Intentar obtener foto de perfil
+        try {
+          const jidToUse = phoneNumber ? `${phoneNumber}@s.whatsapp.net` : originalJid;
+          console.log(`📸 [${tenantId}] Intentando obtener foto de perfil de:`, jidToUse);
+          profilePicUrl = await sock.profilePictureUrl(jidToUse, 'image');
+          console.log(`✅ [${tenantId}] Foto de perfil obtenida:`, profilePicUrl ? 'Sí' : 'No');
+        } catch (error) {
+          console.log(`⚠️  [${tenantId}] No se pudo obtener foto de perfil:`, error.message);
+        }
+        
         const cleanPhone = normalizePhone(phoneNumber || originalJid);
         
-        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}, Message: ${text.substring(0, 30)}...`);
+        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}, ProfilePic: ${profilePicUrl ? 'Sí' : 'No'}`);
+        console.log(`📨 [${tenantId}] Mensaje: ${text.substring(0, 30)}...`);
+        console.log(`🔍 [${tenantId}] ========================================`);
 
-        // Guardar en backend con nombre Y JID original
-        await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid);
+        // Guardar en backend con nombre, JID original Y foto de perfil
+        await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid, profilePicUrl);
 
       } catch (error) {
         console.error(`❌ [${tenantId}] Error procesando mensaje:`, error.message);

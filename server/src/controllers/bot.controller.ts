@@ -222,6 +222,7 @@ export class BotController {
           customerPhone: msg.customerPhone,
           customerName: msg.client?.name || 'Cliente',
           originalJid: msg.originalJid || msg.customerPhone, // Incluir originalJid
+          profilePicUrl: msg.profilePicUrl || undefined, // Incluir foto de perfil
           message: msg.message,
           response: msg.response || '',
           timestamp: msg.createdAt,

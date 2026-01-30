@@ -31,6 +31,69 @@ import { useTranslation } from '@/i18n/I18nProvider';
 
 // Base de datos de modelos de iPhone organizados por serie
 const IPHONE_MODELS = {
+  '7': [
+    {
+      model: 'iPhone 7',
+      storages: ['32GB', '128GB', '256GB'],
+      colors: ['Negro', 'Negro Brillante', 'Plata', 'Oro', 'Oro Rosa', 'Rojo'],
+    },
+    {
+      model: 'iPhone 7 Plus',
+      storages: ['32GB', '128GB', '256GB'],
+      colors: ['Negro', 'Negro Brillante', 'Plata', 'Oro', 'Oro Rosa', 'Rojo'],
+    },
+  ],
+  '8': [
+    {
+      model: 'iPhone 8',
+      storages: ['64GB', '128GB', '256GB'],
+      colors: ['Gris Espacial', 'Plata', 'Oro', 'Rojo'],
+    },
+    {
+      model: 'iPhone 8 Plus',
+      storages: ['64GB', '128GB', '256GB'],
+      colors: ['Gris Espacial', 'Plata', 'Oro', 'Rojo'],
+    },
+  ],
+  'X': [
+    {
+      model: 'iPhone X',
+      storages: ['64GB', '256GB'],
+      colors: ['Gris Espacial', 'Plata'],
+    },
+    {
+      model: 'iPhone XR',
+      storages: ['64GB', '128GB', '256GB'],
+      colors: ['Negro', 'Blanco', 'Azul', 'Amarillo', 'Coral', 'Rojo'],
+    },
+    {
+      model: 'iPhone XS',
+      storages: ['64GB', '256GB', '512GB'],
+      colors: ['Gris Espacial', 'Plata', 'Oro'],
+    },
+    {
+      model: 'iPhone XS Max',
+      storages: ['64GB', '256GB', '512GB'],
+      colors: ['Gris Espacial', 'Plata', 'Oro'],
+    },
+  ],
+  'SE': [
+    {
+      model: 'iPhone SE',
+      storages: ['16GB', '32GB', '64GB', '128GB'],
+      colors: ['Gris Espacial', 'Plata', 'Oro Rosa'],
+    },
+    {
+      model: 'iPhone SE 2',
+      storages: ['64GB', '128GB', '256GB'],
+      colors: ['Negro', 'Blanco', 'Rojo'],
+    },
+    {
+      model: 'iPhone SE 3',
+      storages: ['64GB', '128GB', '256GB'],
+      colors: ['Medianoche', 'Blanco Estelar', 'Rojo'],
+    },
+  ],
   '11': [
     {
       model: 'iPhone 11',
@@ -50,12 +113,12 @@ const IPHONE_MODELS = {
   ],
   '12': [
     {
-      model: 'iPhone 12',
+      model: 'iPhone 12 Mini',
       storages: ['64GB', '128GB', '256GB'],
       colors: ['Negro', 'Blanco', 'Rojo', 'Verde', 'Azul', 'Morado'],
     },
     {
-      model: 'iPhone 12 Mini',
+      model: 'iPhone 12',
       storages: ['64GB', '128GB', '256GB'],
       colors: ['Negro', 'Blanco', 'Rojo', 'Verde', 'Azul', 'Morado'],
     },
@@ -72,14 +135,14 @@ const IPHONE_MODELS = {
   ],
   '13': [
     {
-      model: 'iPhone 13',
-      storages: ['128GB', '256GB', '512GB'],
-      colors: ['Rosa', 'Azul', 'Medianoche', 'Estrella', 'Rojo', 'Verde'],
-    },
-    {
       model: 'iPhone 13 Mini',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Rosa', 'Azul', 'Medianoche', 'Estrella', 'Rojo', 'Verde'],
+      colors: ['Rosa', 'Azul', 'Medianoche', 'Blanco Estelar', 'Rojo', 'Verde'],
+    },
+    {
+      model: 'iPhone 13',
+      storages: ['128GB', '256GB', '512GB'],
+      colors: ['Rosa', 'Azul', 'Medianoche', 'Blanco Estelar', 'Rojo', 'Verde'],
     },
     {
       model: 'iPhone 13 Pro',
@@ -96,12 +159,12 @@ const IPHONE_MODELS = {
     {
       model: 'iPhone 14',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Medianoche', 'Luz Estelar', 'Rojo', 'Azul', 'Morado', 'Amarillo'],
+      colors: ['Medianoche', 'Blanco Estelar', 'Rojo', 'Azul', 'Morado', 'Amarillo'],
     },
     {
       model: 'iPhone 14 Plus',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Medianoche', 'Luz Estelar', 'Rojo', 'Azul', 'Morado', 'Amarillo'],
+      colors: ['Medianoche', 'Blanco Estelar', 'Rojo', 'Azul', 'Morado', 'Amarillo'],
     },
     {
       model: 'iPhone 14 Pro',
@@ -128,56 +191,56 @@ const IPHONE_MODELS = {
     {
       model: 'iPhone 15 Pro',
       storages: ['128GB', '256GB', '512GB', '1TB'],
-      colors: ['Titanio Natural', 'Titanio Azul', 'Titanio Blanco', 'Titanio Negro'],
+      colors: ['Gris', 'Azul', 'Blanco', 'Negro'],
     },
     {
       model: 'iPhone 15 Pro Max',
-      storages: ['128GB', '256GB', '512GB', '1TB'],
-      colors: ['Titanio Natural', 'Titanio Azul', 'Titanio Blanco', 'Titanio Negro'],
+      storages: ['256GB', '512GB', '1TB'],
+      colors: ['Gris', 'Azul', 'Blanco', 'Negro'],
     },
   ],
   '16': [
     {
       model: 'iPhone 16',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Negro', 'Blanco', 'Rosa', 'Verde Azulado', 'Ultramarino'],
+      colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'],
     },
     {
       model: 'iPhone 16 Plus',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Negro', 'Blanco', 'Rosa', 'Verde Azulado', 'Ultramarino'],
+      colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'],
     },
     {
       model: 'iPhone 16 Pro',
       storages: ['128GB', '256GB', '512GB', '1TB'],
-      colors: ['Titanio Negro', 'Titanio Natural', 'Titanio Blanco', 'Titanio Desierto'],
+      colors: ['Negro', 'Gris', 'Blanco', 'Dorado'],
     },
     {
       model: 'iPhone 16 Pro Max',
-      storages: ['128GB', '256GB', '512GB', '1TB'],
-      colors: ['Titanio Negro', 'Titanio Natural', 'Titanio Blanco', 'Titanio Desierto'],
+      storages: ['256GB', '512GB', '1TB'],
+      colors: ['Negro', 'Gris', 'Blanco', 'Dorado'],
     },
   ],
   '17': [
     {
       model: 'iPhone 17',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Negro', 'Blanco', 'Rosa', 'Verde', 'Azul'],
+      colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'],
     },
     {
       model: 'iPhone 17 Plus',
       storages: ['128GB', '256GB', '512GB'],
-      colors: ['Negro', 'Blanco', 'Rosa', 'Verde', 'Azul'],
+      colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'],
     },
     {
       model: 'iPhone 17 Pro',
-      storages: ['256GB', '512GB', '1TB'],
-      colors: ['Titanio Negro', 'Titanio Natural', 'Titanio Blanco', 'Titanio Azul'],
+      storages: ['128GB', '256GB', '512GB', '1TB'],
+      colors: ['Negro', 'Gris', 'Blanco', 'Dorado'],
     },
     {
       model: 'iPhone 17 Pro Max',
-      storages: ['256GB', '512GB', '1TB'],
-      colors: ['Titanio Negro', 'Titanio Natural', 'Titanio Blanco', 'Titanio Azul'],
+      storages: ['256GB', '512GB', '1TB', '2TB'],
+      colors: ['Negro', 'Gris', 'Blanco', 'Dorado'],
     },
   ],
 };

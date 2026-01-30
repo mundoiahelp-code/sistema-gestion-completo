@@ -17,6 +17,7 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 // Lista de todos los modelos de iPhone
 const allModels = [
+  'iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone 17 Plus', 'iPhone 17',
   'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Plus', 'iPhone 16',
   'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15 Plus', 'iPhone 15',
   'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14 Plus', 'iPhone 14',
@@ -30,6 +31,7 @@ const allModels = [
 ];
 
 const modelGroups: { [key: string]: string[] } = {
+  'iPhone 17': allModels.filter(m => m.includes('17')),
   'iPhone 16': allModels.filter(m => m.includes('16')),
   'iPhone 15': allModels.filter(m => m.includes('15')),
   'iPhone 14': allModels.filter(m => m.includes('14')),

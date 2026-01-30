@@ -90,6 +90,7 @@ interface ChatConversation {
   customerPhone: string;
   customerName: string;
   originalJid?: string; // JID original de WhatsApp para responder
+  profilePicUrl?: string; // URL de la foto de perfil de WhatsApp
   lastMessage: string;
   lastMessageTime: Date;
   messages: ChatMessageItem[];
@@ -466,6 +467,7 @@ function CRMPageContent() {
             customerPhone: normalizedPhone,
             customerName: displayName,
             originalJid: msg.originalJid || normalizedPhone, // Guardar JID original
+            profilePicUrl: msg.profilePicUrl || undefined, // Guardar foto de perfil
             lastMessage: msg.message,
             lastMessageTime: new Date(msg.timestamp),
             messages: [],
@@ -478,6 +480,11 @@ function CRMPageContent() {
         // Actualizar originalJid si viene uno más reciente
         if (msg.originalJid && !grouped[normalizedPhone].originalJid?.includes('@lid')) {
           grouped[normalizedPhone].originalJid = msg.originalJid;
+        }
+        
+        // Actualizar profilePicUrl si viene una más reciente
+        if (msg.profilePicUrl && !grouped[normalizedPhone].profilePicUrl) {
+          grouped[normalizedPhone].profilePicUrl = msg.profilePicUrl;
         }
 
         // Agregar mensaje del cliente (usar número normalizado) - SOLO si no es [CRM]
@@ -995,7 +1002,19 @@ function CRMPageContent() {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                      {conv.profilePicUrl ? (
+                        <img 
+                          src={conv.profilePicUrl} 
+                          alt={conv.customerName}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={(e) => {
+                            // Si falla la carga, mostrar avatar con inicial
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold ${conv.profilePicUrl ? 'hidden' : ''}`}>
                         {conv.customerName.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1026,7 +1045,19 @@ function CRMPageContent() {
               <>
                 <div className="p-3 bg-gray-100 dark:bg-zinc-800 border-b dark:border-zinc-700 flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold shrink-0">
+                    {selectedConv.profilePicUrl ? (
+                      <img 
+                        src={selectedConv.profilePicUrl} 
+                        alt={selectedConv.customerName}
+                        className="w-10 h-10 rounded-full object-cover shrink-0"
+                        onError={(e) => {
+                          // Si falla la carga, mostrar avatar con inicial
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold shrink-0 ${selectedConv.profilePicUrl ? 'hidden' : ''}`}>
                       {selectedConv.customerName.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
