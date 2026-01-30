@@ -159,63 +159,14 @@ async function initWhatsAppForTenant(tenantId) {
 
         if (!text) continue;
 
-        // Obtener número
-        let phone = msg.key.remoteJid;
-        let originalJid = phone; // Guardar el JID original
-        let contactName = null;
+        // Obtener JID original y nombre del contacto
+        const originalJid = msg.key.remoteJid; // Guardar el JID original SIEMPRE
+        let contactName = msg.pushName || msg.verifiedBizName || null;
         
-        console.log(`🔍 [${tenantId}] RAW:`, phone);
-        console.log(`🔍 [${tenantId}] pushName:`, msg.pushName);
-        console.log(`🔍 [${tenantId}] verifiedBizName:`, msg.verifiedBizName);
+        // Usar el JID original como identificador (puede ser @lid o @s.whatsapp.net)
+        const cleanPhone = normalizePhone(originalJid);
         
-        // MÉTODO 1: Intentar obtener del participant (para mensajes de canales/comunidades)
-        if (msg.key.participant && !msg.key.participant.includes('@lid')) {
-          phone = msg.key.participant;
-          console.log(`✅ [${tenantId}] Número desde participant:`, phone);
-        }
-        
-        // MÉTODO 2: Si es @lid, intentar obtener info del contacto
-        if (phone?.includes('@lid')) {
-          console.log(`⚠️  [${tenantId}] Detectado @lid`);
-          
-          try {
-            // Intentar obtener del store de contactos
-            const contactInfo = sock.store?.contacts?.[phone];
-            if (contactInfo?.id && !contactInfo.id.includes('@lid')) {
-              phone = contactInfo.id;
-              console.log(`✅ [${tenantId}] Número desde store:`, phone);
-            }
-          } catch (error) {
-            console.log(`⚠️  [${tenantId}] Error en store:`, error.message);
-          }
-          
-          // MÉTODO 3: Intentar con onWhatsApp
-          if (phone.includes('@lid')) {
-            try {
-              const lidNumber = phone.replace('@lid', '');
-              const result = await sock.onWhatsApp(lidNumber);
-              console.log(`🔍 [${tenantId}] onWhatsApp result:`, JSON.stringify(result));
-              
-              if (result && result.length > 0 && result[0].jid) {
-                phone = result[0].jid;
-                console.log(`✅ [${tenantId}] Número desde onWhatsApp:`, phone);
-              }
-            } catch (error) {
-              console.log(`⚠️  [${tenantId}] Error en onWhatsApp:`, error.message);
-            }
-          }
-          
-          // MÉTODO 4: Buscar en el mensaje si tiene info del remitente
-          if (phone.includes('@lid') && msg.message?.messageContextInfo?.deviceListMetadata) {
-            console.log(`🔍 [${tenantId}] deviceListMetadata:`, msg.message.messageContextInfo.deviceListMetadata);
-          }
-        }
-        
-        // Obtener nombre del contacto
-        contactName = msg.pushName || msg.verifiedBizName || null;
-
-        const cleanPhone = normalizePhone(phone);
-        console.log(`📨 [${tenantId}] FINAL: ${cleanPhone} (${contactName || 'Sin nombre'}): ${text}`);
+        console.log(`� [${tenanttId}] ${contactName || cleanPhone}: ${text}`);
 
         // Guardar en backend con nombre Y JID original
         await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid);
