@@ -25,7 +25,7 @@ function normalizePhone(phone) {
 }
 
 // Función para guardar mensaje en el backend
-async function saveMessage(tenantId, phone, message, response = '', contactName = null, originalJid = null, profilePicUrl = null) {
+async function saveMessage(tenantId, phone, message, response = '', contactName = null, originalJid = null) {
   try {
     const cleanPhone = normalizePhone(phone);
     
@@ -35,7 +35,6 @@ async function saveMessage(tenantId, phone, message, response = '', contactName 
         customerPhone: cleanPhone,
         customerName: contactName,
         originalJid: originalJid || phone, // Guardar el JID original para responder
-        profilePicUrl: profilePicUrl, // Guardar foto de perfil
         message: message,
         response: response,
         intent: 'RECIBIDO',
@@ -166,7 +165,6 @@ async function initWhatsAppForTenant(tenantId) {
         let phoneNumber = null;
         let originalJid = msg.key.remoteJid;
         let contactName = msg.pushName || msg.verifiedBizName || null;
-        let profilePicUrl = null;
         
         console.log(`🔍 [${tenantId}] ========== NUEVO MENSAJE ==========`);
         console.log(`🔍 [${tenantId}] RAW JID:`, originalJid);
@@ -222,24 +220,25 @@ async function initWhatsAppForTenant(tenantId) {
           }
         }
         
+        // TODO: Reactivar cuando se ejecute la migración de profilePicUrl
         // Intentar obtener foto de perfil
-        try {
-          const jidToUse = phoneNumber ? `${phoneNumber}@s.whatsapp.net` : originalJid;
-          console.log(`📸 [${tenantId}] Intentando obtener foto de perfil de:`, jidToUse);
-          profilePicUrl = await sock.profilePictureUrl(jidToUse, 'image');
-          console.log(`✅ [${tenantId}] Foto de perfil obtenida:`, profilePicUrl ? 'Sí' : 'No');
-        } catch (error) {
-          console.log(`⚠️  [${tenantId}] No se pudo obtener foto de perfil:`, error.message);
-        }
+        // try {
+        //   const jidToUse = phoneNumber ? `${phoneNumber}@s.whatsapp.net` : originalJid;
+        //   console.log(`📸 [${tenantId}] Intentando obtener foto de perfil de:`, jidToUse);
+        //   profilePicUrl = await sock.profilePictureUrl(jidToUse, 'image');
+        //   console.log(`✅ [${tenantId}] Foto de perfil obtenida:`, profilePicUrl ? 'Sí' : 'No');
+        // } catch (error) {
+        //   console.log(`⚠️  [${tenantId}] No se pudo obtener foto de perfil:`, error.message);
+        // }
         
         const cleanPhone = normalizePhone(phoneNumber || originalJid);
         
-        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}, ProfilePic: ${profilePicUrl ? 'Sí' : 'No'}`);
+        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}`);
         console.log(`📨 [${tenantId}] Mensaje: ${text.substring(0, 30)}...`);
         console.log(`🔍 [${tenantId}] ========================================`);
 
-        // Guardar en backend con nombre, JID original Y foto de perfil
-        await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid, profilePicUrl);
+        // Guardar en backend con nombre y JID original
+        await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid);
 
       } catch (error) {
         console.error(`❌ [${tenantId}] Error procesando mensaje:`, error.message);
