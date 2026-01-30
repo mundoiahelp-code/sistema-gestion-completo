@@ -127,10 +127,22 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     const { phone, message } = req.body;
     const tenantId = req.user?.tenantId;
     
+    console.log('📤 sendMessage - tenantId:', tenantId);
+    console.log('📤 sendMessage - phone:', phone);
+    console.log('📤 sendMessage - req.user:', req.user);
+    
     if (!phone || !message) {
       return res.status(400).json({ 
         success: false,
         error: 'phone y message son requeridos'
+      });
+    }
+    
+    if (!tenantId) {
+      console.error('❌ No hay tenantId en req.user');
+      return res.status(401).json({ 
+        success: false,
+        error: 'No autorizado - falta tenantId'
       });
     }
     
@@ -154,6 +166,8 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     }
     
     const botUrl = BOT_URL;
+    
+    console.log('📤 Enviando al bot:', botUrl, 'con tenant:', tenant.id);
     
     const response = await axios.post(
       `${botUrl}/api/send-message`,
