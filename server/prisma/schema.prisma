@@ -390,7 +390,6 @@ model ChatMessage {
   customerPhone String
   customerName  String?
   originalJid   String?  // JID original de WhatsApp (@lid o @s.whatsapp.net) para responder
-  profilePicUrl String?  // URL de la foto de perfil de WhatsApp
   message       String
   response      String?
   intent        String?
