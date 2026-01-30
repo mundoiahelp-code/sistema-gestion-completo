@@ -221,6 +221,7 @@ export class BotController {
           id: msg.id,
           customerPhone: msg.customerPhone,
           customerName: msg.client?.name || 'Cliente',
+          originalJid: msg.originalJid || msg.customerPhone, // Incluir originalJid
           message: msg.message,
           response: msg.response || '',
           timestamp: msg.createdAt,

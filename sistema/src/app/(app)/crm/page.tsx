@@ -89,6 +89,7 @@ import Cookies from 'js-cookie';
 interface ChatConversation {
   customerPhone: string;
   customerName: string;
+  originalJid?: string; // JID original de WhatsApp para responder
   lastMessage: string;
   lastMessageTime: Date;
   messages: ChatMessageItem[];
@@ -454,6 +455,7 @@ function CRMPageContent() {
           grouped[normalizedPhone] = {
             customerPhone: normalizedPhone,
             customerName: displayName,
+            originalJid: msg.originalJid || normalizedPhone, // Guardar JID original
             lastMessage: msg.message,
             lastMessageTime: new Date(msg.timestamp),
             messages: [],
@@ -461,6 +463,11 @@ function CRMPageContent() {
             notes: msg.notes || undefined,
             resolved: msg.resolved || false,
           };
+        }
+        
+        // Actualizar originalJid si viene uno más reciente
+        if (msg.originalJid && !grouped[normalizedPhone].originalJid?.includes('@lid')) {
+          grouped[normalizedPhone].originalJid = msg.originalJid;
         }
 
         // Agregar mensaje del cliente (usar número normalizado) - SOLO si no es [CRM]
@@ -518,6 +525,12 @@ function CRMPageContent() {
     try {
       const token = Cookies.get('accessToken') || Cookies.get('token');
       
+      // Obtener el originalJid de la conversación seleccionada
+      const selectedConv = conversations.find(c => c.customerPhone === selectedChat);
+      const phoneToSend = selectedConv?.originalJid || selectedChat;
+      
+      console.log('📤 Enviando a:', phoneToSend, '(original:', selectedChat, ')');
+      
       // Determinar endpoint según la plataforma
       const endpoint = platform === 'instagram' 
         ? `${process.env.NEXT_PUBLIC_API_URL}/instagram/send`
@@ -525,7 +538,7 @@ function CRMPageContent() {
       
       const payload = platform === 'instagram'
         ? { recipientId: selectedChat, message: messageToSend }
-        : { phone: selectedChat.replace('+', '').replace(/\s/g, ''), message: messageToSend };
+        : { phone: phoneToSend, message: messageToSend }; // Usar originalJid
 
       const response = await axios.post(
         endpoint,
@@ -538,6 +551,7 @@ function CRMPageContent() {
           `${process.env.NEXT_PUBLIC_API_URL}/bot/messages`,
           {
             customerPhone: selectedChat,
+            originalJid: phoneToSend, // Guardar el JID usado
             message: '[CRM]',
             response: messageToSend,
             intent: 'MANUAL_CRM',
