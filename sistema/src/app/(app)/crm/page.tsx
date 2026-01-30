@@ -435,12 +435,18 @@ function CRMPageContent() {
   const loadConversations = async () => {
     try {
       const token = Cookies.get('accessToken') || Cookies.get('token');
+      console.log('🔍 Cargando conversaciones...', { platform, token: token ? 'Sí' : 'No' });
+      
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/bot/messages`, {
         params: { platform },
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log('📨 Respuesta del backend:', response.data);
+      
       const messages = response.data.messages || response.data;
+      console.log('📊 Total mensajes:', messages.length);
+      
       const grouped: { [key: string]: ChatConversation } = {};
 
       messages.forEach((msg: any) => {
@@ -524,10 +530,14 @@ function CRMPageContent() {
       const arr = Object.values(grouped).sort((a, b) => 
         b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
       );
+      
+      console.log('✅ Conversaciones agrupadas:', arr.length);
+      console.log('📋 Conversaciones:', arr);
+      
       setConversations(arr);
       setLoading(false);
     } catch (error) {
-      console.error('Error cargando conversaciones:', error);
+      console.error('❌ Error cargando conversaciones:', error);
       setLoading(false);
     }
   };
