@@ -109,7 +109,6 @@ function Aside() {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
-        setShowThemeConfirm(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
