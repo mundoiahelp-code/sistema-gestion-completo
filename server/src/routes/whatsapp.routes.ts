@@ -7,6 +7,7 @@ import {
   sendMessage,
   logout,
   reconnect,
+  getGroups,
 } from '../controllers/whatsapp.controller';
 import { whatsappService } from '../services/whatsapp.service';
 
@@ -42,6 +43,7 @@ router.use(authenticate);
 
 router.get('/status', getStatus);
 router.get('/qr', getQRCode);
+router.get('/groups', getGroups);
 router.post('/send-repair', sendRepairMessage);
 router.post('/send', sendMessage);
 router.post('/logout', logout);

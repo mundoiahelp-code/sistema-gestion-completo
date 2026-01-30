@@ -72,15 +72,15 @@ export default function BroadcastChannels() {
   const fetchGroups = async () => {
     try {
       setLoadingGroups(true);
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/broadcast/whatsapp-groups`,
+        `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/groups`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setGroups(res.data.groups || []);
     } catch (error) {
       console.error('Error fetching groups:', error);
-      toast.error('Error al cargar grupos');
+      toast.error('Error al cargar grupos. Asegurate de que WhatsApp esté conectado.');
     } finally {
       setLoadingGroups(false);
     }

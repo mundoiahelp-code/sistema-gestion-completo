@@ -363,6 +363,49 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
+// Obtener lista de grupos donde el bot es admin
+app.get('/api/groups', async (req, res) => {
+  const tenantId = req.headers['x-tenant-id'];
+  
+  if (!tenantId) {
+    return res.status(400).json({ error: 'X-Tenant-ID header requerido' });
+  }
+
+  const conn = connections.get(tenantId);
+  
+  if (!conn || !conn.sock) {
+    return res.json({ groups: [] });
+  }
+
+  try {
+    // Obtener todos los chats
+    const chats = await conn.sock.groupFetchAllParticipating();
+    
+    // Filtrar solo grupos donde somos admin
+    const groups = [];
+    for (const [jid, chat] of Object.entries(chats)) {
+      // Verificar si somos admin
+      const myJid = conn.sock.user?.id;
+      const participants = chat.participants || [];
+      const me = participants.find(p => p.id === myJid);
+      
+      if (me && (me.admin === 'admin' || me.admin === 'superadmin')) {
+        groups.push({
+          id: jid,
+          name: chat.subject || 'Grupo sin nombre',
+          participants: participants.length
+        });
+      }
+    }
+    
+    console.log(`📋 [${tenantId}] Grupos donde soy admin: ${groups.length}`);
+    res.json({ groups });
+  } catch (error) {
+    console.error(`❌ [${tenantId}] Error obteniendo grupos:`, error.message);
+    res.json({ groups: [] });
+  }
+});
+
 app.listen(BOT_PORT, () => {
   console.log(`🌐 API escuchando en puerto ${BOT_PORT}`);
   console.log(`📋 Esperando conexiones de tenants...`);

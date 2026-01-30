@@ -343,4 +343,38 @@ export const reconnect = async (req: AuthRequest, res: Response) => {
       needsSetup: error.code === 'ECONNREFUSED'
     });
   }
+};
+
+export const getGroups = async (req: AuthRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    
+    if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      return res.json({ groups: [] });
+    }
+    
+    const tenant = await (await import('../lib/prisma')).prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { botPort: true, botEnabled: true, id: true }
+    });
+    
+    if (!tenant?.botEnabled) {
+      return res.json({ groups: [] });
+    }
+    
+    const botUrl = BOT_URL;
+    
+    const response = await axios.get(
+      `${botUrl}/api/groups`,
+      { 
+        timeout: 5000,
+        headers: { 'X-Tenant-ID': tenant.id }
+      }
+    );
+    
+    res.json(response.data);
+  } catch (error: any) {
+    console.error('Error obteniendo grupos:', error);
+    res.json({ groups: [] });
+  }
 };;
