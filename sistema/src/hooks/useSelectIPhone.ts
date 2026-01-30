@@ -10,7 +10,7 @@ const iphoneModels: {
   // iPhone 17 Series (2025)
   { model: 'iPhone 17 Pro Max', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['256gb', '512gb', '1tb', '2tb'] },
   { model: 'iPhone 17 Pro', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['128gb', '256gb', '512gb', '1tb'] },
-  { model: 'iPhone 17 Plus', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
+  { model: 'iPhone 17 Air', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
   { model: 'iPhone 17', colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'], storages: ['128gb', '256gb', '512gb'] },
   // iPhone 16 Series (2024)
   { model: 'iPhone 16 Pro Max', colors: ['Gris', 'Negro', 'Blanco', 'Dorado'], storages: ['256gb', '512gb', '1tb'] },

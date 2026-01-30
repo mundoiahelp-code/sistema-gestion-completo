@@ -228,7 +228,7 @@ const IPHONE_MODELS = {
       colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'],
     },
     {
-      model: 'iPhone 17 Plus',
+      model: 'iPhone 17 Air',
       storages: ['128GB', '256GB', '512GB'],
       colors: ['Negro', 'Blanco', 'Rosa', 'Celeste', 'Azul'],
     },

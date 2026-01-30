@@ -257,7 +257,7 @@ export default function AddAccessoryForm({ stores }: Props) {
                       <SelectLabel>17</SelectLabel>
                       <SelectItem value="iPhone 17 Pro Max">iPhone 17 Pro Max</SelectItem>
                       <SelectItem value="iPhone 17 Pro">iPhone 17 Pro</SelectItem>
-                      <SelectItem value="iPhone 17 Plus">iPhone 17 Plus</SelectItem>
+                      <SelectItem value="iPhone 17 Air">iPhone 17 Air</SelectItem>
                       <SelectItem value="iPhone 17">iPhone 17</SelectItem>
                     </SelectGroup>
                     <SelectGroup>
