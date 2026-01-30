@@ -140,6 +140,7 @@ function CRMPageContent() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [filteredConversations, setFilteredConversations] = useState<ChatConversation[]>([]);
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [readChats, setReadChats] = useState<Set<string>>(new Set()); // Trackear chats leídos
   const [newMessage, setNewMessage] = useState('');
   const [customCategories, setCustomCategories] = useState<Array<{ value: string; label: string; color: string }>>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -514,24 +515,41 @@ function CRMPageContent() {
           conv.lastMessage = last.message;
           conv.lastMessageTime = last.timestamp;
           
-          // Contar mensajes del cliente sin respuesta (no leídos)
-          let unreadCount = 0;
-          for (let i = conv.messages.length - 1; i >= 0; i--) {
-            const msg = conv.messages[i];
-            if (msg.isFromCustomer) {
-              unreadCount++;
-            } else {
-              // Si encontramos una respuesta, paramos de contar
-              break;
+          // Solo contar no leídos si el chat NO fue marcado como leído
+          if (!readChats.has(conv.customerPhone)) {
+            // Contar mensajes del cliente sin respuesta (no leídos)
+            let unreadCount = 0;
+            for (let i = conv.messages.length - 1; i >= 0; i--) {
+              const msg = conv.messages[i];
+              if (msg.isFromCustomer) {
+                unreadCount++;
+              } else {
+                // Si encontramos una respuesta, paramos de contar
+                break;
+              }
             }
+            conv.unreadCount = unreadCount;
+          } else {
+            conv.unreadCount = 0;
           }
-          conv.unreadCount = unreadCount;
         }
       });
 
       const arr = Object.values(grouped).sort((a, b) => 
         b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
       );
+      
+      // Detectar mensajes nuevos y remover del Set de leídos si hay nuevos mensajes del cliente
+      arr.forEach(conv => {
+        if (conv.unreadCount && conv.unreadCount > 0) {
+          // Si hay mensajes no leídos, asegurarse de que NO esté en readChats
+          setReadChats(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(conv.customerPhone);
+            return newSet;
+          });
+        }
+      });
       
       setConversations(arr);
       setLoading(false);
@@ -1005,7 +1023,9 @@ function CRMPageContent() {
                     onClick={() => {
                       setSelectedChat(conv.customerPhone);
                       setIsUserScrolling(false); // Reset scroll al cambiar de chat
-                      // Marcar mensajes como leídos
+                      // Marcar chat como leído
+                      setReadChats(prev => new Set(prev).add(conv.customerPhone));
+                      // Actualizar el contador inmediatamente
                       setConversations(prev =>
                         prev.map(c =>
                           c.customerPhone === conv.customerPhone
