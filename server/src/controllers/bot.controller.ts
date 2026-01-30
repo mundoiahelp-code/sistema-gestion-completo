@@ -263,7 +263,7 @@ export class BotController {
   static async logChatMessage(req: AuthRequest, res: Response) {
     try {
       const tenantId = req.user?.tenantId;
-      const { customerPhone, message, response, intent, status = 'responded', platform = 'whatsapp', sentBy } = req.body;
+      const { customerPhone, customerName, originalJid, message, response, intent, status = 'responded', platform = 'whatsapp', sentBy } = req.body;
 
       if (!customerPhone || !message) {
         console.error('❌ Faltan datos: customerPhone o message');
@@ -283,12 +283,19 @@ export class BotController {
 
       // Si no existe, crear cliente en el tenant actual
       if (!client && tenantId) {
+        const clientName = customerName || `Cliente ${normalizedPhone.slice(-4)}`;
         client = await prisma.client.create({
           data: {
             phone: normalizedPhone,
-            name: `Cliente ${normalizedPhone.slice(-4)}`,
+            name: clientName,
             tenantId
           }
+        });
+      } else if (client && customerName && !client.name.startsWith('Cliente')) {
+        // Actualizar nombre si viene uno nuevo y el actual es genérico
+        await prisma.client.update({
+          where: { id: client.id },
+          data: { name: customerName }
         });
       }
 
@@ -296,6 +303,7 @@ export class BotController {
       const chatMessage = await prisma.chatMessage.create({
         data: {
           customerPhone: normalizedPhone,
+          originalJid: originalJid || normalizedPhone, // Guardar JID original para responder
           message,
           response: response || '',
           intent: intent || 'OTRO',

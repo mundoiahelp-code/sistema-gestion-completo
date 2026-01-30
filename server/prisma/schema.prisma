@@ -389,6 +389,7 @@ model ChatMessage {
   id            String   @id @default(uuid())
   customerPhone String
   customerName  String?
+  originalJid   String?  // JID original de WhatsApp (@lid o @s.whatsapp.net) para responder
   message       String
   response      String?
   intent        String?

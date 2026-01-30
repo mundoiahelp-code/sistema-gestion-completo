@@ -25,7 +25,7 @@ function normalizePhone(phone) {
 }
 
 // Función para guardar mensaje en el backend
-async function saveMessage(tenantId, phone, message, response = '', contactName = null) {
+async function saveMessage(tenantId, phone, message, response = '', contactName = null, originalJid = null) {
   try {
     const cleanPhone = normalizePhone(phone);
     
@@ -33,7 +33,8 @@ async function saveMessage(tenantId, phone, message, response = '', contactName 
       `${BACKEND_URL}/bot/messages`,
       {
         customerPhone: cleanPhone,
-        customerName: contactName, // Agregar nombre del contacto
+        customerName: contactName,
+        originalJid: originalJid || phone, // Guardar el JID original para responder
         message: message,
         response: response,
         intent: 'RECIBIDO',
@@ -160,6 +161,7 @@ async function initWhatsAppForTenant(tenantId) {
 
         // Obtener número
         let phone = msg.key.remoteJid;
+        let originalJid = phone; // Guardar el JID original
         let contactName = null;
         
         console.log(`🔍 [${tenantId}] RAW:`, phone);
@@ -215,8 +217,8 @@ async function initWhatsAppForTenant(tenantId) {
         const cleanPhone = normalizePhone(phone);
         console.log(`📨 [${tenantId}] FINAL: ${cleanPhone} (${contactName || 'Sin nombre'}): ${text}`);
 
-        // Guardar en backend con nombre
-        await saveMessage(tenantId, cleanPhone, text, '', contactName);
+        // Guardar en backend con nombre Y JID original
+        await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid);
 
       } catch (error) {
         console.error(`❌ [${tenantId}] Error procesando mensaje:`, error.message);
@@ -314,11 +316,19 @@ app.post('/api/send-message', async (req, res) => {
     return res.status(400).json({ error: 'phone y message requeridos' });
   }
 
-  const cleanPhone = normalizePhone(phone);
-  const sent = await sendMessage(tenantId, cleanPhone, message);
+  // El phone puede venir como número normalizado o como JID (@lid o @s.whatsapp.net)
+  // Si no tiene @, agregamos @s.whatsapp.net
+  let jid = phone;
+  if (!phone.includes('@')) {
+    jid = phone + '@s.whatsapp.net';
+  }
+  
+  console.log(`📤 [${tenantId}] Enviando a: ${jid}`);
+  const sent = await sendMessage(tenantId, jid, message);
   
   if (sent) {
-    await saveMessage(tenantId, cleanPhone, '[CRM]', message);
+    const cleanPhone = normalizePhone(jid);
+    await saveMessage(tenantId, cleanPhone, '[CRM]', message, null, jid);
     res.json({ success: true });
   } else {
     res.status(500).json({ success: false });
