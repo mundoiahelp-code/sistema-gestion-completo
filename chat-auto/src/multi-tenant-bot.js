@@ -176,17 +176,18 @@ async function initWhatsAppForTenant(tenantId) {
           phoneNumber = originalJid.replace('@s.whatsapp.net', '');
           console.log(`✅ [${tenantId}] Número directo:`, phoneNumber);
         }
-        // MÉTODO 2: Si es @lid, intentar obtener del participant
+        // MÉTODO 2: Si es @lid, FORZAR la obtención del número real
         else if (originalJid.includes('@lid')) {
-          console.log(`⚠️  [${tenantId}] Detectado @lid, buscando número real...`);
+          console.log(`⚠️  [${tenantId}] Detectado @lid, FORZANDO obtención de número real...`);
           
-          // Intentar obtener del participant
+          // Intentar obtener del participant PRIMERO
           if (msg.key.participant && !msg.key.participant.includes('@lid')) {
             phoneNumber = msg.key.participant.replace('@s.whatsapp.net', '');
+            originalJid = msg.key.participant; // Actualizar originalJid al participant
             console.log(`✅ [${tenantId}] Número desde participant:`, phoneNumber);
           }
           
-          // MÉTODO 3: Intentar con onWhatsApp usando el @lid
+          // Si no hay participant, intentar con onWhatsApp
           if (!phoneNumber) {
             try {
               const lidNumber = originalJid.replace('@lid', '');
@@ -194,29 +195,23 @@ async function initWhatsAppForTenant(tenantId) {
               const result = await sock.onWhatsApp(lidNumber);
               console.log(`🔍 [${tenantId}] onWhatsApp result:`, JSON.stringify(result));
               
-              if (result && result.length > 0 && result[0].jid && !result[0].jid.includes('@lid')) {
-                phoneNumber = result[0].jid.replace('@s.whatsapp.net', '');
-                console.log(`✅ [${tenantId}] Número desde onWhatsApp:`, phoneNumber);
+              if (result && result.length > 0 && result[0].jid) {
+                if (!result[0].jid.includes('@lid')) {
+                  phoneNumber = result[0].jid.replace('@s.whatsapp.net', '');
+                  originalJid = result[0].jid; // Actualizar originalJid
+                  console.log(`✅ [${tenantId}] Número desde onWhatsApp:`, phoneNumber);
+                }
               }
             } catch (error) {
               console.log(`⚠️  [${tenantId}] Error en onWhatsApp:`, error.message);
             }
           }
           
-          // MÉTODO 4: Intentar buscar en contactos guardados
-          if (!phoneNumber && contactName) {
-            try {
-              console.log(`🔍 [${tenantId}] Buscando en contactos por nombre:`, contactName);
-              // Aquí podrías implementar búsqueda en contactos si tienes acceso
-            } catch (error) {
-              console.log(`⚠️  [${tenantId}] Error buscando contacto:`, error.message);
-            }
-          }
-          
-          // Si no pudimos obtener el número, usar el @lid como fallback
+          // ÚLTIMO RECURSO: Usar el @lid completo para poder responder
           if (!phoneNumber) {
             phoneNumber = originalJid.replace('@lid', '');
-            console.log(`⚠️  [${tenantId}] Usando @lid como fallback:`, phoneNumber);
+            console.log(`⚠️  [${tenantId}] No se pudo resolver, usando @lid completo para responder`);
+            console.log(`⚠️  [${tenantId}] originalJid guardado:`, originalJid);
           }
         }
         
@@ -328,11 +323,17 @@ app.post('/api/send-message', async (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   const { phone, message } = req.body;
   
+  console.log(`📥 [SEND-MESSAGE] Headers:`, req.headers);
+  console.log(`📥 [SEND-MESSAGE] Body:`, { phone, message });
+  console.log(`📥 [SEND-MESSAGE] Tenant ID:`, tenantId);
+  
   if (!tenantId) {
+    console.error(`❌ [SEND-MESSAGE] Falta X-Tenant-ID header`);
     return res.status(400).json({ error: 'X-Tenant-ID header requerido' });
   }
   
   if (!phone || !message) {
+    console.error(`❌ [SEND-MESSAGE] Faltan phone o message`);
     return res.status(400).json({ error: 'phone y message requeridos' });
   }
 
@@ -351,7 +352,8 @@ app.post('/api/send-message', async (req, res) => {
     await saveMessage(tenantId, cleanPhone, '[CRM]', message, null, jid);
     res.json({ success: true });
   } else {
-    res.status(500).json({ success: false });
+    console.error(`❌ [${tenantId}] Error enviando mensaje`);
+    res.status(500).json({ success: false, error: 'Error enviando mensaje' });
   }
 });
 
