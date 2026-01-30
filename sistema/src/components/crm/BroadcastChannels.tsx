@@ -23,6 +23,7 @@ import {
 import { 
   Megaphone, Plus, Trash2, Send, Clock, Edit, RefreshCw, Users
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
@@ -352,40 +353,53 @@ export default function BroadcastChannels() {
             </div>
 
             <div>
-              <Label>Grupo de WhatsApp</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Grupo de WhatsApp</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={fetchGroups}
+                  disabled={loadingGroups}
+                  className="h-6 px-2"
+                >
+                  <RefreshCw className={`h-3 w-3 ${loadingGroups ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+              
               {loadingGroups ? (
                 <div className="mt-1 p-3 border rounded-lg dark:border-zinc-700 flex items-center gap-2">
                   <RefreshCw className="h-4 w-4 animate-spin text-zinc-400" />
                   <span className="text-sm text-zinc-500">Cargando grupos...</span>
                 </div>
-              ) : groups.length > 0 ? (
-                <Select
-                  value={formData.chatId}
-                  onValueChange={(v) => setFormData({...formData, chatId: v})}
-                >
-                  <SelectTrigger className="mt-1 dark:bg-zinc-800">
-                    <SelectValue placeholder="Seleccioná un grupo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groups.map((group) => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.name} ({group.participants} miembros)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               ) : (
-                <div className="mt-1">
-                  <Input
+                <>
+                  <Select
                     value={formData.chatId}
-                    onChange={(e) => setFormData({...formData, chatId: e.target.value})}
-                    placeholder="Ej: 123456789@g.us"
-                    className="dark:bg-zinc-800"
-                  />
-                  <p className="text-xs text-zinc-500 mt-1">
-                    No se encontraron grupos. Asegurate de que WhatsApp esté conectado.
-                  </p>
-                </div>
+                    onValueChange={(v) => setFormData({...formData, chatId: v})}
+                  >
+                    <SelectTrigger className="mt-1 dark:bg-zinc-800">
+                      <SelectValue placeholder={groups.length === 0 ? "No hay grupos disponibles" : "Seleccioná un grupo"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groups.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                          No se encontraron grupos
+                        </SelectItem>
+                      ) : (
+                        groups.map((group) => (
+                          <SelectItem key={group.id} value={group.id}>
+                            {group.name} ({group.participants} miembros)
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {groups.length === 0 && (
+                    <p className="text-xs text-zinc-500 mt-1">
+                      Asegurate de que WhatsApp esté conectado y que pertenezcas a algún grupo.
+                    </p>
+                  )}
+                </>
               )}
             </div>
 

@@ -314,7 +314,7 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
-// Obtener lista de grupos donde el bot es admin
+// Obtener lista de grupos (TODOS los grupos, no solo admin)
 app.get('/api/groups', async (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   
@@ -332,34 +332,30 @@ app.get('/api/groups', async (req, res) => {
   try {
     console.log(`📋 [${tenantId}] Obteniendo grupos...`);
     
-    // Obtener todos los chats
+    // Obtener todos los chats de grupo
     const chats = await conn.sock.groupFetchAllParticipating();
-    console.log(`📋 [${tenantId}] Total de chats:`, Object.keys(chats).length);
+    console.log(`📋 [${tenantId}] Total de grupos:`, Object.keys(chats).length);
     
-    // Filtrar solo grupos donde somos admin
+    // Convertir a array simple con todos los grupos
     const groups = [];
-    const myJid = conn.sock.user?.id;
-    console.log(`👤 [${tenantId}] Mi JID:`, myJid);
     
     for (const [jid, chat] of Object.entries(chats)) {
-      console.log(`🔍 [${tenantId}] Grupo:`, chat.subject, '- JID:', jid);
-      
-      // Verificar si somos admin
       const participants = chat.participants || [];
+      const myJid = conn.sock.user?.id;
       const me = participants.find(p => p.id === myJid);
+      const isAdmin = me && (me.admin === 'admin' || me.admin === 'superadmin');
       
-      console.log(`👤 [${tenantId}] Mi rol en ${chat.subject}:`, me?.admin || 'member');
+      groups.push({
+        id: jid,
+        name: chat.subject || 'Grupo sin nombre',
+        participants: participants.length,
+        isAdmin: isAdmin || false
+      });
       
-      if (me && (me.admin === 'admin' || me.admin === 'superadmin')) {
-        groups.push({
-          id: jid,
-          name: chat.subject || 'Grupo sin nombre',
-          participants: participants.length
-        });
-      }
+      console.log(`📋 [${tenantId}] Grupo: ${chat.subject} - Admin: ${isAdmin}`);
     }
     
-    console.log(`✅ [${tenantId}] Grupos donde soy admin: ${groups.length}`);
+    console.log(`✅ [${tenantId}] Total grupos: ${groups.length}`);
     res.json({ groups });
   } catch (error) {
     console.error(`❌ [${tenantId}] Error obteniendo grupos:`, error.message);
