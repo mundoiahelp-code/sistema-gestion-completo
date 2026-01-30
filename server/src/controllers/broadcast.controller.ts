@@ -120,22 +120,38 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Canal no encontrado' });
     }
 
+    let messagesSent = 0;
+
     // Si sendStock es true, enviar lista de precios (2 mensajes)
     if (channel.sendStock) {
-      // Mensaje 1: iPhones
-      const phonesMessage = await generatePhonesStockMessage(tenantId);
-      const sent1 = await sendMessageToWhatsAppGroup(channel.chatId, phonesMessage, tenantId);
-      
-      if (!sent1) {
-        return res.status(500).json({ error: 'Error al enviar mensaje de iPhones' });
+      try {
+        // Mensaje 1: iPhones
+        const phonesMessage = await generatePhonesStockMessage(tenantId);
+        const sent1 = await sendMessageToWhatsAppGroup(channel.chatId, phonesMessage, tenantId);
+        
+        if (sent1) {
+          messagesSent++;
+          console.log('✅ Mensaje de iPhones enviado');
+        }
+      } catch (error) {
+        console.error('Error enviando mensaje de iPhones:', error);
       }
 
-      // Mensaje 2: Accesorios
-      const accessoriesMessage = await generateAccessoriesStockMessage(tenantId);
-      const sent2 = await sendMessageToWhatsAppGroup(channel.chatId, accessoriesMessage, tenantId);
-      
-      if (!sent2) {
-        return res.status(500).json({ error: 'Error al enviar mensaje de accesorios' });
+      try {
+        // Mensaje 2: Accesorios
+        const accessoriesMessage = await generateAccessoriesStockMessage(tenantId);
+        const sent2 = await sendMessageToWhatsAppGroup(channel.chatId, accessoriesMessage, tenantId);
+        
+        if (sent2) {
+          messagesSent++;
+          console.log('✅ Mensaje de accesorios enviado');
+        }
+      } catch (error) {
+        console.error('Error enviando mensaje de accesorios:', error);
+      }
+
+      if (messagesSent === 0) {
+        return res.status(500).json({ error: 'No se pudo enviar ningún mensaje' });
       }
     } else {
       // Enviar mensaje personalizado
@@ -149,6 +165,7 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
       if (!sent) {
         return res.status(500).json({ error: 'Error al enviar mensaje' });
       }
+      messagesSent = 1;
     }
 
     // Actualizar lastSent
@@ -159,12 +176,12 @@ export const sendToChannel = async (req: AuthRequest, res: Response) => {
 
     res.json({ 
       success: true, 
-      message: 'Mensaje enviado',
+      message: `${messagesSent} mensaje${messagesSent > 1 ? 's' : ''} enviado${messagesSent > 1 ? 's' : ''}`,
       chatId: channel.chatId 
     });
   } catch (error) {
     console.error('Error sending to channel:', error);
-    res.status(400).json({ error: 'Error al enviar mensaje' });
+    res.status(500).json({ error: 'Error al enviar mensaje' });
   }
 };
 
