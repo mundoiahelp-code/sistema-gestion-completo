@@ -349,7 +349,10 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
   try {
     const tenantId = req.user?.tenantId;
     
+    console.log('📋 getGroups - tenantId:', tenantId);
+    
     if (!BOT_URL || BOT_URL === 'http://localhost:3001') {
+      console.log('⚠️  getGroups - Bot URL no configurada');
       return res.json({ groups: [] });
     }
     
@@ -359,10 +362,12 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
     });
     
     if (!tenant?.botEnabled) {
+      console.log('⚠️  getGroups - Bot deshabilitado para tenant');
       return res.json({ groups: [] });
     }
     
     const botUrl = BOT_URL;
+    console.log('📋 getGroups - Llamando al bot:', botUrl);
     
     const response = await axios.get(
       `${botUrl}/api/groups`,
@@ -372,9 +377,10 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
       }
     );
     
+    console.log('✅ getGroups - Grupos recibidos:', response.data.groups?.length || 0);
     res.json(response.data);
   } catch (error: any) {
-    console.error('Error obteniendo grupos:', error);
+    console.error('❌ getGroups - Error:', error.message);
     res.json({ groups: [] });
   }
 };;

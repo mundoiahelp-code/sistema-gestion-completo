@@ -40,6 +40,9 @@ interface BroadcastChannel {
 }
 
 export default function BroadcastChannels() {
+  const { canAccess } = usePlan();
+  const hasPro = canAccess('bot'); // Plan Pro tiene bot IA
+  
   const [channels, setChannels] = useState<BroadcastChannel[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -222,7 +225,10 @@ export default function BroadcastChannels() {
             Canales de Broadcast
           </h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-            Envía stock automáticamente a grupos y listas de difusión
+            {hasPro 
+              ? 'Envía mensajes automáticamente a grupos y listas de difusión'
+              : 'Envía mensajes manualmente a grupos y listas de difusión'
+            }
           </p>
         </div>
         <Button size="sm" onClick={() => openModal()}>
@@ -253,24 +259,33 @@ export default function BroadcastChannels() {
                   <Switch
                     checked={channel.enabled}
                     onCheckedChange={() => toggleEnabled(channel)}
+                    disabled={!hasPro}
+                    title={!hasPro ? 'Solo disponible en Plan Pro' : ''}
                   />
                   <div>
-                    <div className="font-medium dark:text-zinc-100">{channel.name}</div>
+                    <div className="font-medium dark:text-zinc-100 flex items-center gap-2">
+                      {channel.name}
+                      {!hasPro && <Badge variant="outline" className="text-xs">Manual</Badge>}
+                    </div>
                     <div className="text-xs text-zinc-500 flex items-center gap-2">
                       <span className={channel.type === 'GROUP' ? 'text-green-600' : 'text-blue-600'}>
                         {channel.type === 'GROUP' ? '👥 Grupo' : '📢 Lista'}
                       </span>
-                      <span>•</span>
-                      <Clock className="h-3 w-3" />
-                      <span>{channel.sendTime}hs</span>
-                      {channel.sendStock && (
+                      {hasPro && (
                         <>
                           <span>•</span>
-                          <span>📱 Stock auto</span>
+                          <Clock className="h-3 w-3" />
+                          <span>{channel.sendTime}hs</span>
+                          {channel.sendStock && (
+                            <>
+                              <span>•</span>
+                              <span>📱 Stock auto</span>
+                            </>
+                          )}
                         </>
                       )}
                     </div>
-                    {channel.lastSent && (
+                    {hasPro && channel.lastSent && (
                       <div className="text-xs text-zinc-400 mt-1">
                         Último envío: {new Date(channel.lastSent).toLocaleString('es-AR')}
                       </div>
@@ -367,86 +382,97 @@ export default function BroadcastChannels() {
                     className="dark:bg-zinc-800"
                   />
                   <p className="text-xs text-zinc-500 mt-1">
-                    No se encontraron grupos. Asegurate de que el bot esté conectado.
+                    No se encontraron grupos. Asegurate de que WhatsApp esté conectado.
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Tipo</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(v: 'GROUP' | 'BROADCAST_LIST') => setFormData({...formData, type: v})}
-                >
-                  <SelectTrigger className="mt-1 dark:bg-zinc-800">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GROUP">👥 Grupo</SelectItem>
-                    <SelectItem value="BROADCAST_LIST">📢 Lista de difusión</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* SOLO PLAN PRO: Configuración de envío automático */}
+            {hasPro && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Tipo</Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(v: 'GROUP' | 'BROADCAST_LIST') => setFormData({...formData, type: v})}
+                    >
+                      <SelectTrigger className="mt-1 dark:bg-zinc-800">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="GROUP">👥 Grupo</SelectItem>
+                        <SelectItem value="BROADCAST_LIST">📢 Lista de difusión</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <Label>Hora de envío</Label>
-                <Input
-                  type="time"
-                  value={formData.sendTime}
-                  onChange={(e) => setFormData({...formData, sendTime: e.target.value})}
-                  className="mt-1 dark:bg-zinc-800"
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label>Hora de envío</Label>
+                    <Input
+                      type="time"
+                      value={formData.sendTime}
+                      onChange={(e) => setFormData({...formData, sendTime: e.target.value})}
+                      className="mt-1 dark:bg-zinc-800"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Frecuencia de envío</Label>
+                  <Select
+                    value={formData.frequency.toString()}
+                    onValueChange={(v) => setFormData({...formData, frequency: parseInt(v)})}
+                  >
+                    <SelectTrigger className="mt-1 dark:bg-zinc-800">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Todos los días</SelectItem>
+                      <SelectItem value="2">Cada 2 días</SelectItem>
+                      <SelectItem value="3">Cada 3 días</SelectItem>
+                      <SelectItem value="7">Una vez por semana</SelectItem>
+                      <SelectItem value="15">Cada 15 días</SelectItem>
+                      <SelectItem value="30">Una vez al mes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    El mensaje se enviará cada {formData.frequency} {formData.frequency === 1 ? 'día' : 'días'} a las {formData.sendTime}hs
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                  <div>
+                    <div className="font-medium text-sm dark:text-zinc-100">Enviar stock automático</div>
+                    <div className="text-xs text-zinc-500">Incluye lista de productos disponibles</div>
+                  </div>
+                  <Switch
+                    checked={formData.sendStock}
+                    onCheckedChange={(v) => setFormData({...formData, sendStock: v})}
+                  />
+                </div>
+              </>
+            )}
 
             <div>
-              <Label>Frecuencia de envío</Label>
-              <Select
-                value={formData.frequency.toString()}
-                onValueChange={(v) => setFormData({...formData, frequency: parseInt(v)})}
-              >
-                <SelectTrigger className="mt-1 dark:bg-zinc-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Todos los días</SelectItem>
-                  <SelectItem value="2">Cada 2 días</SelectItem>
-                  <SelectItem value="3">Cada 3 días</SelectItem>
-                  <SelectItem value="7">Una vez por semana</SelectItem>
-                  <SelectItem value="15">Cada 15 días</SelectItem>
-                  <SelectItem value="30">Una vez al mes</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-zinc-500 mt-1">
-                El mensaje se enviará cada {formData.frequency} {formData.frequency === 1 ? 'día' : 'días'} a las {formData.sendTime}hs
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-              <div>
-                <div className="font-medium text-sm dark:text-zinc-100">Enviar stock automático</div>
-                <div className="text-xs text-zinc-500">Incluye lista de productos disponibles</div>
-              </div>
-              <Switch
-                checked={formData.sendStock}
-                onCheckedChange={(v) => setFormData({...formData, sendStock: v})}
-              />
-            </div>
-
-            <div>
-              <Label>Mensaje personalizado (opcional)</Label>
+              <Label>Mensaje personalizado {!hasPro && '(opcional)'}</Label>
               <Textarea
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
-                placeholder="Usá {stock} para insertar la lista de productos"
+                placeholder={hasPro ? "Usá {stock} para insertar la lista de productos" : "Escribí el mensaje que querés enviar"}
                 className="mt-1 dark:bg-zinc-800"
                 rows={3}
               />
-              <p className="text-xs text-zinc-500 mt-1">
-                Dejalo vacío para enviar solo el stock, o escribí un mensaje y usá {'{stock}'} donde quieras la lista
-              </p>
+              {hasPro ? (
+                <p className="text-xs text-zinc-500 mt-1">
+                  Dejalo vacío para enviar solo el stock, o escribí un mensaje y usá {'{stock}'} donde quieras la lista
+                </p>
+              ) : (
+                <p className="text-xs text-zinc-500 mt-1">
+                  Este mensaje se enviará cuando hagas clic en "Enviar ahora"
+                </p>
+              )}
             </div>
           </div>
 
