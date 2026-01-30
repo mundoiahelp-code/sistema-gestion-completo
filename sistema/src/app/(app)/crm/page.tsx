@@ -96,6 +96,7 @@ interface ChatConversation {
   category?: string;
   notes?: string;
   resolved?: boolean;
+  unreadCount?: number; // Contador de mensajes no leídos
 }
 
 interface ChatMessageItem {
@@ -472,6 +473,7 @@ function CRMPageContent() {
             category: msg.category || undefined,
             notes: msg.notes || undefined,
             resolved: msg.resolved || false,
+            unreadCount: 0, // Inicializar contador
           };
         }
         
@@ -504,13 +506,26 @@ function CRMPageContent() {
         }
       });
 
-      // Ordenar mensajes y actualizar último mensaje
+      // Ordenar mensajes y actualizar último mensaje + contar no leídos
       Object.values(grouped).forEach(conv => {
         conv.messages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
         if (conv.messages.length > 0) {
           const last = conv.messages[conv.messages.length - 1];
           conv.lastMessage = last.message;
           conv.lastMessageTime = last.timestamp;
+          
+          // Contar mensajes del cliente sin respuesta (no leídos)
+          let unreadCount = 0;
+          for (let i = conv.messages.length - 1; i >= 0; i--) {
+            const msg = conv.messages[i];
+            if (msg.isFromCustomer) {
+              unreadCount++;
+            } else {
+              // Si encontramos una respuesta, paramos de contar
+              break;
+            }
+          }
+          conv.unreadCount = unreadCount;
         }
       });
 
@@ -990,6 +1005,14 @@ function CRMPageContent() {
                     onClick={() => {
                       setSelectedChat(conv.customerPhone);
                       setIsUserScrolling(false); // Reset scroll al cambiar de chat
+                      // Marcar mensajes como leídos
+                      setConversations(prev =>
+                        prev.map(c =>
+                          c.customerPhone === conv.customerPhone
+                            ? { ...c, unreadCount: 0 }
+                            : c
+                        )
+                      );
                     }}
                     className={`p-3 border-b dark:border-zinc-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors ${
                       selectedChat === conv.customerPhone ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-l-blue-500' : ''
@@ -1005,9 +1028,18 @@ function CRMPageContent() {
                             <span className="font-medium text-sm truncate dark:text-zinc-100">{conv.customerName}</span>
                             {conv.resolved && <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />}
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-zinc-400">{formatTime(conv.lastMessageTime)}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 dark:text-zinc-400">{formatTime(conv.lastMessageTime)}</span>
+                            {conv.unreadCount && conv.unreadCount > 0 && (
+                              <div className="bg-blue-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0">
+                                {conv.unreadCount}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-zinc-400 truncate">{conv.lastMessage}</p>
+                        <p className={`text-sm text-gray-600 dark:text-zinc-400 truncate ${conv.unreadCount && conv.unreadCount > 0 ? 'font-semibold text-gray-900 dark:text-zinc-100' : ''}`}>
+                          {conv.lastMessage}
+                        </p>
                         {conv.category && (
                           <div className="mt-1">
                             {getCategoryBadge(conv.category)}
