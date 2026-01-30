@@ -221,8 +221,7 @@ export class BotController {
           id: msg.id,
           customerPhone: msg.customerPhone,
           customerName: msg.client?.name || 'Cliente',
-          originalJid: msg.originalJid || msg.customerPhone, // Incluir originalJid
-          profilePicUrl: msg.profilePicUrl || undefined, // Incluir foto de perfil
+          originalJid: msg.originalJid || msg.customerPhone,
           message: msg.message,
           response: msg.response || '',
           timestamp: msg.createdAt,
@@ -232,7 +231,7 @@ export class BotController {
           notes: msg.notes || undefined,
           resolved: msg.resolved || false,
           platform: msg.platform || 'whatsapp',
-          sentBy: msg.sentBy || undefined, // Incluir quién envió el mensaje
+          sentBy: msg.sentBy || undefined,
         }))
       });
     } catch (error) {
