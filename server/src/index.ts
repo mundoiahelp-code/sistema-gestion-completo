@@ -1,3 +1,4 @@
+// Backend del Sistema de Gestión - v1.0.1
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
