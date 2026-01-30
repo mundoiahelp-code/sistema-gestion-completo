@@ -374,20 +374,30 @@ app.get('/api/groups', async (req, res) => {
   const conn = connections.get(tenantId);
   
   if (!conn || !conn.sock) {
+    console.log(`⚠️  [${tenantId}] No hay conexión de WhatsApp`);
     return res.json({ groups: [] });
   }
 
   try {
+    console.log(`📋 [${tenantId}] Obteniendo grupos...`);
+    
     // Obtener todos los chats
     const chats = await conn.sock.groupFetchAllParticipating();
+    console.log(`📋 [${tenantId}] Total de chats:`, Object.keys(chats).length);
     
     // Filtrar solo grupos donde somos admin
     const groups = [];
+    const myJid = conn.sock.user?.id;
+    console.log(`👤 [${tenantId}] Mi JID:`, myJid);
+    
     for (const [jid, chat] of Object.entries(chats)) {
+      console.log(`🔍 [${tenantId}] Grupo:`, chat.subject, '- JID:', jid);
+      
       // Verificar si somos admin
-      const myJid = conn.sock.user?.id;
       const participants = chat.participants || [];
       const me = participants.find(p => p.id === myJid);
+      
+      console.log(`👤 [${tenantId}] Mi rol en ${chat.subject}:`, me?.admin || 'member');
       
       if (me && (me.admin === 'admin' || me.admin === 'superadmin')) {
         groups.push({
@@ -398,7 +408,7 @@ app.get('/api/groups', async (req, res) => {
       }
     }
     
-    console.log(`📋 [${tenantId}] Grupos donde soy admin: ${groups.length}`);
+    console.log(`✅ [${tenantId}] Grupos donde soy admin: ${groups.length}`);
     res.json({ groups });
   } catch (error) {
     console.error(`❌ [${tenantId}] Error obteniendo grupos:`, error.message);
