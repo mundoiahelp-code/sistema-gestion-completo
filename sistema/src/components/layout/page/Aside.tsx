@@ -28,7 +28,6 @@ function Aside() {
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState('Usuario');
   const [userColor, setUserColor] = useState('blue');
-  const [showThemeConfirm, setShowThemeConfirm] = useState(false);
   const [tenantName, setTenantName] = useState('');
   const [tenantLogo, setTenantLogo] = useState('');
   const [plan, setPlan] = useState<PlanType>('trial');
@@ -293,50 +292,27 @@ function Aside() {
 
             {/* Opciones del menú */}
             <div className="py-1">
-              {/* Toggle tema - muestra confirmación */}
-              {!showThemeConfirm ? (
-                <button
-                  onClick={() => setShowThemeConfirm(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors"
-                >
-                  {mounted && (
-                    <>
-                      {theme === 'dark' ? (
-                        <Sun className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                      ) : (
-                        <Moon className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                      )}
-                      <span className="text-sm text-[#0d0d0d] dark:text-zinc-100">
-                        {theme === 'dark' ? t('settings.lightMode') : t('settings.darkMode')}
-                      </span>
-                    </>
-                  )}
-                </button>
-              ) : (
-                <div className="px-3 py-2.5">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-                    {t('common.confirm')}?
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        toggleTheme();
-                        setShowThemeConfirm(false);
-                        setMenuOpen(false);
-                      }}
-                      className="flex-1 text-xs py-1.5 px-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg hover:opacity-90 transition-opacity"
-                    >
-                      {t('common.yes')}
-                    </button>
-                    <button
-                      onClick={() => setShowThemeConfirm(false)}
-                      className="flex-1 text-xs py-1.5 px-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg hover:opacity-90 transition-opacity"
-                    >
-                      {t('common.no')}
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Toggle tema - cambia directamente */}
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  setMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors"
+              >
+                {mounted && (
+                  <>
+                    {theme === 'dark' ? (
+                      <Sun className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    ) : (
+                      <Moon className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    )}
+                    <span className="text-sm text-[#0d0d0d] dark:text-zinc-100">
+                      {theme === 'dark' ? t('settings.lightMode') : t('settings.darkMode')}
+                    </span>
+                  </>
+                )}
+              </button>
 
               {/* Ajustes */}
               <Link
