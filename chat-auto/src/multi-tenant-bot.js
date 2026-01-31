@@ -61,9 +61,13 @@ async function saveMessage(tenantId, phone, message, response = '', contactName 
 async function shouldBotRespond(tenantId) {
   try {
     console.log(`🔍 [${tenantId}] Verificando estado del bot...`);
+    console.log(`🔍 [${tenantId}] Backend URL: ${BACKEND_URL}`);
     
     // Obtener configuración del tenant
-    const tenantResponse = await axios.get(`${BACKEND_URL}/tenants/current`, {
+    const tenantUrl = `${BACKEND_URL}/tenants/current`;
+    console.log(`🔍 [${tenantId}] GET ${tenantUrl}`);
+    
+    const tenantResponse = await axios.get(tenantUrl, {
       headers: { 'X-Tenant-ID': tenantId }
     });
     
@@ -83,7 +87,10 @@ async function shouldBotRespond(tenantId) {
     }
     
     // Verificar si el bot está activo
-    const configResponse = await axios.get(`${BACKEND_URL}/bot/public/config`, {
+    const configUrl = `${BACKEND_URL}/bot/public/config`;
+    console.log(`🔍 [${tenantId}] GET ${configUrl}`);
+    
+    const configResponse = await axios.get(configUrl, {
       headers: { 'X-Tenant-ID': tenantId }
     });
     
@@ -94,6 +101,10 @@ async function shouldBotRespond(tenantId) {
     return isActive;
   } catch (error) {
     console.error(`❌ [${tenantId}] Error verificando bot:`, error.message);
+    if (error.response) {
+      console.error(`❌ [${tenantId}] Status: ${error.response.status}`);
+      console.error(`❌ [${tenantId}] Data:`, error.response.data);
+    }
     return false;
   }
 }
