@@ -215,6 +215,9 @@ export class BotController {
         }
       });
 
+      console.log('📨 Mensajes encontrados:', messages.length);
+      console.log('📨 Primer mensaje sentBy:', messages[0]?.sentBy);
+
       res.json({
         success: true,
         messages: messages.map(msg => ({
