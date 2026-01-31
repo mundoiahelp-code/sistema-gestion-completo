@@ -465,15 +465,6 @@ function CRMPageContent() {
         // Normalizar el número para evitar duplicados
         const normalizedPhone = normalizePhoneNumber(msg.customerPhone);
         
-        // Debug: Log para ver números problemáticos
-        if (normalizedPhone.length > 13 || !normalizedPhone.startsWith('54')) {
-          console.log('⚠️ Número sospechoso:', {
-            original: msg.customerPhone,
-            normalized: normalizedPhone,
-            originalJid: msg.originalJid
-          });
-        }
-        
         if (!grouped[normalizedPhone]) {
           // Si tiene nombre del cliente, usarlo. Si no, verificar si es número válido
           let displayName = normalizedPhone;
@@ -870,7 +861,7 @@ function CRMPageContent() {
     
     // Si el número es muy largo (más de 15 dígitos), es un @lid encriptado
     if (cleaned.length > 15) {
-      return 'Número privado';
+      return `Contacto ${cleaned.substring(0, 8)}...`;
     }
     
     // Si es un número argentino (empieza con 54 y tiene 12-13 dígitos)
@@ -879,7 +870,7 @@ function CRMPageContent() {
       const country = '54';
       const rest = cleaned.substring(2); // Quitar el 54
       
-      if (rest.startsWith('9')) {
+      if (rest.startsWith('9') && rest.length >= 10) {
         // Tiene el 9 de celular
         const nine = '9';
         const area = rest.substring(1, 3); // Código de área (11, 221, etc)
@@ -894,13 +885,18 @@ function CRMPageContent() {
       }
     }
     
-    // Si tiene otro formato pero es válido (10-15 dígitos), mostrar con + al inicio
+    // Si tiene 10-15 dígitos, mostrar con + al inicio (número internacional)
     if (cleaned.length >= 10 && cleaned.length <= 15) {
+      // Formatear como número internacional genérico
+      if (cleaned.length === 13) {
+        // Formato: +XX XXX XXX XXXX
+        return `+${cleaned.substring(0, 2)} ${cleaned.substring(2, 5)} ${cleaned.substring(5, 8)} ${cleaned.substring(8)}`;
+      }
       return `+${cleaned}`;
     }
     
-    // Si no cumple ningún patrón, es probablemente un @lid
-    return 'Número privado';
+    // Si no cumple ningún patrón, mostrar como contacto genérico
+    return `Contacto ${cleaned.substring(0, 8)}`;
   };
 
   // Copiar número de teléfono al portapapeles
