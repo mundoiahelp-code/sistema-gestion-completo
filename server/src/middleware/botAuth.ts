@@ -20,7 +20,7 @@ export const authenticateBot = async (
       return res.status(401).json({ error: 'X-Tenant-ID header requerido' });
     }
 
-    console.log(`🔍 Buscando tenant: ${tenantId}`);
+    console.log(`🔍 [BOT-AUTH] Buscando tenant: ${tenantId}`);
 
     // Verificar que el tenant existe
     const tenant = await prisma.tenant.findUnique({
@@ -34,17 +34,23 @@ export const authenticateBot = async (
     });
 
     if (!tenant) {
-      console.error(`❌ Tenant no encontrado: ${tenantId}`);
-      // Listar los primeros 5 tenants para debug
+      console.error(`❌ [BOT-AUTH] Tenant no encontrado: ${tenantId}`);
+      // Listar TODOS los tenants para debug
       const tenants = await prisma.tenant.findMany({
-        take: 5,
-        select: { id: true, name: true }
+        select: { id: true, name: true, plan: true }
       });
-      console.log('📋 Tenants disponibles:', tenants.map(t => `${t.name} (${t.id})`).join(', '));
-      return res.status(401).json({ error: 'Tenant no encontrado' });
+      console.log(`📋 [BOT-AUTH] Total tenants en DB: ${tenants.length}`);
+      tenants.forEach(t => {
+        console.log(`   - ${t.name} (${t.plan}): ${t.id}`);
+      });
+      return res.status(401).json({ 
+        error: 'Tenant no encontrado',
+        tenantId,
+        availableTenants: tenants.length
+      });
     }
 
-    console.log(`✅ Tenant encontrado: ${tenant.name} (${tenant.plan})`);
+    console.log(`✅ [BOT-AUTH] Tenant encontrado: ${tenant.name} (${tenant.plan})`);
 
     // Agregar tenant al request
     (req as any).tenant = tenant;
@@ -55,7 +61,7 @@ export const authenticateBot = async (
 
     next();
   } catch (error) {
-    console.error('Error en authenticateBot:', error);
+    console.error('❌ [BOT-AUTH] Error:', error);
     res.status(500).json({ error: 'Error de autenticación' });
   }
 };
