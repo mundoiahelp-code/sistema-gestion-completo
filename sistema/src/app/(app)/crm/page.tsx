@@ -311,6 +311,7 @@ function CRMPageContent() {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastMessagesRef = useRef<{ [phone: string]: string }>({}); // Trackear último mensaje de cada chat
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastScrollTop = useRef(0);
@@ -508,6 +509,22 @@ function CRMPageContent() {
           const last = conv.messages[conv.messages.length - 1];
           conv.lastMessage = last.message;
           conv.lastMessageTime = last.timestamp;
+          
+          // Crear un ID único para el último mensaje
+          const lastMessageId = `${last.timestamp.getTime()}_${last.isFromCustomer}`;
+          const previousLastMessageId = lastMessagesRef.current[conv.customerPhone];
+          
+          // Si hay un mensaje nuevo del cliente (diferente al anterior), remover del Set de leídos
+          if (last.isFromCustomer && lastMessageId !== previousLastMessageId) {
+            setReadChats(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(conv.customerPhone);
+              return newSet;
+            });
+          }
+          
+          // Actualizar el último mensaje trackeado
+          lastMessagesRef.current[conv.customerPhone] = lastMessageId;
           
           // Si el chat está en el Set de leídos O el chat está seleccionado actualmente, mantener en 0
           if (readChats.has(conv.customerPhone) || selectedChat === conv.customerPhone) {
