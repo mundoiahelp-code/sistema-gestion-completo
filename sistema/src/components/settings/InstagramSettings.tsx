@@ -11,6 +11,53 @@ import { useTranslation } from '@/i18n/I18nProvider';
 
 export default function InstagramSettings() {
   const { t } = useTranslation();
+  
+  // MODO MANTENIMIENTO - Desactivar temporalmente
+  const MAINTENANCE_MODE = true;
+
+  if (MAINTENANCE_MODE) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Instagram className="w-5 h-5" />
+            Instagram Direct Messages
+          </CardTitle>
+          <CardDescription>
+            Conecta tu cuenta de Instagram Business para recibir y responder mensajes desde el CRM
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+            <div className="flex items-start gap-3">
+              <Loader2 className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                  <p className="font-semibold mb-2">🚧 Integración en Mantenimiento</p>
+                  <p className="text-sm">
+                    La integración con Instagram está temporalmente deshabilitada mientras configuramos los permisos necesarios con Meta/Facebook.
+                  </p>
+                  <p className="text-sm mt-2">
+                    Mientras tanto, podés usar WhatsApp para gestionar tus conversaciones.
+                  </p>
+                </AlertDescription>
+              </div>
+            </div>
+          </Alert>
+
+          <div className="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-zinc-400">
+              <strong>¿Por qué está en mantenimiento?</strong>
+            </p>
+            <p className="text-sm text-gray-500 dark:text-zinc-500 mt-1">
+              La API de Instagram requiere una configuración compleja con Facebook Developers y aprobación de permisos por parte de Meta. Estamos trabajando en simplificar este proceso.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
