@@ -415,7 +415,7 @@ function CRMPageContent() {
     // Remover todos los sufijos de WhatsApp
     let normalized = phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '');
     
-    // Remover espacios, guiones, paréntesis y otros caracteres
+    // Remover espacios, guiones, paréntesis y otros caracteres NO numéricos
     normalized = normalized.replace(/[\s\-\(\)\.]/g, '');
     
     // Si empieza con +, removerlo
@@ -424,9 +424,13 @@ function CRMPageContent() {
     // Asegurar que solo contenga números
     normalized = normalized.replace(/\D/g, '');
     
-    // Si es un número argentino (empieza con 54 y tiene 12-13 dígitos)
+    // Si el número es muy largo (más de 15 dígitos), es un @lid encriptado - devolver tal cual
+    if (normalized.length > 15) {
+      return normalized;
+    }
+    
+    // Si es un número argentino válido (empieza con 54 y tiene 12-13 dígitos)
     if (normalized.startsWith('54') && (normalized.length === 12 || normalized.length === 13)) {
-      // Formato: 5491138514845 -> mantener tal cual
       return normalized;
     }
     
@@ -442,6 +446,7 @@ function CRMPageContent() {
       }
     }
     
+    // Para cualquier otro caso, devolver tal cual (puede ser internacional)
     return normalized;
   };
 
@@ -459,6 +464,15 @@ function CRMPageContent() {
       messages.forEach((msg: any) => {
         // Normalizar el número para evitar duplicados
         const normalizedPhone = normalizePhoneNumber(msg.customerPhone);
+        
+        // Debug: Log para ver números problemáticos
+        if (normalizedPhone.length > 13 || !normalizedPhone.startsWith('54')) {
+          console.log('⚠️ Número sospechoso:', {
+            original: msg.customerPhone,
+            normalized: normalizedPhone,
+            originalJid: msg.originalJid
+          });
+        }
         
         if (!grouped[normalizedPhone]) {
           // Si tiene nombre del cliente, usarlo. Si no, verificar si es número válido
