@@ -319,7 +319,7 @@ export class BotController {
         }
       });
 
-      console.log(`✅ Mensaje guardado: ${normalizedPhone} (${intent})`);
+      console.log(`✅ Mensaje guardado: ${normalizedPhone} (${intent}) - sentBy: ${sentBy || 'null'}`);
 
       res.json({
         success: true,

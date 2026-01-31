@@ -491,13 +491,16 @@ function CRMPageContent() {
 
         // Agregar respuesta del bot si existe
         if (msg.response) {
+          // Crear un ID único basado en timestamp y contenido para evitar duplicados
+          const responseId = `${msg.id}_b_${msg.timestamp}_${msg.response.substring(0, 20)}`;
+          
           grouped[normalizedPhone].messages.push({
-            id: msg.id + '_b',
+            id: responseId,
             message: msg.response,
             timestamp: new Date(msg.timestamp),
             intent: msg.intent,
             isFromCustomer: false,
-            sentBy: msg.sentBy, // Incluir quién envió el mensaje
+            sentBy: msg.sentBy || undefined, // IMPORTANTE: Mantener el sentBy del servidor
           });
         }
       });
@@ -566,7 +569,10 @@ function CRMPageContent() {
     if (!newMessage.trim() || !selectedChat) return;
 
     const messageToSend = newMessage;
-    const tempId = `temp_${Date.now()}`;
+    const now = new Date();
+    const tempTimestamp = now.getTime();
+    // ID temporal basado en timestamp y contenido
+    const tempId = `temp_${tempTimestamp}_${messageToSend.substring(0, 20)}`;
     
     // Limpiar input INMEDIATAMENTE
     setNewMessage('');
@@ -582,14 +588,14 @@ function CRMPageContent() {
             {
               id: tempId,
               message: messageToSend,
-              timestamp: new Date(),
+              timestamp: now,
               intent: 'MANUAL_CRM',
               isFromCustomer: false,
-              sentBy: userName || 'Usuario',
+              sentBy: userName || 'Usuario', // IMPORTANTE: Guardar el nombre del usuario
             }
           ],
           lastMessage: messageToSend,
-          lastMessageTime: new Date(),
+          lastMessageTime: now,
         };
       }
       return conv;
@@ -635,7 +641,7 @@ function CRMPageContent() {
                 intent: 'MANUAL_CRM',
                 status: 'responded',
                 platform,
-                sentBy: userName || 'Usuario',
+                sentBy: userName || 'Usuario', // IMPORTANTE: Guardar quién envió
               },
               { headers: { Authorization: `Bearer ${token}` } }
             );
