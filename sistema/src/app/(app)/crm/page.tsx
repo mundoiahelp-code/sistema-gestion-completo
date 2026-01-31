@@ -638,12 +638,9 @@ function CRMPageContent() {
                 sentBy: userName || 'Usuario',
               },
               { headers: { Authorization: `Bearer ${token}` } }
-            ).then(() => {
-              // Esperar 2 segundos antes de recargar para que el servidor procese
-              setTimeout(() => {
-                loadConversations();
-              }, 2000);
-            });
+            );
+            // NO recargar inmediatamente - el mensaje ya está en la UI con optimistic update
+            // Se recargará automáticamente cada 5 segundos de todas formas
           }
         })
         .catch(error => {
