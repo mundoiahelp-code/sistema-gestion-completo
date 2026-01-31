@@ -564,72 +564,102 @@ function CRMPageContent() {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat) return;
-    setSending(true);
 
     const messageToSend = newMessage;
+    const tempId = `temp_${Date.now()}`;
+    
+    // Limpiar input INMEDIATAMENTE
     setNewMessage('');
+    setSending(true);
 
+    // OPTIMISTIC UPDATE: Agregar mensaje a la UI inmediatamente
+    setConversations(prev => prev.map(conv => {
+      if (conv.customerPhone === selectedChat) {
+        return {
+          ...conv,
+          messages: [
+            ...conv.messages,
+            {
+              id: tempId,
+              message: messageToSend,
+              timestamp: new Date(),
+              intent: 'MANUAL_CRM',
+              isFromCustomer: false,
+              sentBy: userName || 'Usuario',
+            }
+          ],
+          lastMessage: messageToSend,
+          lastMessageTime: new Date(),
+        };
+      }
+      return conv;
+    }));
+
+    // Marcar chat como leído inmediatamente
+    setReadChats(prev => new Set(prev).add(selectedChat));
+
+    // Scroll inmediato
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+
+    // Liberar el input inmediatamente
+    setSending(false);
+
+    // Enviar en segundo plano
     try {
       const token = Cookies.get('accessToken') || Cookies.get('token');
-      
-      // Obtener el originalJid de la conversación seleccionada
       const selectedConv = conversations.find(c => c.customerPhone === selectedChat);
       const phoneToSend = selectedConv?.originalJid || selectedChat;
       
-      console.log('📤 Enviando a:', phoneToSend, '(original:', selectedChat, ')');
-      
-      // Determinar endpoint según la plataforma
       const endpoint = platform === 'instagram' 
         ? `${process.env.NEXT_PUBLIC_API_URL}/instagram/send`
         : `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/send`;
       
       const payload = platform === 'instagram'
         ? { recipientId: selectedChat, message: messageToSend }
-        : { phone: phoneToSend, message: messageToSend }; // Usar originalJid
+        : { phone: phoneToSend, message: messageToSend };
 
-      const response = await axios.post(
-        endpoint,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data.success) {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/bot/messages`,
-          {
-            customerPhone: selectedChat,
-            originalJid: phoneToSend, // Guardar el JID usado
-            message: '[CRM]',
-            response: messageToSend,
-            intent: 'MANUAL_CRM',
-            status: 'responded',
-            platform,
-            sentBy: userName || 'Usuario', // Agregar quién envió el mensaje
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        // Marcar chat como leído al enviar mensaje
-        setReadChats(prev => new Set(prev).add(selectedChat));
-
-        await loadConversations();
-        
-        // Forzar scroll al fondo después de enviar mensaje
-        setIsUserScrolling(false);
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 200);
-      }
-    } catch (error: any) {
-      console.error('Error enviando:', error);
-      // Solo mostrar error si realmente falló el envío
-      if (!error.response || error.response.status >= 500) {
-        const errorMsg = error.response?.data?.error || 'Error al enviar mensaje';
-        alert(errorMsg);
-      }
-      // Si es error 400 pero el mensaje se envió, ignorar
-    } finally {
-      setSending(false);
+      // Enviar mensaje (sin await para no bloquear)
+      axios.post(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } })
+        .then(response => {
+          if (response.data.success) {
+            // Guardar en BD en segundo plano
+            return axios.post(
+              `${process.env.NEXT_PUBLIC_API_URL}/bot/messages`,
+              {
+                customerPhone: selectedChat,
+                originalJid: phoneToSend,
+                message: '[CRM]',
+                response: messageToSend,
+                intent: 'MANUAL_CRM',
+                status: 'responded',
+                platform,
+                sentBy: userName || 'Usuario',
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+          }
+        })
+        .catch(error => {
+          console.error('Error enviando:', error);
+          // Si falla, mostrar error pero el mensaje ya está en la UI
+          if (!error.response || error.response.status >= 500) {
+            alert('Error al enviar mensaje. Intenta de nuevo.');
+            // Remover mensaje temporal si falló
+            setConversations(prev => prev.map(conv => {
+              if (conv.customerPhone === selectedChat) {
+                return {
+                  ...conv,
+                  messages: conv.messages.filter(m => m.id !== tempId)
+                };
+              }
+              return conv;
+            }));
+          }
+        });
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
