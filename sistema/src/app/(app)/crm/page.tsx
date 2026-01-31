@@ -509,22 +509,35 @@ function CRMPageContent() {
           conv.lastMessage = last.message;
           conv.lastMessageTime = last.timestamp;
           
-          // Contar mensajes no leídos: solo si el chat NO fue marcado como leído Y el último mensaje es del cliente
-          if (!readChats.has(conv.customerPhone) && last.isFromCustomer) {
-            // Contar mensajes del cliente consecutivos desde el final
+          // Si el último mensaje ES del cliente, remover del Set de leídos
+          if (last.isFromCustomer) {
+            setReadChats(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(conv.customerPhone);
+              return newSet;
+            });
+          }
+          
+          // Si el chat fue marcado como leído manualmente, mantener unreadCount en 0
+          if (readChats.has(conv.customerPhone)) {
+            conv.unreadCount = 0;
+          } 
+          // Si el último mensaje NO es del cliente, no hay mensajes sin leer
+          else if (!last.isFromCustomer) {
+            conv.unreadCount = 0;
+          }
+          // Si el último mensaje ES del cliente, contar mensajes consecutivos
+          else {
             let unreadCount = 0;
             for (let i = conv.messages.length - 1; i >= 0; i--) {
               const msg = conv.messages[i];
               if (msg.isFromCustomer) {
                 unreadCount++;
               } else {
-                // Si encontramos una respuesta, paramos de contar
                 break;
               }
             }
             conv.unreadCount = unreadCount;
-          } else {
-            conv.unreadCount = 0;
           }
         }
       });
@@ -601,8 +614,12 @@ function CRMPageContent() {
       }
     } catch (error: any) {
       console.error('Error enviando:', error);
-      const errorMsg = error.response?.data?.error || 'Error al enviar mensaje';
-      alert(errorMsg);
+      // Solo mostrar error si realmente falló el envío
+      if (!error.response || error.response.status >= 500) {
+        const errorMsg = error.response?.data?.error || 'Error al enviar mensaje';
+        alert(errorMsg);
+      }
+      // Si es error 400 pero el mensaje se envió, ignorar
     } finally {
       setSending(false);
     }
