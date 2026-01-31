@@ -337,8 +337,6 @@ function CRMPageContent() {
 
   useEffect(() => {
     loadConversations();
-  useEffect(() => {
-    loadConversations();
     const interval = setInterval(loadConversations, 5000);
     return () => clearInterval(interval);
   }, [platform]);
