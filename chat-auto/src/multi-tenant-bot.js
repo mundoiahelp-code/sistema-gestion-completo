@@ -165,6 +165,7 @@ async function initWhatsAppForTenant(tenantId) {
         let phoneNumber = null;
         let originalJid = msg.key.remoteJid;
         let contactName = msg.pushName || msg.verifiedBizName || null;
+        let isPrivateNumber = false; // Flag para números privados
         
         console.log(`🔍 [${tenantId}] ========== NUEVO MENSAJE ==========`);
         console.log(`🔍 [${tenantId}] RAW JID:`, originalJid);
@@ -207,11 +208,18 @@ async function initWhatsAppForTenant(tenantId) {
             }
           }
           
-          // ÚLTIMO RECURSO: Usar el @lid completo para poder responder
+          // Si NO se pudo resolver, marcar como número privado
           if (!phoneNumber) {
+            isPrivateNumber = true;
             phoneNumber = originalJid.replace('@lid', '');
-            console.log(`⚠️  [${tenantId}] No se pudo resolver, usando @lid completo para responder`);
-            console.log(`⚠️  [${tenantId}] originalJid guardado:`, originalJid);
+            console.log(`⚠️  [${tenantId}] NO SE PUDO RESOLVER @lid - Marcando como privado`);
+            console.log(`⚠️  [${tenantId}] Se usará pushName como identificador: ${contactName}`);
+            
+            // Si no hay pushName, no guardar el mensaje
+            if (!contactName) {
+              console.log(`❌ [${tenantId}] Sin pushName - IGNORANDO mensaje de @lid sin resolver`);
+              continue;
+            }
           }
         }
         
@@ -228,7 +236,7 @@ async function initWhatsAppForTenant(tenantId) {
         
         const cleanPhone = normalizePhone(phoneNumber || originalJid);
         
-        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}`);
+        console.log(`📨 [${tenantId}] FINAL - Phone: ${cleanPhone}, Name: ${contactName || 'Sin nombre'}, Private: ${isPrivateNumber}`);
         console.log(`📨 [${tenantId}] Mensaje: ${text.substring(0, 30)}...`);
         console.log(`🔍 [${tenantId}] ========================================`);
 
@@ -264,7 +272,11 @@ app.get('/api/health', (req, res) => {
 app.post('/api/connect', async (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   
+  console.log(`📥 [CONNECT] Headers:`, req.headers);
+  console.log(`📥 [CONNECT] Tenant ID:`, tenantId);
+  
   if (!tenantId) {
+    console.error(`❌ [CONNECT] Falta X-Tenant-ID header`);
     return res.status(400).json({ error: 'X-Tenant-ID header requerido' });
   }
 
@@ -297,7 +309,11 @@ app.post('/api/connect', async (req, res) => {
 app.get('/api/qr', async (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   
+  console.log(`📥 [QR] Headers:`, req.headers);
+  console.log(`📥 [QR] Tenant ID:`, tenantId);
+  
   if (!tenantId) {
+    console.error(`❌ [QR] Falta X-Tenant-ID header`);
     return res.status(400).json({ error: 'X-Tenant-ID header requerido' });
   }
 
@@ -361,7 +377,11 @@ app.post('/api/send-message', async (req, res) => {
 app.post('/api/logout', async (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   
+  console.log(`📥 [LOGOUT] Headers:`, req.headers);
+  console.log(`📥 [LOGOUT] Tenant ID:`, tenantId);
+  
   if (!tenantId) {
+    console.error(`❌ [LOGOUT] Falta X-Tenant-ID header`);
     return res.status(400).json({ error: 'X-Tenant-ID header requerido' });
   }
 
@@ -389,7 +409,11 @@ app.post('/api/logout', async (req, res) => {
 app.get('/api/groups', async (req, res) => {
   const tenantId = req.headers['x-tenant-id'];
   
+  console.log(`📥 [GROUPS] Headers:`, req.headers);
+  console.log(`📥 [GROUPS] Tenant ID:`, tenantId);
+  
   if (!tenantId) {
+    console.error(`❌ [GROUPS] Falta X-Tenant-ID header`);
     return res.status(400).json({ error: 'X-Tenant-ID header requerido' });
   }
 

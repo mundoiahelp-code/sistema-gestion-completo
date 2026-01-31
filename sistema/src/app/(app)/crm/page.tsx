@@ -157,7 +157,6 @@ function CRMPageContent() {
   const [checkingConnection, setCheckingConnection] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [showResolved, setShowResolved] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
   const [tempNotes, setTempNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -359,13 +358,8 @@ function CRMPageContent() {
       filtered = filtered.filter(conv => conv.category === categoryFilter);
     }
 
-    // Filtro de resueltos
-    if (!showResolved) {
-      filtered = filtered.filter(conv => !conv.resolved);
-    }
-
     setFilteredConversations(filtered);
-  }, [conversations, searchTerm, categoryFilter, showResolved]);
+  }, [conversations, searchTerm, categoryFilter]);
 
   // Scroll al último mensaje cuando se abre un chat o llegan mensajes nuevos
   useEffect(() => {
@@ -515,9 +509,9 @@ function CRMPageContent() {
           conv.lastMessage = last.message;
           conv.lastMessageTime = last.timestamp;
           
-          // Solo contar no leídos si el chat NO fue marcado como leído
-          if (!readChats.has(conv.customerPhone)) {
-            // Contar mensajes del cliente sin respuesta (no leídos)
+          // Contar mensajes no leídos: solo si el chat NO fue marcado como leído Y el último mensaje es del cliente
+          if (!readChats.has(conv.customerPhone) && last.isFromCustomer) {
+            // Contar mensajes del cliente consecutivos desde el final
             let unreadCount = 0;
             for (let i = conv.messages.length - 1; i >= 0; i--) {
               const msg = conv.messages[i];
@@ -538,18 +532,6 @@ function CRMPageContent() {
       const arr = Object.values(grouped).sort((a, b) => 
         b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
       );
-      
-      // Detectar mensajes nuevos y remover del Set de leídos si hay nuevos mensajes del cliente
-      arr.forEach(conv => {
-        if (conv.unreadCount && conv.unreadCount > 0) {
-          // Si hay mensajes no leídos, asegurarse de que NO esté en readChats
-          setReadChats(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(conv.customerPhone);
-            return newSet;
-          });
-        }
-      });
       
       setConversations(arr);
       setLoading(false);
@@ -605,6 +587,9 @@ function CRMPageContent() {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
+        // Marcar chat como leído al enviar mensaje
+        setReadChats(prev => new Set(prev).add(selectedChat));
 
         await loadConversations();
         
@@ -999,13 +984,16 @@ function CRMPageContent() {
                   </SelectContent>
                 </Select>
                 <Button
-                  variant={showResolved ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
                   className="text-xs h-8"
-                  onClick={() => setShowResolved(!showResolved)}
+                  onClick={() => {
+                    setLoading(true);
+                    loadConversations();
+                  }}
                 >
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Resueltos
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  Actualizar
                 </Button>
               </div>
             </div>
