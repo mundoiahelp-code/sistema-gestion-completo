@@ -1046,7 +1046,7 @@ function CRMPageContent() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-500 dark:text-zinc-400">{formatTime(conv.lastMessageTime)}</span>
-                            {conv.unreadCount && conv.unreadCount > 0 && (
+                            {(conv.unreadCount ?? 0) > 0 && (
                               <div className="bg-blue-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0">
                                 {conv.unreadCount}
                               </div>
