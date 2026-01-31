@@ -509,17 +509,8 @@ function CRMPageContent() {
           conv.lastMessage = last.message;
           conv.lastMessageTime = last.timestamp;
           
-          // Si el último mensaje ES del cliente, remover del Set de leídos
-          if (last.isFromCustomer) {
-            setReadChats(prev => {
-              const newSet = new Set(prev);
-              newSet.delete(conv.customerPhone);
-              return newSet;
-            });
-          }
-          
-          // Si el chat fue marcado como leído manualmente, mantener unreadCount en 0
-          if (readChats.has(conv.customerPhone)) {
+          // Si el chat está en el Set de leídos O el chat está seleccionado actualmente, mantener en 0
+          if (readChats.has(conv.customerPhone) || selectedChat === conv.customerPhone) {
             conv.unreadCount = 0;
           } 
           // Si el último mensaje NO es del cliente, no hay mensajes sin leer
