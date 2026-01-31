@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Instagram, CheckCircle, XCircle, ExternalLink, Copy, Check } from 'lucide-react';
+import { Instagram, CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useTranslation } from '@/i18n/I18nProvider';
@@ -17,29 +15,31 @@ export default function InstagramSettings() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [username, setUsername] = useState('');
-  
-  // Formulario de conexión
-  const [pageId, setPageId] = useState('');
-  const [pageAccessToken, setPageAccessToken] = useState('');
-  const [appId, setAppId] = useState('');
-  const [appSecret, setAppSecret] = useState('');
-  
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [copiedWebhook, setCopiedWebhook] = useState(false);
-  const [copiedToken, setCopiedToken] = useState(false);
 
-  const webhookUrl = `${process.env.NEXT_PUBLIC_API_URL}/instagram/webhook`;
-  const verifyToken = 'mi_token_secreto_123'; // Debe coincidir con el del servidor
+  // Facebook App Config - DEBES CREAR UNA APP EN developers.facebook.com
+  const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || ''; // Configurar en .env
+  const REDIRECT_URI = `${window.location.origin}/api/instagram/callback`;
 
   useEffect(() => {
     checkStatus();
+    
+    // Verificar si venimos del callback de OAuth
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const errorParam = urlParams.get('error');
+    
+    if (code) {
+      handleOAuthCallback(code);
+    } else if (errorParam) {
+      setError('Error al conectar con Instagram: ' + errorParam);
+    }
   }, []);
 
   const checkStatus = async () => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/instagram/status`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -53,46 +53,109 @@ export default function InstagramSettings() {
     }
   };
 
-  const handleConnect = async () => {
-    if (!pageId || !pageAccessToken) {
-      setError(t('settings.instagramSettings.pageIdRequired'));
+  const handleConnectWithOAuth = () => {
+    if (!FACEBOOK_APP_ID) {
+      setError('Facebook App ID no configurado. Contacta al administrador.');
       return;
     }
 
     setConnecting(true);
-    setError('');
-    setSuccess('');
+    
+    // Permisos necesarios para Instagram
+    const permissions = [
+      'pages_show_list',
+      'pages_messaging',
+      'instagram_basic',
+      'instagram_manage_messages',
+      'pages_manage_metadata'
+    ].join(',');
 
+    // URL de OAuth de Facebook
+    const oauthUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
+      `client_id=${FACEBOOK_APP_ID}` +
+      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+      `&scope=${permissions}` +
+      `&response_type=code` +
+      `&state=${Math.random().toString(36).substring(7)}`;
+
+    // Abrir ventana de OAuth
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    
+    const popup = window.open(
+      oauthUrl,
+      'Instagram OAuth',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    // Escuchar el mensaje del callback
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'instagram-oauth-success') {
+        popup?.close();
+        setSuccess('¡Instagram conectado exitosamente!');
+        checkStatus();
+        setConnecting(false);
+      } else if (event.data.type === 'instagram-oauth-error') {
+        popup?.close();
+        setError(event.data.error || 'Error al conectar Instagram');
+        setConnecting(false);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    
+    // Limpiar listener cuando se cierre el popup
+    const checkPopup = setInterval(() => {
+      if (popup?.closed) {
+        clearInterval(checkPopup);
+        window.removeEventListener('message', handleMessage);
+        setConnecting(false);
+      }
+    }, 500);
+  };
+
+  const handleOAuthCallback = async (code: string) => {
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/instagram/connect`,
-        { pageId, pageAccessToken, appId, appSecret },
+        `${process.env.NEXT_PUBLIC_API_URL}/instagram/oauth-callback`,
+        { code, redirectUri: REDIRECT_URI },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        setSuccess(response.data.message);
-        setConnected(true);
-        setUsername(pageId);
-        // Limpiar formulario
-        setPageId('');
-        setPageAccessToken('');
-        setAppId('');
-        setAppSecret('');
+        // Notificar a la ventana padre
+        if (window.opener) {
+          window.opener.postMessage({ type: 'instagram-oauth-success' }, window.location.origin);
+          window.close();
+        } else {
+          setSuccess('¡Instagram conectado exitosamente!');
+          checkStatus();
+          // Limpiar URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       }
     } catch (error: any) {
-      setError(error.response?.data?.error || t('settings.instagramSettings.connectError'));
-    } finally {
-      setConnecting(false);
+      const errorMsg = error.response?.data?.error || 'Error al conectar Instagram';
+      if (window.opener) {
+        window.opener.postMessage({ type: 'instagram-oauth-error', error: errorMsg }, window.location.origin);
+        window.close();
+      } else {
+        setError(errorMsg);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
   };
 
   const handleDisconnect = async () => {
-    if (!confirm(t('settings.instagramSettings.disconnectConfirm'))) return;
+    if (!confirm('¿Estás seguro de desconectar Instagram?')) return;
 
     try {
-      const token = Cookies.get('token');
+      const token = Cookies.get('accessToken') || Cookies.get('token');
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/instagram/disconnect`,
         {},
@@ -101,24 +164,9 @@ export default function InstagramSettings() {
 
       setConnected(false);
       setUsername('');
-      setSuccess(t('settings.instagramSettings.disconnectSuccess'));
+      setSuccess('Instagram desconectado correctamente');
     } catch (error) {
-      setError(t('settings.instagramSettings.disconnectError'));
-    }
-  };
-
-  const copyToClipboard = async (text: string, type: 'webhook' | 'token') => {
-    try {
-      await navigator.clipboard.writeText(text);
-      if (type === 'webhook') {
-        setCopiedWebhook(true);
-        setTimeout(() => setCopiedWebhook(false), 2000);
-      } else {
-        setCopiedToken(true);
-        setTimeout(() => setCopiedToken(false), 2000);
-      }
-    } catch (error) {
-      console.error('Error copiando:', error);
+      setError('Error al desconectar Instagram');
     }
   };
 
@@ -128,11 +176,14 @@ export default function InstagramSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Instagram className="w-5 h-5" />
-            Instagram
+            Instagram Direct Messages
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500">{t('common.loading')}</p>
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <p className="text-sm text-gray-500">Cargando...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -143,10 +194,10 @@ export default function InstagramSettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Instagram className="w-5 h-5" />
-          {t('settings.instagramSettings.title')}
+          Instagram Direct Messages
         </CardTitle>
         <CardDescription>
-          {t('settings.instagramSettings.description')}
+          Conecta tu cuenta de Instagram Business para recibir y responder mensajes desde el CRM
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -157,7 +208,7 @@ export default function InstagramSettings() {
               <>
                 <CheckCircle className="w-5 h-5 text-green-500" />
                 <div>
-                  <p className="font-medium dark:text-zinc-100">{t('settings.instagramSettings.connected')}</p>
+                  <p className="font-medium dark:text-zinc-100">Instagram Conectado</p>
                   {username && <p className="text-sm text-gray-500 dark:text-zinc-400">@{username}</p>}
                 </div>
               </>
@@ -165,26 +216,26 @@ export default function InstagramSettings() {
               <>
                 <XCircle className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="font-medium dark:text-zinc-100">{t('settings.instagramSettings.notConnected')}</p>
-                  <p className="text-sm text-gray-500 dark:text-zinc-400">{t('settings.instagramSettings.connectToStart')}</p>
+                  <p className="font-medium dark:text-zinc-100">Instagram No Conectado</p>
+                  <p className="text-sm text-gray-500 dark:text-zinc-400">Conecta tu cuenta para empezar</p>
                 </div>
               </>
             )}
           </div>
           {connected && (
             <Button variant="outline" size="sm" onClick={handleDisconnect}>
-              {t('settings.instagramSettings.disconnect')}
+              Desconectar
             </Button>
           )}
         </div>
 
         {/* Mensajes de error/éxito */}
         {error && (
-          <Alert variant="destructive" className="border-red-500 bg-red-50">
+          <Alert variant="destructive" className="border-red-500 bg-red-50 dark:bg-red-900/20">
             <div className="flex items-start gap-3">
               <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <AlertDescription className="text-red-800 font-medium">
+                <AlertDescription className="text-red-800 dark:text-red-200 font-medium">
                   {error}
                 </AlertDescription>
               </div>
@@ -192,11 +243,11 @@ export default function InstagramSettings() {
           </Alert>
         )}
         {success && (
-          <Alert className="border-green-500 bg-green-50">
+          <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
             <div className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <AlertDescription className="text-green-800 font-medium">
+                <AlertDescription className="text-green-800 dark:text-green-200 font-medium">
                   {success}
                 </AlertDescription>
               </div>
@@ -204,173 +255,60 @@ export default function InstagramSettings() {
           </Alert>
         )}
 
-        {/* Formulario de conexión */}
+        {/* Botón de conexión */}
         {!connected && (
-          <>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="pageId">{t('settings.instagramSettings.pageId')}</Label>
-                <Input
-                  id="pageId"
-                  value={pageId}
-                  onChange={(e) => setPageId(e.target.value)}
-                  placeholder="123456789012345"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="pageAccessToken">{t('settings.instagramSettings.pageAccessToken')}</Label>
-                <Input
-                  id="pageAccessToken"
-                  type="password"
-                  value={pageAccessToken}
-                  onChange={(e) => setPageAccessToken(e.target.value)}
-                  placeholder="EAAxxxxxxxxxx..."
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="appId">{t('settings.instagramSettings.appId')}</Label>
-                <Input
-                  id="appId"
-                  value={appId}
-                  onChange={(e) => setAppId(e.target.value)}
-                  placeholder="123456789012345"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="appSecret">{t('settings.instagramSettings.appSecret')}</Label>
-                <Input
-                  id="appSecret"
-                  type="password"
-                  value={appSecret}
-                  onChange={(e) => setAppSecret(e.target.value)}
-                  placeholder="xxxxxxxxxxxxxxxx"
-                />
-              </div>
-
-              <Button
-                onClick={handleConnect}
-                disabled={connecting || !pageId || !pageAccessToken}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                {connecting ? t('settings.instagramSettings.connecting') : t('settings.instagramSettings.connectInstagram')}
-              </Button>
-            </div>
-
-            {/* Botón de instrucciones */}
+          <div className="space-y-4">
             <Button
-              variant="outline"
-              onClick={() => setShowInstructions(!showInstructions)}
-              className="w-full"
+              onClick={handleConnectWithOAuth}
+              disabled={connecting || !FACEBOOK_APP_ID}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
             >
-              {showInstructions ? t('settings.instagramSettings.hideInstructions') : t('settings.instagramSettings.showInstructions')}
+              {connecting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Conectando...
+                </>
+              ) : (
+                <>
+                  <Instagram className="w-4 h-4 mr-2" />
+                  Conectar con Instagram
+                </>
+              )}
             </Button>
 
-            {/* Instrucciones */}
-            {showInstructions && (
-              <div className="space-y-4 p-4 bg-blue-50 rounded-lg text-sm">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <ExternalLink className="w-4 h-4" />
-                  {t('settings.instagramSettings.instructionsTitle')}
-                </h4>
-                
-                <div className="space-y-3">
-                  <div>
-                    <p className="font-medium mb-1">{t('settings.instagramSettings.step1Title')}</p>
-                    <p className="text-gray-600">
-                      {t('settings.instagramSettings.step1Desc')}{' '}
-                      <a
-                        href="https://developers.facebook.com/apps"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        Facebook Developers
-                      </a>
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-medium mb-1">{t('settings.instagramSettings.step2Title')}</p>
-                    <p className="text-gray-600">
-                      {t('settings.instagramSettings.step2Desc')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-medium mb-1">{t('settings.instagramSettings.step3Title')}</p>
-                    <p className="text-gray-600">
-                      {t('settings.instagramSettings.step3Desc')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-medium mb-1">{t('settings.instagramSettings.step4Title')}</p>
-                    <p className="text-gray-600">
-                      {t('settings.instagramSettings.step4Desc')}
-                      <code className="block mt-1 p-2 bg-white dark:bg-zinc-700 rounded text-xs dark:text-zinc-200">
-                        pages_messaging, instagram_basic, instagram_manage_messages
-                      </code>
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-medium mb-1">{t('settings.instagramSettings.step5Title')}</p>
-                    <p className="text-gray-600 mb-2">
-                      {t('settings.instagramSettings.step5Desc')}
-                    </p>
-                    <div className="flex items-center gap-2 p-2 bg-white dark:bg-zinc-700 rounded">
-                      <code className="flex-1 text-xs break-all dark:text-zinc-200">{webhookUrl}</code>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(webhookUrl, 'webhook')}
-                      >
-                        {copiedWebhook ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    <p className="text-gray-600 mt-2 mb-2">{t('settings.instagramSettings.verifyToken')}</p>
-                    <div className="flex items-center gap-2 p-2 bg-white dark:bg-zinc-700 rounded">
-                      <code className="flex-1 text-xs dark:text-zinc-200">{verifyToken}</code>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(verifyToken, 'token')}
-                      >
-                        {copiedToken ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    <p className="text-gray-600 mt-2">
-                      {t('settings.instagramSettings.subscribeFields')} <code className="bg-white dark:bg-zinc-700 px-1 rounded dark:text-zinc-200">messages</code> {t('settings.instagramSettings.and')}{' '}
-                      <code className="bg-white dark:bg-zinc-700 px-1 rounded dark:text-zinc-200">messaging_postbacks</code>
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-medium mb-1">{t('settings.instagramSettings.step6Title')}</p>
-                    <p className="text-gray-600">
-                      {t('settings.instagramSettings.step6Desc')}
-                    </p>
-                  </div>
-                </div>
-
-                <Alert>
-                  <AlertDescription className="text-xs">
-                    <strong>{t('settings.instagramSettings.noteTitle')}</strong> {t('settings.instagramSettings.noteDesc')}
-                  </AlertDescription>
-                </Alert>
-              </div>
+            {!FACEBOOK_APP_ID && (
+              <Alert>
+                <AlertDescription className="text-sm">
+                  <strong>Configuración requerida:</strong> El administrador debe configurar FACEBOOK_APP_ID en las variables de entorno.
+                </AlertDescription>
+              </Alert>
             )}
-          </>
+
+            {/* Información */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm space-y-2">
+              <p className="font-medium flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                <ExternalLink className="w-4 h-4" />
+                ¿Cómo funciona?
+              </p>
+              <ul className="space-y-1 text-blue-800 dark:text-blue-200 list-disc list-inside">
+                <li>Haz clic en "Conectar con Instagram"</li>
+                <li>Inicia sesión con tu cuenta de Facebook</li>
+                <li>Selecciona la página de Facebook vinculada a tu Instagram Business</li>
+                <li>Autoriza los permisos necesarios</li>
+                <li>¡Listo! Los mensajes aparecerán en el CRM</li>
+              </ul>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+                <strong>Nota:</strong> Necesitas una cuenta de Instagram Business vinculada a una página de Facebook.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Info adicional cuando está conectado */}
         {connected && (
-          <div className="p-4 bg-green-50 rounded-lg text-sm">
-            <p className="text-green-700">
-              ✓ {t('settings.instagramSettings.connectedInfo')}
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
+            <p className="text-green-700 dark:text-green-200">
+              ✓ Tu cuenta de Instagram está conectada. Los mensajes directos aparecerán automáticamente en el CRM.
             </p>
           </div>
         )}

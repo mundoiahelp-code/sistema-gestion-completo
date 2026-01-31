@@ -8,6 +8,7 @@ import {
   getUserInfo,
   verifyWebhook,
   handleWebhook,
+  oauthCallback,
 } from '../controllers/instagram.controller';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use(authenticate);
 
 router.get('/status', getStatus);
 router.post('/connect', connect);
+router.post('/oauth-callback', oauthCallback); // Nueva ruta OAuth
 router.post('/disconnect', disconnect);
 router.post('/send', sendMessage);
 router.get('/user/:userId', getUserInfo);
