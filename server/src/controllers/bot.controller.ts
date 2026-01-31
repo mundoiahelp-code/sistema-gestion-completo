@@ -231,7 +231,7 @@ export class BotController {
           notes: msg.notes || undefined,
           resolved: msg.resolved || false,
           platform: msg.platform || 'whatsapp',
-          sentBy: msg.sentBy || undefined,
+          sentBy: msg.sentBy || (msg.response ? 'Sistema' : undefined), // Si hay respuesta pero no sentBy, es del sistema
         }))
       });
     } catch (error) {
