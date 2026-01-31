@@ -337,6 +337,8 @@ function CRMPageContent() {
 
   useEffect(() => {
     loadConversations();
+  useEffect(() => {
+    loadConversations();
     const interval = setInterval(loadConversations, 5000);
     return () => clearInterval(interval);
   }, [platform]);
@@ -638,7 +640,12 @@ function CRMPageContent() {
                 sentBy: userName || 'Usuario',
               },
               { headers: { Authorization: `Bearer ${token}` } }
-            );
+            ).then(() => {
+              // Esperar 2 segundos antes de recargar para que el servidor procese
+              setTimeout(() => {
+                loadConversations();
+              }, 2000);
+            });
           }
         })
         .catch(error => {
