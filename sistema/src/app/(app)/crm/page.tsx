@@ -105,7 +105,6 @@ interface ChatMessageItem {
   timestamp: Date;
   intent: string;
   isFromCustomer: boolean;
-  sentBy?: string; // Nombre del usuario que envió el mensaje desde el CRM
 }
 
 const DEFAULT_CATEGORIES = [
@@ -416,14 +415,32 @@ function CRMPageContent() {
     // Remover todos los sufijos de WhatsApp
     let normalized = phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '');
     
-    // Remover espacios, guiones y otros caracteres
-    normalized = normalized.replace(/[\s\-\(\)]/g, '');
+    // Remover espacios, guiones, paréntesis y otros caracteres
+    normalized = normalized.replace(/[\s\-\(\)\.]/g, '');
     
     // Si empieza con +, removerlo
     normalized = normalized.replace(/^\+/, '');
     
     // Asegurar que solo contenga números
     normalized = normalized.replace(/\D/g, '');
+    
+    // Si es un número argentino (empieza con 54 y tiene 12-13 dígitos)
+    if (normalized.startsWith('54') && (normalized.length === 12 || normalized.length === 13)) {
+      // Formato: 5491138514845 -> mantener tal cual
+      return normalized;
+    }
+    
+    // Si tiene 10-11 dígitos y NO empieza con 54, puede ser un número argentino sin código de país
+    if (normalized.length >= 10 && normalized.length <= 11 && !normalized.startsWith('54')) {
+      // Agregar código de país argentino
+      if (normalized.startsWith('9')) {
+        // Ya tiene el 9 de celular
+        return '54' + normalized;
+      } else {
+        // Agregar 54 y 9
+        return '549' + normalized;
+      }
+    }
     
     return normalized;
   };
@@ -500,7 +517,6 @@ function CRMPageContent() {
             timestamp: new Date(msg.timestamp),
             intent: msg.intent,
             isFromCustomer: false,
-            sentBy: msg.sentBy || undefined, // IMPORTANTE: Mantener el sentBy del servidor
           });
         }
       });
@@ -591,7 +607,6 @@ function CRMPageContent() {
               timestamp: now,
               intent: 'MANUAL_CRM',
               isFromCustomer: false,
-              sentBy: userName || 'Usuario', // IMPORTANTE: Guardar el nombre del usuario
             }
           ],
           lastMessage: messageToSend,
@@ -641,7 +656,6 @@ function CRMPageContent() {
                 intent: 'MANUAL_CRM',
                 status: 'responded',
                 platform,
-                sentBy: userName || 'Usuario', // IMPORTANTE: Guardar quién envió
               },
               { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -838,7 +852,7 @@ function CRMPageContent() {
   // Formatear número de teléfono para mostrar de forma legible
   const formatPhoneNumber = (phone: string) => {
     // Limpiar el número primero
-    const cleaned = phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '');
+    const cleaned = phone.replace(/@s\.whatsapp\.net|@lid|@g\.us|@c\.us/g, '').replace(/\D/g, '');
     
     // Si el número es muy largo (más de 15 dígitos), es un @lid encriptado
     if (cleaned.length > 15) {
@@ -854,7 +868,7 @@ function CRMPageContent() {
       if (rest.startsWith('9')) {
         // Tiene el 9 de celular
         const nine = '9';
-        const area = rest.substring(1, 3); // 11
+        const area = rest.substring(1, 3); // Código de área (11, 221, etc)
         const number = rest.substring(3); // El resto del número
         
         // Dividir el número en dos partes
@@ -1402,12 +1416,6 @@ function CRMPageContent() {
                         {/* Mensaje */}
                         <div className={`flex ${msg.isFromCustomer ? 'justify-start' : 'justify-end'}`}>
                           <div className={`max-w-[70%] rounded-lg px-3 py-2 ${msg.isFromCustomer ? 'bg-white dark:bg-zinc-800' : 'bg-[#dcf8c6] dark:bg-green-800'}`}>
-                            {/* Mostrar quién envió el mensaje si es del CRM */}
-                            {!msg.isFromCustomer && msg.sentBy && (
-                              <p className="text-[10px] text-gray-600 dark:text-zinc-300 font-semibold mb-1">
-                                {msg.sentBy}
-                              </p>
-                            )}
                             <p className="text-sm whitespace-pre-wrap dark:text-zinc-100">{msg.message}</p>
                             <span className="text-[10px] text-gray-500 dark:text-zinc-400 float-right mt-1">
                               {msg.timestamp.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
