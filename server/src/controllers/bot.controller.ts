@@ -637,4 +637,40 @@ export class BotController {
       res.status(500).json({ error: 'Error al recargar configuración' });
     }
   }
+
+  // Generar respuesta del bot con IA
+  static async generateResponse(req: AuthRequest, res: Response) {
+    try {
+      const tenantId = req.user?.tenantId;
+      const { message } = req.body;
+
+      if (!message || message.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          message: 'Mensaje es requerido'
+        });
+      }
+
+      console.log(`🤖 [${tenantId}] Generando respuesta para: "${message.substring(0, 50)}..."`);
+
+      // Importar el servicio de Anthropic
+      const { anthropicService } = await import('../services/anthropic.service');
+      
+      // Generar respuesta
+      const response = await anthropicService.generateResponse(message);
+
+      console.log(`✅ [${tenantId}] Respuesta generada: "${response.substring(0, 50)}..."`);
+
+      res.json({
+        success: true,
+        response
+      });
+    } catch (error) {
+      console.error('❌ Error generando respuesta:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error interno del servidor'
+      });
+    }
+  }
 }

@@ -9,6 +9,7 @@ const router = Router();
 router.get('/public/config', authenticateBot, BotController.getConfig);
 router.get('/public/stats', authenticateBot, BotController.getStats);
 router.post('/messages', authenticateBot, BotController.logChatMessage); // Mover aquí para que use authenticateBot
+router.post('/generate-response', authenticateBot, BotController.generateResponse); // Generar respuesta con IA
 
 // Rutas que requieren autenticación de usuario
 router.use(authenticate);

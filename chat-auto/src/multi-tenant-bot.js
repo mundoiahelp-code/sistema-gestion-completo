@@ -57,6 +57,72 @@ async function saveMessage(tenantId, phone, message, response = '', contactName 
   }
 }
 
+// Verificar si el bot debe responder automáticamente
+async function shouldBotRespond(tenantId) {
+  try {
+    console.log(`🔍 [${tenantId}] Verificando estado del bot...`);
+    
+    // Obtener configuración del tenant
+    const tenantResponse = await axios.get(`${BACKEND_URL}/tenants/current`, {
+      headers: { 'X-Tenant-ID': tenantId }
+    });
+    
+    const tenant = tenantResponse.data.tenant;
+    if (!tenant) {
+      console.log(`⚠️  [${tenantId}] No se pudo obtener config del tenant`);
+      return false;
+    }
+    
+    console.log(`📋 [${tenantId}] Plan del tenant: ${tenant.plan}`);
+    
+    // Solo plan PRO tiene bot IA
+    const planLower = (tenant.plan || '').toLowerCase();
+    if (planLower !== 'pro') {
+      console.log(`⚠️  [${tenantId}] Plan ${tenant.plan} no tiene bot IA (solo PRO)`);
+      return false;
+    }
+    
+    // Verificar si el bot está activo
+    const configResponse = await axios.get(`${BACKEND_URL}/bot/public/config`, {
+      headers: { 'X-Tenant-ID': tenantId }
+    });
+    
+    const config = configResponse.data.config;
+    const isActive = config?.isActive !== false;
+    
+    console.log(`🤖 [${tenantId}] Bot ${isActive ? 'ACTIVO ✅' : 'INACTIVO ❌'}`);
+    return isActive;
+  } catch (error) {
+    console.error(`❌ [${tenantId}] Error verificando bot:`, error.message);
+    return false;
+  }
+}
+
+// Generar respuesta del bot usando IA
+async function generateBotResponse(tenantId, message) {
+  try {
+    console.log(`🤖 [${tenantId}] Generando respuesta con IA...`);
+    
+    const response = await axios.post(
+      `${BACKEND_URL}/bot/generate-response`,
+      { message },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantId
+        },
+        timeout: 30000 // 30 segundos
+      }
+    );
+    
+    console.log(`✅ [${tenantId}] Respuesta generada`);
+    return response.data.response || null;
+  } catch (error) {
+    console.error(`❌ [${tenantId}] Error generando respuesta:`, error.message);
+    return null;
+  }
+}
+
 // Función para enviar mensaje
 async function sendMessage(tenantId, phone, message) {
   const conn = connections.get(tenantId);
@@ -242,6 +308,29 @@ async function initWhatsAppForTenant(tenantId) {
 
         // Guardar en backend con nombre y JID original
         await saveMessage(tenantId, cleanPhone, text, '', contactName, originalJid);
+
+        // Verificar si el bot debe responder automáticamente
+        const botShouldRespond = await shouldBotRespond(tenantId);
+        
+        if (botShouldRespond) {
+          console.log(`🤖 [${tenantId}] Bot activo - generando respuesta...`);
+          
+          // Generar respuesta con IA
+          const botResponse = await generateBotResponse(tenantId, text);
+          
+          if (botResponse) {
+            // Enviar respuesta
+            const sent = await sendMessage(tenantId, originalJid, botResponse);
+            
+            if (sent) {
+              // Actualizar mensaje con la respuesta
+              await saveMessage(tenantId, cleanPhone, text, botResponse, contactName, originalJid);
+              console.log(`✅ [${tenantId}] Respuesta enviada`);
+            }
+          }
+        } else {
+          console.log(`⏭️  [${tenantId}] Bot inactivo - solo guardado`);
+        }
 
       } catch (error) {
         console.error(`❌ [${tenantId}] Error procesando mensaje:`, error.message);
