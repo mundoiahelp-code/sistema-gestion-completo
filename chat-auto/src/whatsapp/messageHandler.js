@@ -43,7 +43,10 @@ class MessageHandler {
 
       // Verificar si el bot debe responder automáticamente
       if (this.backend) {
+        console.log('🔍 Verificando estado del bot...');
         const botActive = await this.backend.isBotActive();
+        console.log(`🤖 Estado del bot: ${botActive ? 'ACTIVO' : 'INACTIVO'}`);
+        
         if (!botActive) {
           console.log('🤖 Bot inactivo - mensaje guardado, sin respuesta automática');
           return;
