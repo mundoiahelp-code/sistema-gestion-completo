@@ -30,7 +30,7 @@ async function saveMessage(tenantId, phone, message, response = '', contactName 
     const cleanPhone = normalizePhone(phone);
     
     const result = await axios.post(
-      `${BACKEND_URL}/bot/messages`,
+      `${BACKEND_URL}/api/bot/messages`,
       {
         customerPhone: cleanPhone,
         customerName: contactName,
@@ -63,8 +63,8 @@ async function shouldBotRespond(tenantId) {
     console.log(`🔍 [${tenantId}] Verificando estado del bot...`);
     console.log(`🔍 [${tenantId}] Backend URL: ${BACKEND_URL}`);
     
-    // Obtener configuración del tenant
-    const tenantUrl = `${BACKEND_URL}/tenants/current`;
+    // Obtener configuración del tenant (endpoint público para bots)
+    const tenantUrl = `${BACKEND_URL}/api/tenants/public/current`;
     console.log(`🔍 [${tenantId}] GET ${tenantUrl}`);
     
     const tenantResponse = await axios.get(tenantUrl, {
@@ -87,7 +87,7 @@ async function shouldBotRespond(tenantId) {
     }
     
     // Verificar si el bot está activo
-    const configUrl = `${BACKEND_URL}/bot/public/config`;
+    const configUrl = `${BACKEND_URL}/api/bot/public/config`;
     console.log(`🔍 [${tenantId}] GET ${configUrl}`);
     
     const configResponse = await axios.get(configUrl, {
@@ -115,7 +115,7 @@ async function generateBotResponse(tenantId, message) {
     console.log(`🤖 [${tenantId}] Generando respuesta con IA...`);
     
     const response = await axios.post(
-      `${BACKEND_URL}/bot/generate-response`,
+      `${BACKEND_URL}/api/bot/generate-response`,
       { message },
       {
         headers: {

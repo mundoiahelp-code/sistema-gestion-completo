@@ -34,12 +34,16 @@ import {
   getMonthlyRevenue
 } from '../controllers/ai-stats.controller';
 import { authenticate, authorize } from '../middleware/auth';
+import { authenticateBot } from '../middleware/botAuth';
 
 const router = Router();
 
 // Rutas públicas (sin autenticación) - para activación de cuenta
 router.get('/validate-invitation/:token', validateInvitation);
 router.post('/activate', activateAccount);
+
+// Ruta pública para bots (autenticación por tenant ID)
+router.get('/public/current', authenticateBot, getCurrentTenant);
 
 // Todas las demás rutas requieren autenticación
 router.use(authenticate);
