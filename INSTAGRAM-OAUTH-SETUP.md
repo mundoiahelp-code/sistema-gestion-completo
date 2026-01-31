@@ -1,50 +1,69 @@
 # 📱 Configuración de Instagram OAuth
 
-Esta guía te ayudará a configurar la integración de Instagram con OAuth, igual que ManyChat.
-
-## 🎯 Requisitos Previos
-
-1. **Cuenta de Instagram Business** vinculada a una **Página de Facebook**
-2. **Cuenta de Facebook Developers** (gratis)
+⚠️ **IMPORTANTE**: Esta configuración la hacés **VOS UNA SOLA VEZ** como administrador del sistema. Tus clientes solo harán clic en "Conectar con Instagram" y listo, como en ManyChat.
 
 ---
 
-## 📝 Paso 1: Crear App en Facebook Developers
+## 🎯 ¿Cómo funciona?
+
+### Para el cliente (usuario final):
+1. Va a **Ajustes → Integraciones**
+2. Hace clic en **"Conectar con Instagram"**
+3. Autoriza con su Facebook
+4. Selecciona su página de Facebook
+5. ¡Listo! Ya está conectado
+
+### Para vos (administrador del sistema):
+1. Creás **UNA app de Facebook** (una sola vez)
+2. Configurás las variables de entorno en Railway y Vercel
+3. **Todos tus clientes usan esa misma app**
+4. Los clientes NO necesitan crear nada en Facebook Developers
+
+---
+
+## � Conofiguración Inicial (Solo vos, una vez)
+
+### Paso 1: Crear App en Facebook Developers (5 minutos)
 
 1. Ve a [Facebook Developers](https://developers.facebook.com/apps)
 2. Haz clic en **"Crear app"**
 3. Selecciona **"Empresa"** como tipo de app
 4. Completa:
-   - **Nombre de la app**: "Sistema CRM" (o el nombre que quieras)
+   - **Nombre de la app**: "Sistema CRM MundoApple" (o el nombre que quieras)
    - **Email de contacto**: tu email
 5. Haz clic en **"Crear app"**
+6. **Guarda el App ID y App Secret** (los necesitarás después)
 
 ---
 
-## 🔧 Paso 2: Configurar Productos
-
-### 2.1 Agregar Instagram
+### Paso 2: Agregar Productos (2 minutos)
 
 1. En el panel de tu app, busca **"Instagram"** en productos
 2. Haz clic en **"Configurar"**
-3. Completa la configuración básica
-
-### 2.2 Agregar Messenger (necesario para Instagram)
-
-1. Busca **"Messenger"** en productos
-2. Haz clic en **"Configurar"**
+3. También agrega **"Messenger"** (necesario para Instagram)
+4. Haz clic en **"Configurar"**
 
 ---
 
-## 🔐 Paso 3: Configurar OAuth
+### Paso 3: Configurar Dominios y OAuth (5 minutos)
 
-### 3.1 Configuración de OAuth
+#### 3.1 Configurar Dominios (IMPORTANTE)
 
 1. Ve a **"Configuración" → "Básica"** en el menú lateral
-2. Copia el **ID de la app** y el **Clave secreta de la app**
-3. Guárdalos, los necesitarás después
+2. Copia el **ID de la app** y la **Clave secreta de la app** (los necesitarás después)
+3. Baja hasta encontrar **"Dominios de la app"**
+4. Agrega estos dominios (uno por línea):
+   ```
+   localhost
+   app.mundoiahelp.store
+   ```
+5. Guarda los cambios
 
-### 3.2 URIs de Redirección OAuth Válidos
+#### 3.2 Configurar OAuth (Solo si tu app está en modo producción)
+
+⚠️ **NOTA**: Si tu app está en **modo desarrollo**, NO necesitas configurar URIs de redirección. Solo agrega tu cuenta como administrador en **"Roles de la app" → "Roles"**.
+
+Si tu app está en **modo producción** o ya obtuviste acceso avanzado:
 
 1. Ve a **"Productos" → "Inicio de sesión con Facebook" → "Configuración"**
 2. En **"URI de redireccionamiento de OAuth válidos"**, agrega:
@@ -56,21 +75,24 @@ Esta guía te ayudará a configurar la integración de Instagram con OAuth, igua
 
 ---
 
-## 🔔 Paso 4: Configurar Webhooks
+### Paso 4: Configurar Webhooks (5 minutos)
 
-### 4.1 Configurar Webhook de Instagram
+#### 4.1 Webhook de Instagram
 
 1. Ve a **"Productos" → "Instagram" → "Configuración"**
 2. En **"Webhooks"**, haz clic en **"Configurar webhooks"**
 3. Completa:
-   - **URL de devolución de llamada**: `https://distcba.gestion-completo.production-88bc.up.railway.app/api/instagram/webhook`
+   - **URL de devolución de llamada**: 
+     ```
+     https://distcba.gestion-completo.production-88bc.up.railway.app/api/instagram/webhook
+     ```
    - **Token de verificación**: `mi_token_secreto_123`
 4. Haz clic en **"Verificar y guardar"**
 5. Suscríbete a los campos:
    - ✅ `messages`
    - ✅ `messaging_postbacks`
 
-### 4.2 Configurar Webhook de Messenger (para Instagram)
+#### 4.2 Webhook de Messenger
 
 1. Ve a **"Productos" → "Messenger" → "Configuración"**
 2. En **"Webhooks"**, haz clic en **"Agregar URL de devolución de llamada"**
@@ -79,37 +101,14 @@ Esta guía te ayudará a configurar la integración de Instagram con OAuth, igua
 
 ---
 
-## 🔑 Paso 5: Permisos de la App
+### Paso 5: Configurar Variables de Entorno (3 minutos)
 
-### 5.1 Solicitar Permisos
+#### En Railway (Backend):
 
-1. Ve a **"Revisión de la app" → "Permisos y funciones"**
-2. Solicita los siguientes permisos:
-   - ✅ `pages_show_list` (Básico - aprobado automáticamente)
-   - ✅ `pages_messaging` (Requiere revisión)
-   - ✅ `instagram_basic` (Básico - aprobado automáticamente)
-   - ✅ `instagram_manage_messages` (Requiere revisión)
-   - ✅ `pages_manage_metadata` (Básico - aprobado automáticamente)
-
-### 5.2 Modo de Desarrollo vs Producción
-
-**Modo de Desarrollo** (para probar):
-- Funciona solo con cuentas que sean administradores/desarrolladores de la app
-- No requiere revisión de Meta
-- Perfecto para testing
-
-**Modo Producción** (para clientes):
-- Requiere revisión de Meta (puede tardar 1-2 semanas)
-- Funciona con cualquier cuenta de Instagram
-- Necesario para uso real
-
----
-
-## ⚙️ Paso 6: Configurar Variables de Entorno
-
-### 6.1 Backend (Railway)
-
-Agrega estas variables en Railway:
+1. Ve a tu proyecto en Railway
+2. Selecciona el servicio **"server"**
+3. Ve a **"Variables"**
+4. Agrega estas variables:
 
 ```env
 FACEBOOK_APP_ID=tu_app_id_aqui
@@ -117,19 +116,52 @@ FACEBOOK_APP_SECRET=tu_app_secret_aqui
 INSTAGRAM_WEBHOOK_VERIFY_TOKEN=mi_token_secreto_123
 ```
 
-### 6.2 Frontend (Vercel)
+5. Guarda y espera que se redeploy automáticamente
 
-Agrega esta variable en Vercel:
+#### En Vercel (Frontend):
+
+1. Ve a tu proyecto en Vercel
+2. Ve a **"Settings" → "Environment Variables"**
+3. Agrega esta variable:
 
 ```env
 NEXT_PUBLIC_FACEBOOK_APP_ID=tu_app_id_aqui
 ```
 
+4. Guarda y redeploy el proyecto
+
 ---
 
-## 🚀 Paso 7: Probar la Integración
+### Paso 6: Permisos de la App (Importante)
 
-### 7.1 En Desarrollo
+#### Modo de Desarrollo (para probar):
+
+1. Ve a **"Roles" → "Roles"** en tu app
+2. Agrega tu cuenta de Facebook como **"Administrador"**
+3. Agrega las cuentas de prueba que necesites
+4. En modo desarrollo, solo estas cuentas podrán conectarse
+5. **No requiere revisión de Meta**
+
+#### Modo Producción (para clientes reales):
+
+1. Ve a **"Revisión de la app" → "Permisos y funciones"**
+2. Solicita los siguientes permisos:
+   - ✅ `pages_show_list`
+   - ✅ `pages_messaging`
+   - ✅ `instagram_basic`
+   - ✅ `instagram_manage_messages`
+   - ✅ `pages_manage_metadata`
+3. Completa el formulario de revisión de Meta
+4. Espera aprobación (1-2 semanas)
+5. Una vez aprobado, cambia la app a **"Modo en vivo"**
+
+**Nota**: Mientras estés en modo desarrollo, solo vos y las cuentas que agregues como administradores/desarrolladores podrán conectarse. Para que cualquier cliente pueda conectarse, necesitás pasar a modo producción.
+
+---
+
+## 🚀 Probar la Integración
+
+### Como Administrador (Modo Desarrollo):
 
 1. Asegúrate de que tu cuenta de Facebook sea **administrador** de la app
 2. Ve a **Ajustes → Integraciones** en el sistema
@@ -138,7 +170,7 @@ NEXT_PUBLIC_FACEBOOK_APP_ID=tu_app_id_aqui
 5. Selecciona tu página de Facebook
 6. ¡Listo! Deberías ver "Instagram Conectado"
 
-### 7.2 Probar Mensajes
+### Probar Mensajes:
 
 1. Envía un mensaje directo a tu cuenta de Instagram Business desde otra cuenta
 2. El mensaje debería aparecer en el CRM
@@ -149,6 +181,10 @@ NEXT_PUBLIC_FACEBOOK_APP_ID=tu_app_id_aqui
 
 ## 🐛 Troubleshooting
 
+### Error: "Facebook App ID no configurado"
+
+**Solución**: Verifica que hayas agregado `NEXT_PUBLIC_FACEBOOK_APP_ID` en Vercel y que el proyecto se haya redeployado.
+
 ### Error: "No se encontró una cuenta de Instagram Business"
 
 **Solución**: Asegúrate de que:
@@ -158,7 +194,21 @@ NEXT_PUBLIC_FACEBOOK_APP_ID=tu_app_id_aqui
 
 ### Error: "Invalid OAuth redirect URI"
 
-**Solución**: Verifica que la URI de redirección en Facebook Developers coincida exactamente con la configurada en el sistema.
+**Solución**: Verifica que las URIs de redirección en Facebook Developers sean exactamente:
+```
+https://app.mundoiahelp.store/api/instagram/callback
+http://localhost:3000/api/instagram/callback
+```
+
+**Pasos para verificar:**
+1. Ve a [Facebook Developers](https://developers.facebook.com/apps)
+2. Selecciona tu app
+3. Ve a **"Productos" → "Inicio de sesión con Facebook" → "Configuración"**
+4. Busca **"URI de redireccionamiento de OAuth válidos"**
+5. Asegúrate de que las URLs estén agregadas EXACTAMENTE como arriba
+6. Guarda los cambios y espera 1-2 minutos
+
+**Nota**: La URL debe coincidir exactamente con `window.location.origin + '/api/instagram/callback'` de tu frontend.
 
 ### Los mensajes no llegan al CRM
 
@@ -169,7 +219,25 @@ NEXT_PUBLIC_FACEBOOK_APP_ID=tu_app_id_aqui
 
 ### Error: "This message is sent outside of allowed window"
 
-**Solución**: Este error aparece si intentas responder después de 24 horas. Instagram solo permite responder dentro de las 24 horas del último mensaje del cliente, a menos que tengas permisos especiales aprobados por Meta.
+**Solución**: Instagram solo permite responder dentro de las 24 horas del último mensaje del cliente, a menos que tengas permisos especiales aprobados por Meta.
+
+---
+
+## ✅ Checklist Final
+
+Antes de poner en producción, verifica:
+
+- [ ] App de Facebook creada
+- [ ] Instagram y Messenger agregados como productos
+- [ ] OAuth configurado con URI correcta
+- [ ] Webhooks configurados y verificados
+- [ ] Variables de entorno configuradas en Railway
+- [ ] Variables de entorno configuradas en Vercel
+- [ ] Ambos proyectos redeployados
+- [ ] Tu cuenta agregada como administrador de la app
+- [ ] Probado con tu cuenta de Instagram
+- [ ] Mensajes llegan al CRM
+- [ ] Puedes responder desde el CRM
 
 ---
 
@@ -181,19 +249,17 @@ NEXT_PUBLIC_FACEBOOK_APP_ID=tu_app_id_aqui
 
 ---
 
-## ✅ Checklist Final
+## 💡 Resumen para el Cliente
 
-Antes de poner en producción, verifica:
+Cuando un cliente te pregunte cómo conectar Instagram, solo decile:
 
-- [ ] App de Facebook creada
-- [ ] Instagram y Messenger agregados como productos
-- [ ] OAuth configurado con URIs correctas
-- [ ] Webhooks configurados y verificados
-- [ ] Variables de entorno configuradas en Railway y Vercel
-- [ ] Permisos solicitados (al menos en modo desarrollo)
-- [ ] Probado con tu cuenta de Instagram
-- [ ] Mensajes llegan al CRM
-- [ ] Puedes responder desde el CRM
+1. Andá a **Ajustes → Integraciones**
+2. Hacé clic en **"Conectar con Instagram"**
+3. Autorizá con tu Facebook
+4. Seleccioná tu página de Facebook
+5. ¡Listo!
+
+**No necesitan crear nada en Facebook Developers ni configurar nada técnico.**
 
 ---
 
