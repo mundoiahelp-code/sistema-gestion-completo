@@ -212,35 +212,30 @@ class WhatsAppClient {
 
             // Obtener número de teléfono
             let phoneNumber = message.key.remoteJid;
+            let customerName = message.pushName || null;
             
-            // Si viene con @lid, intentar extraer el número real
+            // Si viene con @lid, es un número encriptado por privacidad de WhatsApp
             if (phoneNumber?.includes('@lid')) {
-              console.log('⚠️  Número con @lid:', phoneNumber);
+              console.log('⚠️  Número con @lid (encriptado):', phoneNumber);
               
-              // Intentar obtener del participant
+              // Intentar obtener del participant (en grupos)
               const participant = message.key.participant || message.participant;
               if (participant && !participant.includes('@lid')) {
                 phoneNumber = participant;
                 console.log('✅ Usando participant:', phoneNumber);
               } else {
-                // Si no hay participant, extraer el número del @lid
-                // Formato: 123456789@lid -> usar el número antes del @
-                const match = phoneNumber.match(/^(\d+)@lid/);
-                if (match) {
-                  phoneNumber = match[1] + '@s.whatsapp.net';
-                  console.log('✅ Extraído de @lid:', phoneNumber);
-                } else {
-                  console.log('❌ No se pudo extraer número de @lid');
-                  continue;
-                }
+                // Para @lid, usar el número encriptado tal cual
+                // NO intentar extraer porque el número antes del @ es inválido
+                console.log('ℹ️  Usando @lid completo (número privado)');
+                // phoneNumber ya tiene el valor correcto con @lid
               }
             }
             
-            console.log(`💬 [${this.tenantId}] ${phoneNumber}: "${messageText}"`);
+            console.log(`💬 [${this.tenantId}] ${customerName || phoneNumber}: "${messageText}"`);
 
             // Llamar al handler
             if (this.messageHandler) {
-              await this.messageHandler(phoneNumber, messageText, this);
+              await this.messageHandler(phoneNumber, messageText, this, customerName);
             } else {
               console.log('⚠️  Sin messageHandler');
             }

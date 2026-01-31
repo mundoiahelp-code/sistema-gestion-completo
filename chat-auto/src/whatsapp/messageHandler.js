@@ -19,7 +19,7 @@ class MessageHandler {
     this.mp = mercadoPago;
   }
 
-  async handleMessage(phoneNumber, messageText, whatsappClient) {
+  async handleMessage(phoneNumber, messageText, whatsappClient, customerName = null) {
     try {
       console.log(`📩 [${phoneNumber}] ${messageText.substring(0, 100)}${messageText.length > 100 ? '...' : ''}`);
 
@@ -31,7 +31,7 @@ class MessageHandler {
       if (this.backend) {
         try {
           console.log('💾 Guardando mensaje en backend...');
-          await this.backend.logChatMessage(phoneNumber, messageText, '', 'RECIBIDO', 'pending');
+          await this.backend.logChatMessage(phoneNumber, messageText, '', 'RECIBIDO', 'pending', customerName);
           console.log('✅ Mensaje guardado en CRM');
         } catch (error) {
           console.error('❌ Error guardando en CRM:', error.message);

@@ -293,20 +293,26 @@ class BackendIntegration {
   }
 
   // Registrar mensaje de chat
-  async logChatMessage(customerPhone, message, response, intent, status = 'responded') {
+  async logChatMessage(customerPhone, message, response, intent, status = 'responded', customerName = null) {
     try {
       // Normalizar el número de teléfono para evitar duplicados
       const cleanPhone = this.normalizePhoneNumber(customerPhone);
       
       const payload = {
         customerPhone: cleanPhone,
+        originalJid: customerPhone, // Guardar el JID original (puede tener @lid)
         message,
         response,
         intent,
         status
       };
 
-      console.log('📝 Guardando mensaje en backend:', { customerPhone: cleanPhone, intent });
+      // Si viene customerName (pushName de WhatsApp), agregarlo
+      if (customerName) {
+        payload.customerName = customerName;
+      }
+
+      console.log('📝 Guardando mensaje en backend:', { customerPhone: cleanPhone, intent, customerName });
       const result = await this.client.post('/bot/messages', payload);
       console.log('✅ Mensaje guardado en backend');
       return result.data;
