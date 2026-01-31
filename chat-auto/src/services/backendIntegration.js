@@ -428,18 +428,14 @@ class BackendIntegration {
   // Verificar si el bot está activo Y si el plan permite bot IA
   async isBotActive() {
     try {
-      // TEMPORAL: Por ahora retornar false para que solo guarde mensajes sin responder
-      // Esto permite que funcione el CRM sin importar el plan
-      console.log('⚠️  Bot en modo CRM (sin respuestas automáticas)');
-      return false;
-      
-      /* TODO: Descomentar cuando el TENANT_ID esté correcto en Railway
       // Verificar plan del tenant
       const tenant = await this.getTenantConfig();
       if (!tenant) {
-        console.log('⚠️  No se pudo obtener config del tenant');
+        console.log('⚠️  No se pudo obtener config del tenant - bot inactivo');
         return false;
       }
+
+      console.log(`📋 Plan del tenant: ${tenant.plan}`);
 
       // Solo plan PRO tiene bot IA automático
       if (tenant.plan !== 'pro') {
@@ -449,8 +445,10 @@ class BackendIntegration {
 
       // Verificar si el bot está activo en la configuración
       const config = await this.getBotConfig();
-      return config?.isActive || false;
-      */
+      const isActive = config?.isActive !== false; // Por defecto activo si no hay config
+      
+      console.log(`🤖 Bot ${isActive ? 'ACTIVO' : 'INACTIVO'} en configuración`);
+      return isActive;
     } catch (error) {
       console.error('Error verificando estado del bot:', error.message);
       return false; // Por defecto INACTIVO si hay error
