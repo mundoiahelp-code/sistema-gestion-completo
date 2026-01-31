@@ -787,6 +787,30 @@ function CRMPageContent() {
     return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
   };
 
+  // Formatear fecha para separadores (estilo WhatsApp)
+  const formatDateSeparator = (date: Date) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    if (messageDate.getTime() === today.getTime()) {
+      return 'Hoy';
+    } else if (messageDate.getTime() === yesterday.getTime()) {
+      return 'Ayer';
+    } else {
+      return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+  };
+
+  // Verificar si dos fechas son del mismo día
+  const isSameDay = (date1: Date, date2: Date) => {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  };
+
   const getCategoryBadge = (category?: string) => {
     if (!category) return null;
     const cat = getAllCategories().find(c => c.value === category);
@@ -1352,22 +1376,44 @@ function CRMPageContent() {
                   onScroll={handleScroll}
                   className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-50 dark:bg-zinc-900 max-h-[calc(100vh-300px)]"
                 >
-                  {selectedConv.messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.isFromCustomer ? 'justify-start' : 'justify-end'}`}>
-                      <div className={`max-w-[70%] rounded-lg px-3 py-2 ${msg.isFromCustomer ? 'bg-white dark:bg-zinc-800' : 'bg-[#dcf8c6] dark:bg-green-800'}`}>
-                        {/* Mostrar quién envió el mensaje si es del CRM */}
-                        {!msg.isFromCustomer && msg.sentBy && (
-                          <p className="text-[10px] text-gray-600 dark:text-zinc-300 font-semibold mb-1">
-                            {msg.sentBy}
-                          </p>
+                  {selectedConv.messages.map((msg, index) => {
+                    // Verificar si necesitamos mostrar separador de fecha
+                    const showDateSeparator = index === 0 || !isSameDay(
+                      msg.timestamp,
+                      selectedConv.messages[index - 1].timestamp
+                    );
+
+                    return (
+                      <div key={msg.id}>
+                        {/* Separador de fecha */}
+                        {showDateSeparator && (
+                          <div className="flex justify-center my-4">
+                            <div className="bg-white dark:bg-zinc-800 px-3 py-1 rounded-lg shadow-sm">
+                              <span className="text-xs text-gray-600 dark:text-zinc-400 font-medium">
+                                {formatDateSeparator(msg.timestamp)}
+                              </span>
+                            </div>
+                          </div>
                         )}
-                        <p className="text-sm whitespace-pre-wrap dark:text-zinc-100">{msg.message}</p>
-                        <span className="text-[10px] text-gray-500 dark:text-zinc-400 float-right mt-1">
-                          {msg.timestamp.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        
+                        {/* Mensaje */}
+                        <div className={`flex ${msg.isFromCustomer ? 'justify-start' : 'justify-end'}`}>
+                          <div className={`max-w-[70%] rounded-lg px-3 py-2 ${msg.isFromCustomer ? 'bg-white dark:bg-zinc-800' : 'bg-[#dcf8c6] dark:bg-green-800'}`}>
+                            {/* Mostrar quién envió el mensaje si es del CRM */}
+                            {!msg.isFromCustomer && msg.sentBy && (
+                              <p className="text-[10px] text-gray-600 dark:text-zinc-300 font-semibold mb-1">
+                                {msg.sentBy}
+                              </p>
+                            )}
+                            <p className="text-sm whitespace-pre-wrap dark:text-zinc-100">{msg.message}</p>
+                            <span className="text-[10px] text-gray-500 dark:text-zinc-400 float-right mt-1">
+                              {msg.timestamp.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
 
