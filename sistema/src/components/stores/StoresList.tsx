@@ -315,6 +315,8 @@ export default function StoresList({ data }: Props) {
   const handleEditStore = (storeData: any) => {
     if (!storeToEdit) return;
 
+    console.log('📤 Enviando datos al backend:', JSON.stringify(storeData, null, 2));
+
     const config: AxiosRequestConfig = {
       url: `${API}/stores/${storeToEdit.id}`,
       method: 'PATCH',
@@ -324,7 +326,8 @@ export default function StoresList({ data }: Props) {
 
     setLoading(true);
     axios(config)
-      .then(() => {
+      .then((response) => {
+        console.log('✅ Respuesta del backend:', JSON.stringify(response.data, null, 2));
         handleSuccessSonner(t('stores.storeUpdated'));
         setStores(prev => prev.map(s => 
           s.id === storeToEdit.id ? { ...s, ...storeData } : s
@@ -334,6 +337,7 @@ export default function StoresList({ data }: Props) {
         router.refresh();
       })
       .catch((err) => {
+        console.error('❌ Error al actualizar:', err);
         handleErrorSonner(err.response?.data?.error || t('stores.errorUpdating'));
       })
       .finally(() => setLoading(false));
