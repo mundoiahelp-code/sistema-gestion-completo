@@ -215,7 +215,7 @@ function Aside() {
             <>
               {/* Logo Clodeb */}
               <Image
-                src="/images/logo-white.svg"
+                src="/images/logo.png"
                 alt="Clodeb"
                 height={28}
                 width={28}

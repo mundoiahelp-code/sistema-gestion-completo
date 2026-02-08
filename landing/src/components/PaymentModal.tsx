@@ -108,7 +108,7 @@ export default function PaymentModal({ isOpen, onClose, plan, userData, paymentM
         
         // Redirigir después de 2 segundos
         setTimeout(() => {
-          window.location.href = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.mundoaple.store'}/activar-cuenta?email=${encodeURIComponent(userData.email)}&verified=true`;
+          window.location.href = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.clodeb.com'}/activar-cuenta?email=${encodeURIComponent(userData.email)}&verified=true`;
         }, 2000);
       } else if (data.payment.status === 'expired') {
         setPaymentStatus('expired');
@@ -136,7 +136,7 @@ export default function PaymentModal({ isOpen, onClose, plan, userData, paymentM
         toast.success('¡Pago confirmado! Activando tu cuenta...');
         
         setTimeout(() => {
-          window.location.href = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.mundoaple.store'}/activar-cuenta?email=${encodeURIComponent(userData.email)}&verified=true`;
+          window.location.href = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.clodeb.com}/activar-cuenta?email=${encodeURIComponent(userData.email)}&verified=true`;
         }, 2000);
       } else {
         toast.info(data.message || 'Pago no encontrado aún. Seguimos verificando automáticamente...');

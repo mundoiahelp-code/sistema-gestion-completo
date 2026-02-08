@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 const ADMIN = {
-  email: 'mundoia.help@gmail.com',
+  email: 'contacto@clodeb.com',
   password: 'Lauti10b12RR!!',
   name: 'Super Admin'
 };

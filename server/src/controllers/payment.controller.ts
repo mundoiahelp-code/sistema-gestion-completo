@@ -983,7 +983,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     });
     
     // Generar link de recuperación
-    const frontendUrl = process.env.FRONTEND_URL || 'https://app.mundoaple.store';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.clodeb.com';
     const resetLink = `${frontendUrl}/restablecer-password/${resetToken}`;
     
     // Enviar email

@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'Clodeb - Sistema de Gestión con IA',
   description: 'El sistema de gestión definitivo para tu negocio de tecnología. Inventario, ventas, WhatsApp con IA y más.',
   icons: {
-    icon: '/screenshots/logo-white.svg',
-    apple: '/screenshots/logo-white.svg',
+    icon: '/screenshots/logo.png',
+    apple: '/screenshots/logo.png',
   },
 }
 

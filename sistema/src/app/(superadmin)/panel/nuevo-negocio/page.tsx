@@ -28,7 +28,7 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const APP_URL = 'https://app.mundoaple.store';
+const APP_URL = 'https://app.clodeb.com';
 
 export default function NuevoNegocioPage() {
   const router = useRouter();

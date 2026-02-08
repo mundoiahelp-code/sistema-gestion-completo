@@ -324,7 +324,7 @@ export default function AsideMobile() {
             >
               {/* Logo Clodeb */}
               <Image
-                src='/images/logo-white.svg'
+                src='/images/logo.png'
                 className='cursor-pointer h-auto w-auto'
                 alt='Clodeb'
                 height={0}

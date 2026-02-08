@@ -174,14 +174,14 @@ app.post('/api/create-admin-temp', async (req, res) => {
     
     const hashedPassword = await bcrypt.default.hash('Lauti10b12RR!!', 10);
     const user = await prisma.user.upsert({
-      where: { email: 'mundoia.help@gmail.com' },
+      where: { email: 'contacto@clodeb.com' },
       update: {
         password: hashedPassword,
         role: 'SUPER_ADMIN',
         active: true
       },
       create: {
-        email: 'mundoia.help@gmail.com',
+        email: 'contacto@clodeb.com',
         password: hashedPassword,
         name: 'Super Admin',
         role: 'SUPER_ADMIN',
@@ -196,7 +196,7 @@ app.post('/api/create-admin-temp', async (req, res) => {
     res.json({ 
       success: true, 
       message: 'Admin creado',
-      email: 'mundoia.help@gmail.com',
+      email: 'contacto@clodeb.com',
       password: 'Lauti10b12RR!!'
     });
   } catch (error: any) {

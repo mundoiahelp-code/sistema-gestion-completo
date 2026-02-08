@@ -450,7 +450,7 @@ export default function CreateAppointmentModal({ open, onClose, onSuccess }: Pro
             <Input
               value={formData.customerName}
               onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-              placeholder={isEnglish ? 'John Doe' : 'Lautaro Barberis'}
+              placeholder={isEnglish ? 'John Doe' : 'Jeremias Escobar'}
               required
               className="mt-1"
             />

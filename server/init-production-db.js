@@ -10,8 +10,8 @@ const { execSync } = require('child_process');
 const prisma = new PrismaClient();
 
 const ADMIN_USER = {
-  email: 'mundoia.help@gmail.com',
-  password: 'Lauti10b12RR!!',
+  email: 'oculto@oculto.com',
+  password: 'oculto',
   name: 'Super Admin'
 };
 

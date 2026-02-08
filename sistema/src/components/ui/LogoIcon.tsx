@@ -8,7 +8,7 @@ interface LogoIconProps {
 export function LogoIcon({ size = 40, className = '' }: LogoIconProps) {
   return (
     <Image
-      src="/images/logo-white.svg"
+      src="/images/logo.png"
       width={size}
       height={size}
       alt="Clodeb"

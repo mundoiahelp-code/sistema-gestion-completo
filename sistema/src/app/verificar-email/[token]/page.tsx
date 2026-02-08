@@ -110,7 +110,7 @@ export default function VerifyEmailPage() {
                 {message}
               </p>
               <a
-                href="https://mundoaple.store"
+                href="https://clodeb.com"
                 className="inline-flex items-center justify-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium px-6 py-3 rounded-xl transition"
               >
                 Volver al inicio

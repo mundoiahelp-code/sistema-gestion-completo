@@ -211,7 +211,7 @@ const Login = () => {
                 <>
                   {/* Logo Clodeb */}
                   <Image
-                    src={'/images/logo-white.svg'}
+                    src={'/images/logo.png'}
                     width={64}
                     height={64}
                     alt='Clodeb'
