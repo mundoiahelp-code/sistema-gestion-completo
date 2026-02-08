@@ -301,7 +301,20 @@ export default function StoreEditForm({ handleEdit, loading, data, onCancel }: P
         <Button
           type='button'
           disabled={loading}
-          onClick={() => handleEdit(formData)}
+          onClick={() => {
+            // Convertir undefined a null para los horarios
+            const cleanedData = {
+              ...formData,
+              mondayHours: formData.mondayHours || null,
+              tuesdayHours: formData.tuesdayHours || null,
+              wednesdayHours: formData.wednesdayHours || null,
+              thursdayHours: formData.thursdayHours || null,
+              fridayHours: formData.fridayHours || null,
+              saturdayHours: formData.saturdayHours || null,
+              sundayHours: formData.sundayHours || null,
+            };
+            handleEdit(cleanedData);
+          }}
         >
           {loading ? (
             <LoaderCircleIcon className='stroke-1 h-5 w-5 animate-spin' />
