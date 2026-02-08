@@ -199,21 +199,21 @@ const Login = () => {
         <div className='bg-white dark:bg-zinc-800 rounded-2xl shadow-xl p-8 md:p-10'>
           {/* Logo y título */}
           <div className='text-center mb-8'>
-            <div className='inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-2xl mb-4'>
+            <div className='inline-flex items-center justify-center mb-4'>
               {tenantLogo ? (
                 /* Logo personalizado del tenant */
                 <img
                   src={tenantLogo}
                   alt='Logo'
-                  className='w-12 h-12 object-contain'
+                  className='w-16 h-16 object-contain'
                 />
               ) : (
                 <>
                   {/* Logo Clodeb */}
                   <Image
                     src={'/images/logo-icon.png'}
-                    width={40}
-                    height={40}
+                    width={64}
+                    height={64}
                     alt='Clodeb'
                   />
                 </>

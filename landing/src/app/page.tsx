@@ -360,11 +360,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <motion.button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
-            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition"
+            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <img src="/screenshots/logo.png" alt="Clodeb" className="h-10 w-auto" />
+            <span className="text-xl font-semibold text-white">Clodeb</span>
           </motion.button>
           <div className="flex items-center gap-6">
             <button onClick={() => scrollTo('funciones')} className="text-sm text-gray-400 hover:text-white transition hidden md:block font-medium">Funciones</button>
@@ -850,10 +851,9 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <img 
-                src="/screenshots/logo-solo-clodeb.png" 
+                src="/screenshots/logo.png" 
                 alt="Clodeb" 
-                className="h-12 w-auto object-contain"
-                style={{ imageRendering: 'crisp-edges' }}
+                className="h-10 w-auto object-contain"
               />
               <span className="font-semibold text-white">Clodeb</span>
             </div>
