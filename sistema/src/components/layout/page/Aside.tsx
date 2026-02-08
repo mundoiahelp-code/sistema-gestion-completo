@@ -213,22 +213,13 @@ function Aside() {
             />
           ) : (
             <>
-              {/* Logo Clodeb - cambia según tema */}
-              <Image
-                src="/images/logo-dark.svg"
-                alt="Clodeb"
-                height={28}
-                width={28}
-                priority
-                className="dark:hidden"
-              />
+              {/* Logo Clodeb */}
               <Image
                 src="/images/logo-white.svg"
                 alt="Clodeb"
                 height={28}
                 width={28}
                 priority
-                className="hidden dark:block"
               />
             </>
           )}

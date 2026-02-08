@@ -52,6 +52,9 @@ app.set('trust proxy', 1);
 
 // CORS - Configuración segura
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
+  'https://app.clodeb.com',
+  'https://clodeb.com',
+  'https://www.clodeb.com',
   'http://localhost:3000',
   'http://localhost:3001'
 ];
@@ -61,8 +64,8 @@ app.use(cors({
     // Permitir requests sin origin (mobile apps, Postman, etc)
     if (!origin) return callback(null, true);
     
-    // Verificar si el origin está en la lista permitida
-    if (allowedOrigins.includes(origin)) {
+    // Verificar si el origin está en la lista permitida o es un subdominio de clodeb.com
+    if (allowedOrigins.includes(origin) || origin.endsWith('.clodeb.com')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

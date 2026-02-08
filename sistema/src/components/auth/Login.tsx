@@ -209,20 +209,12 @@ const Login = () => {
                 />
               ) : (
                 <>
-                  {/* Logo Clodeb - cambia según tema */}
-                  <Image
-                    src={'/images/logo-dark.svg'}
-                    width={64}
-                    height={64}
-                    alt='Clodeb'
-                    className='dark:hidden'
-                  />
+                  {/* Logo Clodeb */}
                   <Image
                     src={'/images/logo-white.svg'}
                     width={64}
                     height={64}
                     alt='Clodeb'
-                    className='hidden dark:block'
                   />
                 </>
               )}
