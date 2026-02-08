@@ -24,6 +24,7 @@ export default function LandingPage() {
   const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'crypto' | null>(null);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [pricingTab, setPricingTab] = useState<'monthly' | 'annual' | 'forever'>('monthly');
 
   // Componente Screenshot con efecto 3D
   const ScreenshotWith3D = () => {
@@ -336,15 +337,6 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} 
             className="text-center mb-16"
           >
-            {/* Badge */}
-            <motion.div 
-              className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-full px-4 py-2 mb-6"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-blue-600 font-medium">Asistente IA incluido</span>
-            </motion.div>
-            
             {/* Título */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
               <motion.span
@@ -565,12 +557,47 @@ export default function LandingPage() {
       {/* PRICING */}
       <section id="planes" className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Precios simples y transparentes</h2>
-            <p className="text-xl text-gray-600">Elegí el plan que mejor se adapte a tu negocio</p>
+            <p className="text-xl text-gray-600 mb-8">Elegí el plan que mejor se adapte a tu negocio</p>
+            
+            {/* Pestañas Mensual/Anual */}
+            <div className="inline-flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={() => setPricingTab('monthly')}
+                className={`px-6 py-2 rounded-md font-medium transition ${
+                  pricingTab === 'monthly'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Mensual
+              </button>
+              <button
+                onClick={() => setPricingTab('annual')}
+                className={`px-6 py-2 rounded-md font-medium transition ${
+                  pricingTab === 'annual'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Anual
+              </button>
+              <button
+                onClick={() => setPricingTab('forever')}
+                className={`px-6 py-2 rounded-md font-medium transition ${
+                  pricingTab === 'forever'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Forever
+              </button>
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Planes Mensuales */}
+          {pricingTab === 'monthly' && (
             {/* FREE */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
@@ -730,97 +757,157 @@ export default function LandingPage() {
               <span>Activación inmediata</span>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* PLANES ANUALES */}
-      <section id="anuales" className="py-24 px-6 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-green-100 border border-green-200 rounded-full px-4 py-2 mb-6">
-              <span className="text-sm text-green-700 font-semibold">Ahorrá 2 meses pagando anual</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Planes Anuales</h2>
-            <p className="text-xl text-gray-600">Pagá una vez, usá todo el año</p>
-          </div>
+          )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* BÁSICO ANUAL */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg hover:border-gray-300 transition">
-              <div className="mb-6">
-                <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-2">Básico Anual</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base text-gray-400 line-through">USD $708</span>
-                  <div className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded">
-                    -17% OFF
+          {/* Planes Anuales */}
+          {pricingTab === 'annual' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* BÁSICO ANUAL */}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg hover:border-gray-300 transition">
+                <div className="mb-6">
+                  <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-2">Básico Anual</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base text-gray-400 line-through">USD $708</span>
+                    <div className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded">
+                      -17% OFF
+                    </div>
                   </div>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-gray-900">USD $590</p>
+                    <span className="text-gray-600">/año</span>
+                  </div>
+                  <p className="text-green-600 text-sm mt-2 font-medium">Ahorrás USD $118 al año</p>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-gray-900">USD $590</p>
-                  <span className="text-gray-600">/año</span>
-                </div>
-                <p className="text-green-600 text-sm mt-2 font-medium">Ahorrás USD $118 al año</p>
-              </div>
-              <p className="text-gray-600 text-sm mb-6 pb-6 border-b border-gray-200">
-                Plan Básico por un año completo
-              </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Todo lo del Plan Básico mensual',
-                  'Actualizaciones 1 año',
-                  'Soporte WhatsApp 6 meses',
-                  'Precio congelado'
-                ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Básico Anual`} target="_blank" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
-                Contratar anual
-              </a>
-            </motion.div>
+                <p className="text-gray-600 text-sm mb-6 pb-6 border-b border-gray-200">
+                  Plan Básico por un año completo
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Todo lo del Plan Básico mensual',
+                    'Actualizaciones 1 año',
+                    'Soporte WhatsApp 6 meses',
+                    'Precio congelado'
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Básico Anual`} target="_blank" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  Contratar anual
+                </a>
+              </motion.div>
 
-            {/* PRO ANUAL */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="relative bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-purple-600 rounded-xl p-8 hover:shadow-xl transition">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Recomendado
-              </div>
-              <div className="mb-6 mt-2">
-                <p className="text-sm font-medium text-purple-600 uppercase tracking-wider mb-2">Pro Anual</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base text-gray-400 line-through">USD $2,148</span>
-                  <div className="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded">
-                    -17% OFF
+              {/* PRO ANUAL */}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="relative bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-purple-600 rounded-xl p-8 hover:shadow-xl transition">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  Recomendado
+                </div>
+                <div className="mb-6 mt-2">
+                  <p className="text-sm font-medium text-purple-600 uppercase tracking-wider mb-2">Pro Anual</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base text-gray-400 line-through">USD $2,148</span>
+                    <div className="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded">
+                      -17% OFF
+                    </div>
                   </div>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-gray-900">USD $1,790</p>
+                    <span className="text-gray-600">/año</span>
+                  </div>
+                  <p className="text-purple-600 text-sm mt-2 font-medium">Ahorrás USD $358 al año</p>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-gray-900">USD $1,790</p>
-                  <span className="text-gray-600">/año</span>
+                <p className="text-gray-700 text-sm mb-6 pb-6 border-b border-gray-200">
+                  Plan Pro completo con setup incluido
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Todo del Plan Pro',
+                    'Setup incluido',
+                    'Soporte prioritario 1 año',
+                    'Capacitación',
+                    'Precio congelado'
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-gray-900 font-medium">
+                      <Check className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Pro Anual`} target="_blank" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  Contratar anual
+                </a>
+              </motion.div>
+            </div>
+          )}
+          
+          {/* Planes Forever */}
+          {pricingTab === 'forever' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* BÁSICO FOREVER */}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg hover:border-gray-300 transition">
+                <div className="mb-6">
+                  <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-2">Básico Forever</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-gray-900">USD $1,990</p>
+                  </div>
+                  <p className="text-blue-600 text-sm mt-2 font-medium">Pago único • De por vida</p>
                 </div>
-                <p className="text-purple-600 text-sm mt-2 font-medium">Ahorrás USD $358 al año</p>
-              </div>
-              <p className="text-gray-700 text-sm mb-6 pb-6 border-b border-gray-200">
-                Plan Pro completo con setup incluido
-              </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Todo del Plan Pro',
-                  'Setup incluido',
-                  'Soporte prioritario 1 año',
-                  'Capacitación',
-                  'Precio congelado'
-                ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-gray-900 font-medium">
-                    <Check className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Pro Anual`} target="_blank" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
-                Contratar anual
-              </a>
-            </motion.div>
-          </div>
+                <p className="text-gray-600 text-sm mb-6 pb-6 border-b border-gray-200">
+                  Acceso de por vida al Plan Básico
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Todo lo del Plan Básico',
+                    'Actualizaciones de por vida',
+                    'Sin pagos mensuales',
+                    'Soporte prioritario',
+                    'Precio único'
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Básico Forever`} target="_blank" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  Comprar Forever
+                </a>
+              </motion.div>
+
+              {/* PRO FOREVER */}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="relative bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-purple-600 rounded-xl p-8 hover:shadow-xl transition">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  Mejor inversión
+                </div>
+                <div className="mb-6 mt-2">
+                  <p className="text-sm font-medium text-purple-600 uppercase tracking-wider mb-2">Pro Forever</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-gray-900">USD $5,990</p>
+                  </div>
+                  <p className="text-purple-600 text-sm mt-2 font-medium">Pago único • De por vida</p>
+                </div>
+                <p className="text-gray-700 text-sm mb-6 pb-6 border-b border-gray-200">
+                  Acceso de por vida al Plan Pro con todo incluido
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Todo del Plan Pro',
+                    'Actualizaciones de por vida',
+                    'Sin pagos mensuales',
+                    'Setup + Capacitación incluidos',
+                    'Soporte VIP de por vida',
+                    'Precio único'
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-gray-900 font-medium">
+                      <Check className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Pro Forever`} target="_blank" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  Comprar Forever
+                </a>
+              </motion.div>
+            </div>
+          )}
         </div>
       </section>
 
