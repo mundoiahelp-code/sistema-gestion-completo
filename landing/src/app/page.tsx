@@ -598,6 +598,7 @@ export default function LandingPage() {
           
           {/* Planes Mensuales */}
           {pricingTab === 'monthly' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* FREE */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
@@ -740,23 +741,23 @@ export default function LandingPage() {
                 ))}
               </div>
             </motion.div>
-          </div>
-          
-          {/* Trust badges */}
-          <div className="mt-16 flex items-center justify-center gap-12 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              <span>Pago seguro SSL</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-5 h-5" />
-              <span>Cancelación flexible</span>
+            
+            {/* Trust badges */}
+            <div className="mt-16 flex items-center justify-center gap-12 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                <span>Pago seguro SSL</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                <span>Cancelación flexible</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                <span>Activación inmediata</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              <span>Activación inmediata</span>
-            </div>
-          </div>
           )}
           
           {/* Planes Anuales */}
