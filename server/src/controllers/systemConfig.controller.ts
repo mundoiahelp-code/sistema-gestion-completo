@@ -30,7 +30,7 @@ export const getSystemConfig = async (req: AuthRequest, res: Response, next: Nex
             daysBeforeExpiry: [7, 3, 1],
             afterExpiryDays: [1, 3, 7],
           },
-          twoFactorEnabled: false,
+          // twoFactorEnabled: false,
           paymentConfig: {
             currency: 'USD',
             taxRate: 0,
@@ -70,7 +70,7 @@ export const updateSystemConfig = async (req: AuthRequest, res: Response, next: 
           trialDuration: 14,
           planLimits: {},
           paymentReminders: {},
-          twoFactorEnabled: false,
+          // twoFactorEnabled: false,
           paymentConfig: {},
           maintenanceMode: false,
           maintenanceMessage: '',
@@ -93,9 +93,9 @@ export const updateSystemConfig = async (req: AuthRequest, res: Response, next: 
       case 'payment-reminders':
         updateData = { paymentReminders: data.paymentReminders };
         break;
-      case '2fa':
-        updateData = { twoFactorEnabled: data.enabled };
-        break;
+      // case '2fa':
+      //   updateData = { twoFactorEnabled: data.enabled };
+      //   break;
       case 'payment-config':
         updateData = { paymentConfig: data.paymentConfig };
         break;

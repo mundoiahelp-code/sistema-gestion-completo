@@ -101,9 +101,9 @@ model User {
   resetPasswordExpires    DateTime?
   refreshToken            String?                  @unique
   refreshTokenExpires     DateTime?
-  twoFactorEnabled        Boolean                  @default(false)
-  twoFactorSecret         String?
-  twoFactorBackupCodes    String?
+  // twoFactorEnabled        Boolean                  @default(false)
+  // twoFactorSecret         String?
+  // twoFactorBackupCodes    String?
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   tenantId                String
@@ -665,7 +665,7 @@ model SystemConfig {
   trialDuration        Int      @default(14)
   planLimits           Json     // { trial: { users, stores, products }, basic: {...}, pro: {...} }
   paymentReminders     Json     // { enabled, daysBeforeExpiry, afterExpiryDays }
-  twoFactorEnabled     Boolean  @default(false)
+  // twoFactorEnabled     Boolean  @default(false)
   paymentConfig        Json     // { currency, taxRate, invoicePrefix, autoInvoice }
   maintenanceMode      Boolean  @default(false)
   maintenanceMessage   String?
