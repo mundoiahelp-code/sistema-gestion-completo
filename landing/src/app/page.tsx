@@ -298,65 +298,9 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] antialiased scroll-smooth overflow-x-hidden">
-      {/* Animated Grid Background - Efecto artesanal */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '80px 80px',
-        }} />
-      </div>
-
-      {/* Floating Orbs - Animación orgánica personalizada */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <motion.div
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -100, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -150, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-violet-500/10 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, 80, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 4
-          }}
-          className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl"
-        />
-      </div>
-      
-      {/* NAV - Glassmorphism effect */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/60 backdrop-blur-2xl border-b border-white/[0.08]">
+    <div className="min-h-screen bg-white antialiased scroll-smooth overflow-x-hidden">
+      {/* NAV */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <motion.button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
@@ -365,15 +309,15 @@ export default function LandingPage() {
             whileTap={{ scale: 0.95 }}
           >
             <img src="/screenshots/logo.png" alt="Clodeb" className="h-10 w-auto" />
-            <span className="text-xl font-semibold text-white">Clodeb</span>
+            <span className="text-xl font-semibold text-gray-900">Clodeb</span>
           </motion.button>
           <div className="flex items-center gap-6">
-            <button onClick={() => scrollTo('funciones')} className="text-sm text-gray-400 hover:text-white transition hidden md:block font-medium">Funciones</button>
-            <button onClick={() => scrollTo('planes')} className="text-sm text-gray-400 hover:text-white transition hidden md:block font-medium">Planes</button>
-            <a href={`${APP_URL}/iniciar-sesion`} className="text-sm text-gray-400 hover:text-white transition font-medium">Ingresar</a>
+            <button onClick={() => scrollTo('funciones')} className="text-sm text-gray-600 hover:text-gray-900 transition hidden md:block font-medium">Funciones</button>
+            <button onClick={() => scrollTo('planes')} className="text-sm text-gray-600 hover:text-gray-900 transition hidden md:block font-medium">Planes</button>
+            <a href={`${APP_URL}/iniciar-sesion`} className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">Iniciar sesión</a>
             <motion.button 
               onClick={() => openModal('free')} 
-              className="bg-white text-black text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+              className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -383,8 +327,8 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO - Con efectos 3D y parallax */}
-      <section className="relative pt-32 pb-20 px-6 bg-gradient-to-b from-[#0a0a0a] via-[#111111] to-[#0a0a0a] overflow-hidden">
+      {/* HERO */}
+      <section className="relative pt-32 pb-20 px-6 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }} 
@@ -392,43 +336,32 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} 
             className="text-center mb-16"
           >
-            {/* Badge con animación de brillo */}
+            {/* Badge */}
             <motion.div 
-              className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-6 relative overflow-hidden"
+              className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-full px-4 py-2 mb-6"
               whileHover={{ scale: 1.05 }}
             >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                animate={{
-                  x: ['-100%', '200%'],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatDelay: 3,
-                }}
-              />
-              <Sparkles className="w-4 h-4 text-blue-400 relative z-10" />
-              <span className="text-sm text-blue-400 font-medium relative z-10">Sistema de gestión con IA</span>
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <span className="text-sm text-blue-600 font-medium">Asistente IA incluido</span>
             </motion.div>
             
-            {/* Título con gradiente animado */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 text-white">
+            {/* Título */}
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="block"
               >
-                Todo tu negocio Apple
+                Tu negocio Apple
               </motion.span>
               <motion.span 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                className="block bg-gradient-to-r from-blue-400 via-violet-400 to-pink-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient"
+                className="block text-blue-600"
               >
-                en un solo sistema
+                funcionando solo
               </motion.span>
             </h1>
             
@@ -436,14 +369,12 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed"
+              className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-10 leading-relaxed"
             >
-              Inventario, ventas, clientes y un Asistente IA que responde 24/7 por vos.
-              <br className="hidden sm:block" />
-              Tu negocio funcionando solo, incluso cuando dormís.
+              Sistema completo de gestión + Asistente IA que atiende clientes, agenda turnos y reserva productos por WhatsApp. 24/7, sin que hagas nada.
             </motion.p>
             
-            {/* Botones con efectos hover únicos */}
+            {/* Botones */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -452,35 +383,43 @@ export default function LandingPage() {
             >
               <motion.button 
                 onClick={() => openModal('free')} 
-                className="group relative inline-flex items-center justify-center gap-2 bg-white text-black font-semibold px-8 py-4 rounded-lg overflow-hidden text-lg shadow-lg"
+                className="group relative inline-flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold px-8 py-4 rounded-lg text-lg shadow-lg hover:bg-blue-700 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-400 to-violet-400 opacity-0 group-hover:opacity-20 transition-opacity"
-                />
-                <span className="relative z-10">Probar 7 días gratis</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
+                <span>Probar 7 días gratis</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
               <motion.button 
                 onClick={() => setShowContactModal(true)} 
-                className="group inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white font-semibold px-8 py-4 rounded-lg hover:bg-white/10 transition text-lg backdrop-blur-sm"
-                whileHover={{ scale: 1.05, borderColor: 'rgba(255,255,255,0.2)' }}
+                className="group inline-flex items-center justify-center gap-2 bg-gray-100 border border-gray-200 text-gray-900 font-semibold px-8 py-4 rounded-lg hover:bg-gray-200 transition text-lg"
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <MessageSquare className="w-5 h-5" />
                 Contactar
               </motion.button>
             </motion.div>
+            
+            <p className="text-sm text-gray-500 mt-6">
+              Sin tarjeta de crédito • Cancelá cuando quieras
+            </p>
           </motion.div>
           
-          {/* Screenshot con efecto 3D que responde al mouse */}
-          <ScreenshotWith3D />
+          {/* Screenshot */}
+          <div className="relative mt-16">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl"></div>
+            <img
+              src="/screenshots/dashboard.png"
+              alt="Dashboard"
+              className="relative rounded-xl shadow-2xl border border-gray-200"
+            />
+          </div>
         </div>
       </section>
 
       {/* STATS */}
-      <section className="py-16 px-6 bg-[#0a0a0a] border-y border-white/[0.08]">
+      <section className="py-16 px-6 bg-white border-y border-gray-200">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             { value: '24/7', label: 'Asistente activo' },
@@ -489,15 +428,94 @@ export default function LandingPage() {
             { value: '<5s', label: 'Respuesta' },
           ].map((stat, i) => (
             <div key={i} className="text-center">
-              <p className="text-4xl md:text-5xl font-bold text-white">{stat.value}</p>
-              <p className="text-sm text-gray-400 mt-2">{stat.label}</p>
+              <p className="text-4xl md:text-5xl font-bold text-gray-900">{stat.value}</p>
+              <p className="text-sm text-gray-600 mt-2">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* FEATURES GRID - Con efectos 3D en hover */}
-      <section id="funciones" className="py-24 px-6 bg-[#111111] relative">
+      {/* ASISTENTE IA SECTION */}
+      <section className="py-24 px-6 bg-gradient-to-b from-blue-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Asistente IA que trabaja por vos
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Conectado en tiempo real con tu sistema. Atiende clientes, gestiona turnos y reserva productos automáticamente por WhatsApp.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+            <div>
+              <img
+                src="/screenshots/chat-whatsapp.png"
+                alt="Chat WhatsApp"
+                className="rounded-xl shadow-xl"
+              />
+            </div>
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Responde consultas al instante</h3>
+                  <p className="text-gray-600">Muestra stock en tiempo real, precios, características y disponibilidad de productos.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Agenda turnos automáticamente</h3>
+                  <p className="text-gray-600">Crea, modifica y cancela turnos según tus horarios configurados. Todo sincronizado con el sistema.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Package className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Reserva productos</h3>
+                  <p className="text-gray-600">Los clientes pueden reservar productos directamente por WhatsApp. El sistema actualiza el stock automáticamente.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Disponible 24/7</h3>
+                  <p className="text-gray-600">Nunca pierdas una venta. El asistente trabaja mientras dormís, los fines de semana y feriados.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+            <div className="flex items-center gap-2 mb-4">
+              <Check className="w-5 h-5 text-green-600" />
+              <span className="font-semibold text-gray-900">Ejemplo real:</span>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Cliente: "Hola, tenés iPhone 13 Pro en stock?"<br />
+              <span className="text-blue-600">Asistente: "¡Hola! Sí, tenemos iPhone 13 Pro 128GB en Grafito y Azul Sierra. Precio: $850.000. ¿Te gustaría reservarlo?"</span>
+            </p>
+            <p className="text-sm text-gray-500">
+              El asistente consulta tu inventario en tiempo real y responde con información actualizada.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES GRID */}
+      <section id="funciones" className="py-24 px-6 bg-white relative">
         <div className="max-w-6xl mx-auto relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -506,8 +524,8 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">Todo lo que necesitás</h2>
-            <p className="text-xl text-gray-400">Un sistema completo para hacer crecer tu negocio</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Todo lo que necesitás</h2>
+            <p className="text-xl text-gray-600">Un sistema completo para hacer crecer tu negocio</p>
           </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -519,35 +537,55 @@ export default function LandingPage() {
               { icon: Users, title: 'CRM Clientes', desc: 'Historial completo de compras, chats y preferencias de cada cliente', badge: 'Pro', color: 'pink' },
               { icon: BarChart2, title: 'Reportes', desc: 'Dashboard en vivo con métricas de ventas, productos y ganancias', color: 'indigo' },
             ].map((feature, i) => (
-              <FeatureCard key={i} feature={feature} index={i} />
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 hover:shadow-lg transition-all"
+              >
+                <div className={`w-12 h-12 rounded-xl bg-${feature.color}-100 flex items-center justify-center mb-4`}>
+                  <feature.icon className={`w-6 h-6 text-${feature.color}-600`} />
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-lg text-gray-900">{feature.title}</h3>
+                  {feature.badge && (
+                    <span className="text-xs font-semibold bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full">
+                      {feature.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">{feature.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* BENEFITS - Chat + Screenshot */}
-      <section className="py-24 px-6 bg-[#0a0a0a]">
+      <section className="py-24 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
               El Asistente agenda turnos<br />
               <span className="text-gray-500">mientras vos descansás</span>
             </h2>
-            <p className="text-xl text-gray-400">Mirá cómo funciona en tiempo real</p>
+            <p className="text-xl text-gray-600">Mirá cómo funciona en tiempo real</p>
           </div>
           
           {/* Sistema + iPhone Chat lado a lado */}
           <div className="relative">
             <div className="flex items-center justify-center gap-2 mb-8">
-              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
-                <Check className="w-3 h-3 text-green-400" />
+              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                <Check className="w-3 h-3 text-green-600" />
               </div>
-              <span className="text-sm font-semibold text-green-400">Turno creado automáticamente en el sistema</span>
+              <span className="text-sm font-semibold text-green-600">Turno creado automáticamente en el sistema</span>
             </div>
             
             <div className="relative flex flex-col lg:flex-row items-center justify-center gap-8">
               {/* Screenshot del sistema */}
-              <div className="relative overflow-hidden w-full lg:max-w-[750px] rounded-2xl shadow-2xl border border-white/10">
+              <div className="relative overflow-hidden w-full lg:max-w-[750px] rounded-2xl shadow-2xl border border-gray-200">
                 <img src="/screenshots/turnos.png" alt="Sistema de turnos" className="w-full" />
               </div>
               
@@ -569,13 +607,13 @@ export default function LandingPage() {
               { icon: Zap, title: 'Vendé más', desc: 'Nunca pierdas una venta por no responder a tiempo', color: 'violet' },
               { icon: Shield, title: 'Todo organizado', desc: 'Stock, ventas, ingresos y clientes en un solo lugar', color: 'emerald' },
             ].map((item, i) => (
-              <div key={i} className="flex gap-4 bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/[0.07] transition">
-                <div className={`w-12 h-12 rounded-xl bg-${item.color}-500/10 flex items-center justify-center flex-shrink-0`}>
-                  <item.icon className={`w-6 h-6 text-${item.color}-400`} />
+              <div key={i} className="flex gap-4 bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-lg transition">
+                <div className={`w-12 h-12 rounded-xl bg-${item.color}-100 flex items-center justify-center flex-shrink-0`}>
+                  <item.icon className={`w-6 h-6 text-${item.color}-600`} />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-1">{item.title}</h4>
-                  <p className="text-gray-400 text-sm">{item.desc}</p>
+                  <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
+                  <p className="text-gray-600 text-sm">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -584,11 +622,11 @@ export default function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <section id="planes" className="py-24 px-6 bg-[#0a0a0a]">
+      <section id="planes" className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Precios simples y transparentes</h2>
-            <p className="text-xl text-gray-400">Elegí el plan que mejor se adapte a tu negocio</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Precios simples y transparentes</h2>
+            <p className="text-xl text-gray-600">Elegí el plan que mejor se adapte a tu negocio</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -597,19 +635,19 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }} 
               whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true }}
-              className="bg-white/[0.03] border border-white/10 rounded-xl p-8 hover:border-white/20 transition-all hover:bg-white/[0.05]"
+              className="bg-white border border-gray-200 rounded-xl p-8 hover:border-gray-300 transition-all hover:shadow-lg"
             >
               <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">Prueba gratuita</h3>
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Prueba gratuita</h3>
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-bold text-white">Gratis</span>
+                  <span className="text-5xl font-bold text-gray-900">Gratis</span>
                 </div>
-                <p className="text-gray-500 text-sm">7 días para probar</p>
+                <p className="text-gray-600 text-sm">7 días para probar</p>
               </div>
               
               <button 
                 onClick={() => openModal('free')} 
-                className="w-full bg-white/10 hover:bg-white/15 border border-white/10 text-white font-medium py-3 px-6 rounded-lg transition mb-8"
+                className="w-full bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 font-medium py-3 px-6 rounded-lg transition mb-8"
               >
                 Comenzar prueba
               </button>
@@ -624,10 +662,10 @@ export default function LandingPage() {
                   { text: 'Hasta 4 usuarios', desc: 'Equipo pequeño' },
                 ].map((f, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <span className="text-gray-300 text-sm block">{f.text}</span>
-                      <span className="text-gray-600 text-xs">{f.desc}</span>
+                      <span className="text-gray-700 text-sm block">{f.text}</span>
+                      <span className="text-gray-500 text-xs">{f.desc}</span>
                     </div>
                   </div>
                 ))}
@@ -640,16 +678,20 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true }} 
               transition={{ delay: 0.1 }}
-              className="bg-white/[0.03] border border-white/10 rounded-xl p-8 hover:border-blue-500/50 transition-all hover:bg-white/[0.05] relative"
+              className="bg-white border-2 border-blue-600 rounded-xl p-8 hover:shadow-xl transition-all relative"
             >
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-blue-400 uppercase tracking-wider mb-3">Básico</h3>
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-sm font-semibold px-4 py-1 rounded-full">
+                Más popular
+              </div>
+              
+              <div className="mb-8 mt-2">
+                <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-3">Básico</h3>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl text-gray-600 line-through">$89</span>
-                  <span className="text-5xl font-bold text-white">$59</span>
-                  <span className="text-gray-500">/mes</span>
+                  <span className="text-2xl text-gray-400 line-through">$89</span>
+                  <span className="text-5xl font-bold text-gray-900">$59</span>
+                  <span className="text-gray-600">/mes</span>
                 </div>
-                <div className="inline-block bg-green-500/10 text-green-400 text-xs font-medium px-2 py-1 rounded mt-2">
+                <div className="inline-block bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded mt-2">
                   Ahorrás $30/mes
                 </div>
               </div>
@@ -672,10 +714,10 @@ export default function LandingPage() {
                   { text: 'Soporte prioritario', desc: 'Respuesta en 24hs' },
                 ].map((f, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <span className="text-gray-300 text-sm block">{f.text}</span>
-                      <span className="text-gray-600 text-xs">{f.desc}</span>
+                      <span className="text-gray-700 text-sm block">{f.text}</span>
+                      <span className="text-gray-500 text-xs">{f.desc}</span>
                     </div>
                   </div>
                 ))}
@@ -688,27 +730,23 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true }} 
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-b from-violet-500/10 to-blue-500/10 border border-violet-500/50 rounded-xl p-8 hover:border-violet-500 transition-all relative"
+              className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-8 hover:shadow-xl transition-all relative"
             >
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 to-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Más popular
-              </div>
-              
               <div className="mb-8 mt-2">
-                <h3 className="text-sm font-medium text-violet-400 uppercase tracking-wider mb-3">Profesional</h3>
+                <h3 className="text-sm font-medium text-purple-600 uppercase tracking-wider mb-3">Profesional</h3>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl text-gray-600 line-through">$249</span>
-                  <span className="text-5xl font-bold text-white">$179</span>
-                  <span className="text-gray-500">/mes</span>
+                  <span className="text-2xl text-gray-400 line-through">$249</span>
+                  <span className="text-5xl font-bold text-gray-900">$179</span>
+                  <span className="text-gray-600">/mes</span>
                 </div>
-                <div className="inline-block bg-violet-500/20 text-violet-300 text-xs font-medium px-2 py-1 rounded mt-2">
+                <div className="inline-block bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded mt-2">
                   Ahorrás $70/mes
                 </div>
               </div>
               
               <button 
                 onClick={() => openModal('pro')} 
-                className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-medium py-3 px-6 rounded-lg transition mb-8"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-lg transition mb-8"
               >
                 Comenzar ahora
               </button>
@@ -725,10 +763,10 @@ export default function LandingPage() {
                   { text: 'Soporte VIP', desc: 'Respuesta inmediata + WhatsApp directo' },
                 ].map((f, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-violet-400 mt-0.5 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <span className="text-white text-sm block font-medium">{f.text}</span>
-                      <span className="text-gray-500 text-xs">{f.desc}</span>
+                      <span className="text-gray-900 text-sm block font-medium">{f.text}</span>
+                      <span className="text-gray-600 text-xs">{f.desc}</span>
                     </div>
                   </div>
                 ))}
@@ -737,7 +775,7 @@ export default function LandingPage() {
           </div>
           
           {/* Trust badges */}
-          <div className="mt-16 flex items-center justify-center gap-12 text-sm text-gray-500">
+          <div className="mt-16 flex items-center justify-center gap-12 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
               <span>Pago seguro SSL</span>
@@ -755,34 +793,34 @@ export default function LandingPage() {
       </section>
 
       {/* PLANES ANUALES */}
-      <section id="anuales" className="py-24 px-6 bg-[#111111]">
+      <section id="anuales" className="py-24 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 mb-6">
-              <span className="text-sm text-green-400 font-semibold">Ahorrá 2 meses pagando anual</span>
+            <div className="inline-flex items-center gap-2 bg-green-100 border border-green-200 rounded-full px-4 py-2 mb-6">
+              <span className="text-sm text-green-700 font-semibold">Ahorrá 2 meses pagando anual</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">Planes Anuales</h2>
-            <p className="text-xl text-gray-400">Pagá una vez, usá todo el año</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Planes Anuales</h2>
+            <p className="text-xl text-gray-600">Pagá una vez, usá todo el año</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* BÁSICO ANUAL */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white/[0.03] border border-white/10 rounded-xl p-8 hover:bg-white/[0.05] hover:border-white/20 transition">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg hover:border-gray-300 transition">
               <div className="mb-6">
-                <p className="text-sm font-medium text-blue-400 uppercase tracking-wider mb-2">Básico Anual</p>
+                <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-2">Básico Anual</p>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base text-gray-600 line-through">USD $708</span>
-                  <div className="bg-green-500/10 text-green-400 text-xs font-medium px-2 py-1 rounded">
+                  <span className="text-base text-gray-400 line-through">USD $708</span>
+                  <div className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded">
                     -17% OFF
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-white">USD $590</p>
-                  <span className="text-gray-500">/año</span>
+                  <p className="text-4xl font-bold text-gray-900">USD $590</p>
+                  <span className="text-gray-600">/año</span>
                 </div>
-                <p className="text-green-400 text-sm mt-2 font-medium">Ahorrás USD $118 al año</p>
+                <p className="text-green-600 text-sm mt-2 font-medium">Ahorrás USD $118 al año</p>
               </div>
-              <p className="text-gray-400 text-sm mb-6 pb-6 border-b border-white/10">
+              <p className="text-gray-600 text-sm mb-6 pb-6 border-b border-gray-200">
                 Plan Básico por un año completo
               </p>
               <ul className="space-y-3 mb-8">
@@ -792,8 +830,8 @@ export default function LandingPage() {
                   'Soporte WhatsApp 6 meses',
                   'Precio congelado'
                 ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-                    <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" /> {f}
+                  <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" /> {f}
                   </li>
                 ))}
               </ul>
@@ -803,25 +841,25 @@ export default function LandingPage() {
             </motion.div>
 
             {/* PRO ANUAL */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="relative bg-gradient-to-b from-violet-500/10 to-blue-500/10 border border-violet-500/50 rounded-xl p-8 hover:border-violet-500 transition">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 to-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="relative bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-purple-600 rounded-xl p-8 hover:shadow-xl transition">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
                 Recomendado
               </div>
               <div className="mb-6 mt-2">
-                <p className="text-sm font-medium text-violet-400 uppercase tracking-wider mb-2">Pro Anual</p>
+                <p className="text-sm font-medium text-purple-600 uppercase tracking-wider mb-2">Pro Anual</p>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base text-gray-600 line-through">USD $2,148</span>
-                  <div className="bg-violet-500/20 text-violet-300 text-xs font-medium px-2 py-1 rounded">
+                  <span className="text-base text-gray-400 line-through">USD $2,148</span>
+                  <div className="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded">
                     -17% OFF
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-white">USD $1,790</p>
-                  <span className="text-gray-500">/año</span>
+                  <p className="text-4xl font-bold text-gray-900">USD $1,790</p>
+                  <span className="text-gray-600">/año</span>
                 </div>
-                <p className="text-violet-400 text-sm mt-2 font-medium">Ahorrás USD $358 al año</p>
+                <p className="text-purple-600 text-sm mt-2 font-medium">Ahorrás USD $358 al año</p>
               </div>
-              <p className="text-gray-300 text-sm mb-6 pb-6 border-b border-white/10">
+              <p className="text-gray-700 text-sm mb-6 pb-6 border-b border-gray-200">
                 Plan Pro completo con setup incluido
               </p>
               <ul className="space-y-3 mb-8">
@@ -832,12 +870,12 @@ export default function LandingPage() {
                   'Capacitación',
                   'Precio congelado'
                 ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-white font-medium">
-                    <Check className="w-5 h-5 text-violet-400 mt-0.5 flex-shrink-0" /> {f}
+                  <li key={i} className="flex items-start gap-3 text-sm text-gray-900 font-medium">
+                    <Check className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" /> {f}
                   </li>
                 ))}
               </ul>
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Pro Anual`} target="_blank" className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Pro Anual`} target="_blank" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
                 Contratar anual
               </a>
             </motion.div>
@@ -846,7 +884,7 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="py-12 px-6 border-t border-white/[0.08] bg-[#0a0a0a]">
+      <footer className="py-12 px-6 border-t border-gray-200 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
@@ -855,17 +893,17 @@ export default function LandingPage() {
                 alt="Clodeb" 
                 className="h-10 w-auto object-contain"
               />
-              <span className="font-semibold text-white">Clodeb</span>
+              <span className="font-semibold text-gray-900">Clodeb</span>
             </div>
             <div className="flex items-center gap-6">
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" className="text-gray-400 hover:text-white transition text-sm font-medium">WhatsApp</a>
-              <a href="/terminos" className="text-gray-400 hover:text-white transition text-sm font-medium">Términos</a>
-              <a href="/privacidad" className="text-gray-400 hover:text-white transition text-sm font-medium">Privacidad</a>
-              <a href={`${APP_URL}/iniciar-sesion`} className="text-gray-400 hover:text-white transition text-sm font-medium">Ingresar</a>
+              <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" className="text-gray-600 hover:text-gray-900 transition text-sm font-medium">WhatsApp</a>
+              <a href="/terminos" className="text-gray-600 hover:text-gray-900 transition text-sm font-medium">Términos</a>
+              <a href="/privacidad" className="text-gray-600 hover:text-gray-900 transition text-sm font-medium">Privacidad</a>
+              <a href={`${APP_URL}/iniciar-sesion`} className="text-gray-600 hover:text-gray-900 transition text-sm font-medium">Iniciar sesión</a>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-white/[0.08] text-center">
-            <p className="text-sm text-gray-500">© 2023 Clodeb. Todos los derechos reservados.</p>
+          <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-500">© 2024 Clodeb. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
