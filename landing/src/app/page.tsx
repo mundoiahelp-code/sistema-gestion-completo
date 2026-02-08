@@ -742,22 +742,6 @@ export default function LandingPage() {
               </div>
             </motion.div>
             </div>
-            
-            {/* Trust badges */}
-            <div className="mt-16 flex items-center justify-center gap-12 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                <span>Pago seguro SSL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-5 h-5" />
-                <span>Cancelación flexible</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                <span>Activación inmediata</span>
-              </div>
-            </div>
           )}
           
           {/* Planes Anuales */}
@@ -909,6 +893,22 @@ export default function LandingPage() {
               </motion.div>
             </div>
           )}
+          
+          {/* Trust badges */}
+          <div className="mt-16 flex items-center justify-center gap-12 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              <span>Pago seguro SSL</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5" />
+              <span>Cancelación flexible</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              <span>Activación inmediata</span>
+            </div>
+          </div>
         </div>
       </section>
 
