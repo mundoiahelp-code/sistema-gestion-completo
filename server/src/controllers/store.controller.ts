@@ -154,8 +154,6 @@ export const updateStore = async (req: AuthRequest, res: Response) => {
     const data = storeSchema.partial().parse(req.body);
     const tenantId = req.user?.tenantId;
 
-    console.log('📝 Datos recibidos para actualizar store:', JSON.stringify(data, null, 2));
-
     // Verificar que la tienda pertenece al tenant
     const existing = await prisma.store.findFirst({
       where: { id: req.params.id, tenantId }
@@ -170,11 +168,8 @@ export const updateStore = async (req: AuthRequest, res: Response) => {
       data
     });
 
-    console.log('✅ Store actualizado:', JSON.stringify(store, null, 2));
-
     res.json({ store });
   } catch (error) {
-    console.error('❌ Error al actualizar store:', error);
     res.status(400).json({ error: 'Error al actualizar tienda' });
   }
 };

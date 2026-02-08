@@ -312,10 +312,8 @@ export default function StoresList({ data }: Props) {
     return <IconUsed className='h-5 w-5' />;
   };
 
-  const handleEditStore = (storeData: any) => {
+  const handleEditStore = async (storeData: any) => {
     if (!storeToEdit) return;
-
-    console.log('📤 Enviando datos al backend:', JSON.stringify(storeData, null, 2));
 
     const config: AxiosRequestConfig = {
       url: `${API}/stores/${storeToEdit.id}`,
@@ -325,22 +323,28 @@ export default function StoresList({ data }: Props) {
     };
 
     setLoading(true);
-    axios(config)
-      .then((response) => {
-        console.log('✅ Respuesta del backend:', JSON.stringify(response.data, null, 2));
-        handleSuccessSonner(t('stores.storeUpdated'));
-        setStores(prev => prev.map(s => 
-          s.id === storeToEdit.id ? { ...s, ...storeData } : s
-        ));
-        setEditStoreOpen(false);
-        setStoreToEdit(null);
-        router.refresh();
-      })
-      .catch((err) => {
-        console.error('❌ Error al actualizar:', err);
-        handleErrorSonner(err.response?.data?.error || t('stores.errorUpdating'));
-      })
-      .finally(() => setLoading(false));
+    try {
+      const response = await axios(config);
+      const updatedStore = response.data.store;
+      
+      // Actualizar el estado local
+      setStores(prev => prev.map(s => 
+        s.id === storeToEdit.id ? updatedStore : s
+      ));
+      
+      // Si esta tienda está seleccionada, actualizar también selectedStore
+      if (selectedStore?.id === storeToEdit.id) {
+        setSelectedStore(updatedStore);
+      }
+      
+      handleSuccessSonner(t('stores.storeUpdated'));
+      setEditStoreOpen(false);
+      setStoreToEdit(null);
+    } catch (err: any) {
+      handleErrorSonner(err.response?.data?.error || t('stores.errorUpdating'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const selectedAcc = accessories.find(a => a.id === transferProductId);
