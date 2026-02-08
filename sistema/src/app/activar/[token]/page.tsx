@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff, Building2, CheckCircle } from 'lucide-react';
-import Image from 'next/image';
+import { LogoIcon } from '@/components/ui/LogoIcon';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -171,12 +171,7 @@ export default function ActivarCuentaPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-2xl mb-4">
-              <Image
-                src="/images/logo-icon.png"
-                width={40}
-                height={40}
-                alt="Clodeb"
-              />
+              <LogoIcon size={40} />
             </div>
             <h1 className="text-2xl font-bold mb-2">
               {isEnglish ? 'Activate Your Account' : 'Activá tu Cuenta'}

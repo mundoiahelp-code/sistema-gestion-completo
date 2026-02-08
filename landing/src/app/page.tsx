@@ -364,7 +364,7 @@ export default function LandingPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <img src="/screenshots/logo.png" alt="Clodeb" className="h-10 w-auto" />
+            <img src="/screenshots/logo-white.svg" alt="Clodeb" className="h-10 w-auto" />
             <span className="text-xl font-semibold text-white">Clodeb</span>
           </motion.button>
           <div className="flex items-center gap-6">
@@ -851,7 +851,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <img 
-                src="/screenshots/logo.png" 
+                src="/screenshots/logo-white.svg" 
                 alt="Clodeb" 
                 className="h-10 w-auto object-contain"
               />

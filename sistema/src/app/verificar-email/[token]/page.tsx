@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { LogoIcon } from '@/components/ui/LogoIcon';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://sistema-gestion-production-d961.up.railway.app/api';
 
@@ -55,12 +55,7 @@ export default function VerifyEmailPage() {
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-2xl flex items-center justify-center">
-              <Image
-                src="/images/logo-icon.png"
-                width={40}
-                height={40}
-                alt="Clodeb"
-              />
+              <LogoIcon size={40} />
             </div>
           </div>
 

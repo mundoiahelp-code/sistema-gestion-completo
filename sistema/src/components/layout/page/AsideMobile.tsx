@@ -322,10 +322,18 @@ export default function AsideMobile() {
               href='/inicio'
               className='group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold md:text-base'
             >
-              {/* Logo Clodeb */}
+              {/* Logo Clodeb - cambia según tema */}
               <Image
-                src='/images/logo-icon.png'
-                className='cursor-pointer h-auto w-auto'
+                src='/images/logo-dark.svg'
+                className='cursor-pointer h-auto w-auto dark:hidden'
+                alt='Clodeb'
+                height={0}
+                width={60}
+                priority={true}
+              />
+              <Image
+                src='/images/logo-white.svg'
+                className='cursor-pointer h-auto w-auto hidden dark:block'
                 alt='Clodeb'
                 height={0}
                 width={60}

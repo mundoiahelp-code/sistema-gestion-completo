@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
-import Image from 'next/image';
+import { LogoIcon } from '@/components/ui/LogoIcon';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://sistema-gestion-production-d961.up.railway.app/api';
 
