@@ -93,7 +93,7 @@ export default function AccessorySearch({ onAddAccessory, loading }: Props) {
       </div>
 
       {accessories.length > 0 && (
-        <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
+        <div className="rounded-lg divide-y max-h-48 overflow-y-auto bg-zinc-50 dark:bg-zinc-800/50">
           {accessories.map((acc) => (
             <div key={acc.id} className="p-2 flex items-center justify-between gap-2 text-sm">
               <div className="flex-1 min-w-0">

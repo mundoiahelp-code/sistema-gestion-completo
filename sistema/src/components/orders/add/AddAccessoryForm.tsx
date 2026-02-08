@@ -176,7 +176,7 @@ export default function AddAccessoryForm({ stores }: Props) {
     <div className="space-y-4">
       <div className="space-y-4">
         {items.map((item, index) => (
-          <div key={index} className="p-4 border rounded-lg bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700">
+          <div key={index} className="p-4 rounded-lg bg-gray-50 dark:bg-zinc-800">
             <div className="flex justify-between items-center mb-3">
               <span className="text-sm font-medium text-gray-600 dark:text-zinc-400">
                 {locale === 'es' ? 'Accesorio' : 'Accessory'} #{index + 1}

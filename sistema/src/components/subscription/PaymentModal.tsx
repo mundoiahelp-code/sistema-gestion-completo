@@ -222,8 +222,8 @@ export default function PaymentModal({ open, onClose, plan, billingCycle, amount
             </div>
 
             {/* Datos de Transferencia */}
-            <div className="border dark:border-zinc-800 rounded-lg overflow-hidden">
-              <div className="bg-zinc-100 dark:bg-zinc-800 px-4 py-3 border-b dark:border-zinc-700">
+            <div className="rounded-lg overflow-hidden bg-zinc-50 dark:bg-zinc-800/50">
+              <div className="bg-zinc-100 dark:bg-zinc-800 px-4 py-3">
                 <h3 className="font-semibold">💰 Transferí a estos datos:</h3>
               </div>
               

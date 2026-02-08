@@ -427,7 +427,7 @@ export default function TenantDetailModal({ tenant, open, onClose, onUpdate, onD
           <TabsContent value="actions" className="space-y-4">
             <div className="space-y-3">
               {/* Activar/Desactivar */}
-              <div className="p-4 border rounded-lg">
+              <div className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold mb-1">
@@ -449,7 +449,7 @@ export default function TenantDetailModal({ tenant, open, onClose, onUpdate, onD
               </div>
 
               {/* Marcar como pagado */}
-              <div className="p-4 border rounded-lg">
+              <div className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold mb-1">Marcar como pagado</h4>

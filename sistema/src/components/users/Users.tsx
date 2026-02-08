@@ -170,7 +170,7 @@ export default function Users() {
               )}
             </div>
           ) : (
-            <div className='rounded-md border'>
+            <div className='rounded-md'>
               <Table>
                 <TableHeader>
                   <TableRow>

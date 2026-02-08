@@ -311,7 +311,7 @@ export default function TableSales({ data, pagination, query }: Props) {
       
       {/* Paginación */}
       {pagination.total > pagination.perPage && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border dark:border-zinc-800 mt-2 md:mt-0 md:border-t md:rounded-t-none">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg mt-2 md:mt-0">
           <Pagination
             currPage={pagination.page}
             nextPage={nextPage}

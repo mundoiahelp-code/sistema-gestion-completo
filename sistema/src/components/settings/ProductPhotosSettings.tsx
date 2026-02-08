@@ -214,7 +214,7 @@ export default function ProductPhotosSettings() {
             <AccordionItem 
               key={model.modelName} 
               value={model.modelName}
-              className="border rounded-lg px-4 bg-white dark:bg-zinc-800"
+              className="rounded-lg px-4 bg-white dark:bg-zinc-800"
             >
               <AccordionTrigger className="hover:no-underline py-3">
                 <div className="flex items-center justify-between w-full pr-4">

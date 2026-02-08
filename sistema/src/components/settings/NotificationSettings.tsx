@@ -359,7 +359,7 @@ function WhatsAppNotificationNumbers() {
       {numbers.length > 0 ? (
         <div className='space-y-3'>
           {numbers.map((number) => (
-            <div key={number.id} className='flex items-center justify-between p-3 border dark:border-zinc-700 rounded-lg'>
+            <div key={number.id} className='flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50'>
               <div className='flex items-center gap-3 flex-1'>
                 <div className='p-2 rounded-lg bg-green-100 dark:bg-green-900/30'>
                   <MessageSquare className='h-4 w-4 text-green-600' />

@@ -557,7 +557,7 @@ export default function StoresList({ data }: Props) {
               </div>
               
               {foundProduct && (
-                <div className='bg-zinc-50 border rounded-lg p-3 space-y-2'>
+                <div className='bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-3 space-y-2'>
                   <p className='text-sm font-medium text-green-600'>{t('stores.productFound')}</p>
                   <div className='grid grid-cols-2 gap-2 text-sm'>
                     <div>
