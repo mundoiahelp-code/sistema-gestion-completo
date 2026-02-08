@@ -611,7 +611,7 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-2 mb-2">
                   <span className="text-5xl font-bold text-gray-900">Gratis</span>
                 </div>
-                <p className="text-gray-600 text-sm">7 días para probar</p>
+                <p className="text-gray-600 text-sm">14 días para probar</p>
               </div>
               
               <button 
@@ -832,29 +832,30 @@ export default function LandingPage() {
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg hover:border-gray-300 transition">
                 <div className="mb-6">
                   <p className="text-sm font-medium text-blue-600 uppercase tracking-wider mb-2">Básico Forever</p>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-4xl font-bold text-gray-900">USD $1,990</p>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <p className="text-4xl font-bold text-gray-900">Pago único</p>
                   </div>
-                  <p className="text-blue-600 text-sm mt-2 font-medium">Pago único • De por vida</p>
+                  <p className="text-blue-600 text-sm font-medium">Acceso de por vida</p>
                 </div>
                 <p className="text-gray-600 text-sm mb-6 pb-6 border-b border-gray-200">
-                  Acceso de por vida al Plan Básico
+                  Adquirí el Plan Básico una sola vez y usalo para siempre
                 </p>
                 <ul className="space-y-3 mb-8">
                   {[
                     'Todo lo del Plan Básico',
                     'Actualizaciones de por vida',
-                    'Sin pagos mensuales',
+                    'Sin pagos mensuales nunca más',
                     'Soporte prioritario',
-                    'Precio único'
+                    'Una inversión, beneficio eterno'
                   ].map((f, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
                       <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" /> {f}
                     </li>
                   ))}
                 </ul>
-                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Básico Forever`} target="_blank" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
-                  Comprar Forever
+                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero información sobre el plan Básico Forever`} target="_blank" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  Consultar precio
                 </a>
               </motion.div>
 
@@ -865,30 +866,31 @@ export default function LandingPage() {
                 </div>
                 <div className="mb-6 mt-2">
                   <p className="text-sm font-medium text-purple-600 uppercase tracking-wider mb-2">Pro Forever</p>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-4xl font-bold text-gray-900">USD $5,990</p>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <p className="text-4xl font-bold text-gray-900">Pago único</p>
                   </div>
-                  <p className="text-purple-600 text-sm mt-2 font-medium">Pago único • De por vida</p>
+                  <p className="text-purple-600 text-sm font-medium">Acceso de por vida</p>
                 </div>
                 <p className="text-gray-700 text-sm mb-6 pb-6 border-b border-gray-200">
-                  Acceso de por vida al Plan Pro con todo incluido
+                  Adquirí el Plan Pro completo una sola vez y usalo para siempre
                 </p>
                 <ul className="space-y-3 mb-8">
                   {[
                     'Todo del Plan Pro',
                     'Actualizaciones de por vida',
-                    'Sin pagos mensuales',
+                    'Sin pagos mensuales nunca más',
                     'Setup + Capacitación incluidos',
                     'Soporte VIP de por vida',
-                    'Precio único'
+                    'Una inversión, beneficio eterno'
                   ].map((f, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-900 font-medium">
                       <Check className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" /> {f}
                     </li>
                   ))}
                 </ul>
-                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero contratar el plan Pro Forever`} target="_blank" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
-                  Comprar Forever
+                <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola! Quiero información sobre el plan Pro Forever`} target="_blank" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  Consultar precio
                 </a>
               </motion.div>
             </div>
