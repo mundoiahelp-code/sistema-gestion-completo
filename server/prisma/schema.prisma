@@ -1,0 +1,695 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                          String                       @id @default(uuid())
+  name                        String
+  slug                        String                       @unique
+  logo                        String?
+  customLogo                  String?                      // URL del logo personalizado
+  primaryColor                String?                      @default("#000000")
+  secondaryColor              String?                      @default("#ffffff")
+  phone                       String?
+  email                       String?
+  address                     String?
+  website                     String?
+  instagram                   String?
+  whatsapp                    String?
+  currency                    String                       @default("ARS")
+  timezone                    String                       @default("America/Argentina/Buenos_Aires")
+  locale                      String                       @default("es")
+  plan                        String                       @default("basic")
+  planPrice                   Float?
+  planStartDate               DateTime?
+  planExpires                 DateTime?
+  paymentMethod               String?
+  lastPaymentDate             DateTime?
+  nextPaymentDate             DateTime?
+  paymentStatus               String                       @default("pending")
+  notes                       String?
+  active                      Boolean                      @default(true)
+  onboardingCompleted         Boolean                      @default(false)
+  invitationToken             String?                      @unique
+  emailVerified               Boolean                      @default(false)
+  emailVerificationToken      String?                      @unique
+  emailVerificationCode       String?
+  emailVerificationExpires    DateTime?
+  emailVerificationAttempts   Int                          @default(0)
+  emailVerificationLastSent   DateTime?
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  botEnabled                  Boolean                      @default(true)
+  botTone                     String                       @default("amigable")
+  botLanguage                 String                       @default("argentino")
+  botGreeting                 String?
+  botFarewell                 String?
+  botExtraInfo                String?
+  botWarrantyDays             Int                          @default(30)
+  botShipsOrders              Boolean                      @default(false)
+  botPaymentMethods           String                       @default("efectivo,transferencia,usdt")
+  botWorkingHours             String?
+  botLocation                 String?
+  whatsappAsesor              String?
+  shippingZones               String?
+  shippingTime                String?
+  returnPolicy                String?
+  reservationDeposit          String?
+  hiddenModels                String?
+  hiddenCategories            String?
+  botPort                     Int?
+  lastSalesExportAt           DateTime?
+  lastActivityAt              DateTime?                    @default(now())
+  appointments                Appointment[]
+  blockedTimeSlots            BlockedTimeSlot[]
+  auditLogs                   AuditLog[]
+  botConfigs                  BotConfig[]
+  broadcastChannels           BroadcastChannel[]
+  chatMessages                ChatMessage[]
+  clients                     Client[]
+  orders                      Order[]
+  payments                    Payment[]
+  productPhotos               ProductPhoto[]
+  products                    Product[]
+  repairs                     Repair[]
+  sales                       Sale[]
+  stores                      Store[]
+  users                       User[]
+  whatsappNotificationNumbers WhatsAppNotificationNumber[]
+  subscriptions               Subscription[]
+  invoices                    Invoice[]
+  activityLogs                ActivityLog[]
+
+  @@map("tenants")
+}
+
+model User {
+  id                      String                   @id @default(uuid())
+  email                   String                   @unique
+  password                String
+  name                    String
+  role                    String                   @default("SELLER")
+  avatarColor             String                   @default("black")
+  active                  Boolean                  @default(true)
+  resetPasswordToken      String?
+  resetPasswordExpires    DateTime?
+  refreshToken            String?                  @unique
+  refreshTokenExpires     DateTime?
+  twoFactorEnabled        Boolean                  @default(false)
+  twoFactorSecret         String?
+  twoFactorBackupCodes    String?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  tenantId                String
+  storeId                 String?
+  auditLogs               AuditLog[]
+  notificationPreferences NotificationPreferences?
+  orders                  Order[]
+  priceChanges            PriceHistory[]
+  sales                   Sale[]
+  store                   Store?                   @relation(fields: [storeId], references: [id])
+  tenant                  Tenant                   @relation(fields: [tenantId], references: [id])
+  appointments            Appointment[]            @relation("AppointmentAssignedUser")
+  activityLogs            ActivityLog[]
+
+  @@map("users")
+}
+
+model Store {
+  id                  String        @id @default(uuid())
+  name                String
+  icon                String        @default("store")
+  address             String?
+  phone               String?
+  mondayHours         String?
+  tuesdayHours        String?
+  wednesdayHours      String?
+  thursdayHours       String?
+  fridayHours         String?
+  saturdayHours       String?
+  sundayHours         String?
+  appointmentDuration Int           @default(15)
+  appointmentBuffer   Int           @default(0)
+  latitude            Float?
+  longitude           Float?
+  googleMapsUrl       String?
+  active              Boolean       @default(true)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  tenantId            String
+  appointments        Appointment[]
+  blockedTimeSlots    BlockedTimeSlot[]
+  products            Product[]
+  sales               Sale[]
+  tenant              Tenant        @relation(fields: [tenantId], references: [id])
+  users               User[]
+
+  @@map("stores")
+}
+
+model Product {
+  id              String         @id @default(uuid())
+  name            String
+  model           String?
+  storage         String?
+  color           String?
+  imei            String?        @unique
+  battery         Int?
+  price           Float
+  cost            Float?
+  stock           Int            @default(1)
+  condition       String         @default("Nuevo")
+  category        String         @default("PHONE")
+  description     String?
+  reserved        Int            @default(0)
+  warrantyDays    Int?
+  warrantyExpires DateTime?
+  barcode         String?
+  qrCode          String?
+  active          Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  tenantId        String
+  storeId         String
+  orderItems      OrderItem[]
+  priceHistory    PriceHistory[]
+  store           Store          @relation(fields: [storeId], references: [id])
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  saleItems       SaleItem[]
+
+  @@index([storeId])
+  @@index([tenantId])
+  @@index([category])
+  @@index([active])
+  @@index([active, category])
+  @@index([active, stock])
+  @@map("products")
+}
+
+model PriceHistory {
+  id        String   @id @default(uuid())
+  oldPrice  Float
+  newPrice  Float
+  oldCost   Float?
+  newCost   Float?
+  reason    String?
+  createdAt DateTime @default(now())
+  productId String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("price_history")
+}
+
+model Client {
+  id           String        @id @default(uuid())
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  dni          String?
+  instagramId  String?       @unique
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tenantId     String
+  appointments Appointment[]
+  chatMessages ChatMessage[]
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  orders       Order[]
+  repairs      Repair[]
+  sales        Sale[]
+
+  @@map("clients")
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  code          String?
+  total         Float
+  discount      Float      @default(0)
+  paymentMethod String
+  saleType      String     @default("RETAIL")
+  notes         String?
+  cancelled     Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  tenantId      String
+  clientId      String?
+  userId        String
+  storeId       String
+  items         SaleItem[]
+  store         Store      @relation(fields: [storeId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+  client        Client?    @relation(fields: [clientId], references: [id])
+  tenant        Tenant     @relation(fields: [tenantId], references: [id])
+
+  @@index([storeId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([tenantId])
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  price     Float
+  subtotal  Float
+  saleId    String
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  total     Float
+  status    String      @default("PENDING")
+  notes     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  tenantId  String
+  clientId  String?
+  userId    String
+  items     OrderItem[]
+  user      User        @relation(fields: [userId], references: [id])
+  client    Client?     @relation(fields: [clientId], references: [id])
+  tenant    Tenant      @relation(fields: [tenantId], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  price     Float
+  subtotal  Float
+  orderId   String
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Repair {
+  id            String    @id @default(uuid())
+  code          String?
+  deviceModel   String
+  deviceImei    String?
+  deviceColor   String?
+  issue         String
+  diagnosis     String?
+  estimatedCost Float?
+  finalCost     Float?
+  status        String    @default("RECEIVED")
+  notes         String?
+  clientNotes   String?
+  receivedAt    DateTime  @default(now())
+  estimatedDate DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  tenantId      String
+  clientId      String?
+  client        Client?   @relation(fields: [clientId], references: [id])
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@map("repairs")
+}
+
+model Appointment {
+  id             String   @id @default(uuid())
+  date           DateTime
+  time           String
+  customerName   String
+  customerPhone  String
+  customerDni    String?
+  dniFrontUrl    String?
+  dniBackUrl     String?
+  hasCompanion   Boolean  @default(false)
+  companionName  String?
+  companionDni   String?
+  product        String?
+  productId      String?
+  paymentMethod  String?
+  customerType   String   @default("MINORISTA")
+  assignedUserId String?
+  status         String   @default("PENDING") // PENDING, CONFIRMED, ATTENDED, CANCELLED
+  source         String   @default("MANUAL")
+  notes          String?
+  cancelReason   String?
+  attendedAt     DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tenantId       String
+  storeId        String?
+  clientId       String?
+  client         Client?  @relation(fields: [clientId], references: [id])
+  store          Store?   @relation(fields: [storeId], references: [id])
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  assignedUser   User?    @relation("AppointmentAssignedUser", fields: [assignedUserId], references: [id])
+
+  @@index([date, time])
+  @@index([customerPhone])
+  @@index([status])
+  @@index([tenantId, status])
+  @@map("appointments")
+}
+
+model BlockedTimeSlot {
+  id        String   @id @default(uuid())
+  date      DateTime
+  startTime String
+  endTime   String
+  reason    String?
+  storeId   String?
+  tenantId  String
+  createdAt DateTime @default(now())
+  store     Store?   @relation(fields: [storeId], references: [id])
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([date, storeId])
+  @@map("blocked_time_slots")
+}
+
+model BotConfig {
+  id        String   @id @default(uuid())
+  config    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("bot_config")
+}
+
+model ChatMessage {
+  id            String   @id @default(uuid())
+  customerPhone String
+  customerName  String?
+  originalJid   String?  // JID original de WhatsApp (@lid o @s.whatsapp.net) para responder
+  message       String
+  response      String?
+  intent        String?
+  status        String   @default("pending")
+  category      String?
+  notes         String?
+  resolved      Boolean  @default(false)
+  metadata      String?
+  platform      String   @default("whatsapp")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  clientId      String?
+  tenantId      String?
+  sentBy        String?
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
+  client        Client?  @relation(fields: [clientId], references: [id])
+
+  @@index([customerPhone])
+  @@index([createdAt])
+  @@index([status])
+  @@index([intent])
+  @@index([category])
+  @@index([resolved])
+  @@index([platform])
+  @@index([tenantId])
+  @@map("chat_messages")
+}
+
+model BotConversation {
+  id            String   @id @default(uuid())
+  customerPhone String   @unique
+  context       String?
+  state         String   @default("IDLE")
+  lastActivity  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerPhone])
+  @@index([lastActivity])
+  @@map("bot_conversations")
+}
+
+model NotificationPreferences {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  botNewMessage        Boolean  @default(true)
+  botEscalation        Boolean  @default(true)
+  saleCompleted        Boolean  @default(true)
+  saleHighValue        Boolean  @default(true)
+  appointmentNew       Boolean  @default(true)
+  appointmentReminder  Boolean  @default(true)
+  appointmentCancelled Boolean  @default(false)
+  stockLow             Boolean  @default(true)
+  newClient            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model WhatsAppNotificationNumber {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([phone])
+  @@map("whatsapp_notification_numbers")
+}
+
+model ProductPhoto {
+  id        String   @id @default(uuid())
+  modelName String
+  category  String   @default("PHONE")
+  filename  String
+  url       String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([modelName])
+  @@index([tenantId])
+  @@map("product_photos")
+}
+
+model BroadcastChannel {
+  id        String    @id @default(uuid())
+  name      String
+  chatId    String
+  type      String    @default("GROUP")
+  message   String?
+  sendTime  String    @default("09:00")
+  sendStock Boolean   @default(true)
+  enabled   Boolean   @default(true)
+  frequency Int       @default(1)
+  lastSent  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([enabled])
+  @@map("broadcast_channels")
+}
+
+model ProductTemplate {
+  id          String   @id @default(uuid())
+  barcode     String   @unique
+  name        String
+  category    String
+  model       String?
+  price       Float?
+  cost        Float?
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([barcode])
+  @@map("product_templates")
+}
+
+model WhatsAppSession {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  data      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+  @@map("whatsapp_sessions")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  userName   String
+  userRole   String
+  tenantId   String
+  action     String
+  entity     String
+  entityId   String?
+  entityName String?
+  changes    String?
+  metadata   String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@index([entity, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+
+model Payment {
+  id                String        @id @default(uuid())
+  tenantId          String
+  subscriptionId    String?
+  amount            Float
+  currency          String        @default("USD")
+  method            String        // 'mercadopago', 'binance', 'manual'
+  provider          String?       // 'card', 'transfer', 'usdt', 'btc'
+  status            String        @default("pending") // 'pending', 'completed', 'failed', 'refunded'
+  externalId        String?       // ID de MercadoPago o Binance
+  externalStatus    String?
+  paymentUrl        String?
+  transactionHash   String?       // Para crypto
+  walletAddress     String?       // Para crypto
+  metadata          String?       // JSON con datos adicionales
+  notes             String?
+  paidAt            DateTime?
+  expiresAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([tenantId, paidAt])
+  @@index([subscriptionId])
+  @@index([externalId])
+  @@index([status])
+  @@map("payments")
+}
+
+model Subscription {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  plan                String    // 'basic', 'pro', 'enterprise'
+  status              String    @default("active") // 'active', 'cancelled', 'expired', 'suspended'
+  billingCycle        String    @default("monthly") // 'monthly', 'yearly'
+  amount              Float
+  currency            String    @default("USD")
+  paymentMethod       String    // 'mercadopago', 'binance'
+  autoRenew           Boolean   @default(true)
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelledAt         DateTime?
+  cancelReason        String?
+  trialEndsAt         DateTime?
+  metadata            String?   // JSON con configuración del plan
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payments            Payment[]
+  invoices            Invoice[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id               String       @id @default(uuid())
+  subscriptionId   String
+  tenantId         String
+  invoiceNumber    String       @unique
+  amount           Float
+  currency         String       @default("USD")
+  status           String       @default("pending") // 'pending', 'paid', 'void', 'uncollectible'
+  description      String?
+  periodStart      DateTime
+  periodEnd        DateTime
+  dueDate          DateTime
+  paidAt           DateTime?
+  attemptCount     Int          @default(0)
+  lastAttemptAt    DateTime?
+  nextAttemptAt    DateTime?
+  pdfUrl           String?
+  metadata         String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  tenant           Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription     Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([subscriptionId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+model SystemConfig {
+  id                   String   @id @default(uuid())
+  trialDuration        Int      @default(14)
+  planLimits           Json     // { trial: { users, stores, products }, basic: {...}, pro: {...} }
+  paymentReminders     Json     // { enabled, daysBeforeExpiry, afterExpiryDays }
+  twoFactorEnabled     Boolean  @default(false)
+  paymentConfig        Json     // { currency, taxRate, invoicePrefix, autoInvoice }
+  maintenanceMode      Boolean  @default(false)
+  maintenanceMessage   String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  userId      String?
+  action      String   // 'LOGIN', 'CREATE_PRODUCT', 'DELETE_SALE', 'ERROR', etc.
+  details     String?  // JSON con detalles adicionales
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}

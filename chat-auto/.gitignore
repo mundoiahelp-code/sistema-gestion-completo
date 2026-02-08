@@ -1,0 +1,7 @@
+node_modules/
+.env
+auth_info/
+*.log
+.wwebjs_auth/
+baileys_store/
+google-credentials.json
