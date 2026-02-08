@@ -290,10 +290,13 @@ async function initWhatsAppForTenant(tenantId) {
             isPrivateNumber = true;
             phoneNumber = originalJid.replace('@lid', '');
             console.log(`⚠️  [${tenantId}] NO SE PUDO RESOLVER @lid - Marcando como privado`);
-            console.log(`⚠️  [${tenantId}] Se usará pushName como identificador: ${contactName}`);
             
-            // Si no hay pushName, no guardar el mensaje
-            if (!contactName) {
+            // Si hay pushName, usarlo como identificador principal
+            if (contactName) {
+              console.log(`✅ [${tenantId}] Usando pushName como identificador: ${contactName}`);
+              // Guardar el pushName como "número" para que sea buscable
+              phoneNumber = `${contactName}_${phoneNumber.substring(0, 8)}`;
+            } else {
               console.log(`❌ [${tenantId}] Sin pushName - IGNORANDO mensaje de @lid sin resolver`);
               continue;
             }
