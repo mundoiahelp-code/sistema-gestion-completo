@@ -25,7 +25,19 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      include: { store: true, tenant: true }
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        role: true,
+        avatarColor: true,
+        active: true,
+        tenantId: true,
+        storeId: true,
+        store: true,
+        tenant: true
+      }
     });
 
     if (!user || !user.active) {
@@ -42,22 +54,20 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    // Verificar 2FA si está habilitado
-    if (user.twoFactorEnabled) {
-      if (!twoFactorCode) {
-        return res.status(200).json({ 
-          requires2FA: true,
-          userId: user.id 
-        });
-      }
-
-      const { validate2FACode } = await import('./twoFactor.controller');
-      const isValid = await validate2FACode(user.id, twoFactorCode);
-      
-      if (!isValid) {
-        return res.status(401).json({ error: 'Código 2FA incorrecto' });
-      }
-    }
+    // 2FA deshabilitado temporalmente hasta que se ejecuten las migraciones
+    // if (user.twoFactorEnabled) {
+    //   if (!twoFactorCode) {
+    //     return res.status(200).json({ 
+    //       requires2FA: true,
+    //       userId: user.id 
+    //     });
+    //   }
+    //   const { validate2FACode } = await import('./twoFactor.controller');
+    //   const isValid = await validate2FACode(user.id, twoFactorCode);
+    //   if (!isValid) {
+    //     return res.status(401).json({ error: 'Código 2FA incorrecto' });
+    //   }
+    // }
 
     // Generar access token (1 hora)
     const token = jwt.sign(
