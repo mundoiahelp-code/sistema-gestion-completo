@@ -524,18 +524,18 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Todo lo que necesitás</h2>
-            <p className="text-xl text-gray-600">Un sistema completo para hacer crecer tu negocio</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Todo tu negocio, en un solo sistema</h2>
+            <p className="text-xl text-gray-600">Controlá cada área clave de tu operación con herramientas potentes.</p>
           </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: MessageSquare, title: 'Asistente IA', desc: 'Responde consultas, muestra stock en tiempo real y agenda turnos automáticamente 24/7', badge: 'Pro', color: 'violet' },
-              { icon: Package, title: 'Inventario rápido', desc: 'Control de stock en tiempo real con seguimiento por número de serie/IMEI', color: 'blue' },
-              { icon: CreditCard, title: 'Punto de Venta', desc: 'Registrá ventas en segundos. Efectivo, tarjeta, transferencia o crypto', color: 'emerald' },
-              { icon: Calendar, title: 'Turnos Online', desc: 'Tus clientes reservan desde WhatsApp sin que hagas nada', badge: 'Pro', color: 'orange' },
-              { icon: Users, title: 'CRM Clientes', desc: 'Historial completo de compras, chats y preferencias de cada cliente', badge: 'Pro', color: 'pink' },
-              { icon: BarChart2, title: 'Reportes', desc: 'Dashboard en vivo con métricas de ventas, productos y ganancias', color: 'indigo' },
+              { icon: MessageSquare, title: 'Asistente IA', desc: 'Responde mensajes como si fueras vos, consulta stock en tiempo real, agenda turnos y recupera clientes que dejaron la compra.', badge: 'Pro', color: 'violet' },
+              { icon: Package, title: 'Gestion de Stock', desc: 'Gestioná tu stock en tiempo real con seguimiento por IMEI/serie. Sabé exactamente qué tenés, qué vendiste y qué te queda, sin errores humanos.', color: 'blue' },
+              { icon: CreditCard, title: 'Registro de ventas', desc: 'Registrá ventas al instante con efectivo, tarjeta, transferencia o UsdT. Todo queda ordenado, registrado y listo para analizar tus ganancias.', color: 'emerald' },
+              { icon: Calendar, title: 'Turnos Automaticos', desc: 'Tus clientes sacan turno solos desde WhatsApp. El sistema agenda, confirma y organiza todo sin que tengas que responder ni un mensaje.', badge: 'Pro', color: 'orange' },
+              { icon: Users, title: 'CRM Completo', desc: 'Respondé WhatsApp desde el sistema con todo tu equipo, organizá chats con etiquetas, enviá mensajes masivos en segundos y controlá cuántos mensajes entran, se responden y se cierran cada día.', badge: 'Pro', color: 'pink' },
+              { icon: BarChart2, title: 'Estadisticas', desc: 'Dashboard en vivo con ventas, ultimos ingresos, ultimas ventas y ganancias reales. Calculos de ganancias y facturacion totalmente automaticos.', color: 'indigo' },
             ].map((feature, i) => (
               <motion.div
                 key={i}
@@ -562,65 +562,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* BENEFITS - Chat + Screenshot */}
-      <section className="py-24 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
-              El Asistente agenda turnos<br />
-              <span className="text-gray-500">mientras vos descansás</span>
-            </h2>
-            <p className="text-xl text-gray-600">Mirá cómo funciona en tiempo real</p>
-          </div>
-          
-          {/* Sistema + iPhone Chat lado a lado */}
-          <div className="relative">
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                <Check className="w-3 h-3 text-green-600" />
-              </div>
-              <span className="text-sm font-semibold text-green-600">Turno creado automáticamente en el sistema</span>
-            </div>
-            
-            <div className="relative flex flex-col lg:flex-row items-center justify-center gap-8">
-              {/* Screenshot del sistema */}
-              <div className="relative overflow-hidden w-full lg:max-w-[750px] rounded-2xl shadow-2xl border border-gray-200">
-                <img src="/screenshots/turnos.png" alt="Sistema de turnos" className="w-full" />
-              </div>
-              
-              {/* Imagen del chat de WhatsApp */}
-              <div className="relative flex-shrink-0 hidden md:block">
-                <img 
-                  src="/screenshots/chat-whatsapp.png" 
-                  alt="Chat WhatsApp" 
-                  className="w-[280px] lg:w-[320px] h-auto drop-shadow-2xl rounded-3xl"
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Features below */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            {[
-              { icon: Clock, title: 'Ahorrá tiempo', desc: 'El asistente responde mientras vos hacés otras cosas', color: 'blue' },
-              { icon: Zap, title: 'Vendé más', desc: 'Nunca pierdas una venta por no responder a tiempo', color: 'violet' },
-              { icon: Shield, title: 'Todo organizado', desc: 'Stock, ventas, ingresos y clientes en un solo lugar', color: 'emerald' },
-            ].map((item, i) => (
-              <div key={i} className="flex gap-4 bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-lg transition">
-                <div className={`w-12 h-12 rounded-xl bg-${item.color}-100 flex items-center justify-center flex-shrink-0`}>
-                  <item.icon className={`w-6 h-6 text-${item.color}-600`} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
-                  <p className="text-gray-600 text-sm">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* PRICING */}
       <section id="planes" className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
