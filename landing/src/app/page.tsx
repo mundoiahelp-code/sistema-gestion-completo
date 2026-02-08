@@ -485,14 +485,15 @@ export default function LandingPage() {
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
             <div className="flex items-center gap-2 mb-4">
               <Check className="w-5 h-5 text-green-600" />
-              <span className="font-semibold text-gray-900">Ejemplo real:</span>
+              <span className="font-semibold text-gray-900">Turno agendado automáticamente:</span>
             </div>
-            <p className="text-gray-600 mb-4">
-              Cliente: "Hola, tenés iPhone 13 Pro en stock?"<br />
-              <span className="text-blue-600">Asistente: "¡Hola! Sí, tenemos iPhone 13 Pro 128GB en Grafito y Azul Sierra. Precio: $850.000. ¿Te gustaría reservarlo?"</span>
-            </p>
-            <p className="text-sm text-gray-500">
-              El asistente consulta tu inventario en tiempo real y responde con información actualizada.
+            <img
+              src="/screenshots/turnos.png"
+              alt="Turno agendado en el sistema"
+              className="rounded-lg w-full"
+            />
+            <p className="text-sm text-gray-500 mt-4">
+              El asistente agenda el turno y lo registra automáticamente en el sistema con todos los detalles del cliente.
             </p>
           </div>
         </div>
