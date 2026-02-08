@@ -455,10 +455,21 @@ export default function StoresList({ data }: Props) {
           </div>
 
           <DialogFooter className='flex flex-col gap-2 sm:flex-row sm:justify-between'>
-            <Button variant='outline' onClick={() => {
+            <Button variant='outline' onClick={async () => {
               if (selectedStore) {
-                setStoreToEdit(selectedStore);
-                setEditStoreOpen(true);
+                // Recargar la tienda desde el backend para tener datos frescos
+                try {
+                  const response = await axios.get(`${API}/stores/${selectedStore.id}`, {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                  });
+                  setStoreToEdit(response.data.store);
+                  setEditStoreOpen(true);
+                } catch (error) {
+                  console.error('Error al cargar tienda:', error);
+                  // Fallback: usar datos locales
+                  setStoreToEdit(selectedStore);
+                  setEditStoreOpen(true);
+                }
               }
             }}>
               <SettingsIcon className='h-4 w-4 mr-2' />
