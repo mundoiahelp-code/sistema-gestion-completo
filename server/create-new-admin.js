@@ -30,23 +30,36 @@ async function main() {
 
   // Crear o actualizar usuario
   const hashedPassword = await bcrypt.hash(ADMIN.password, 10);
-  const user = await prisma.user.upsert({
+  
+  // Verificar si el usuario existe
+  const existingUser = await prisma.user.findUnique({
     where: { email: ADMIN.email },
-    update: {
-      password: hashedPassword,
-      role: 'SUPER_ADMIN',
-      active: true
-    },
-    create: {
-      email: ADMIN.email,
-      password: hashedPassword,
-      name: ADMIN.name,
-      role: 'SUPER_ADMIN',
-      tenantId: tenant.id,
-      storeId: store.id,
-      active: true
-    }
+    select: { id: true, email: true }
   });
+
+  let user;
+  if (existingUser) {
+    user = await prisma.user.update({
+      where: { email: ADMIN.email },
+      data: {
+        password: hashedPassword,
+        role: 'SUPER_ADMIN',
+        active: true
+      }
+    });
+  } else {
+    user = await prisma.user.create({
+      data: {
+        email: ADMIN.email,
+        password: hashedPassword,
+        name: ADMIN.name,
+        role: 'SUPER_ADMIN',
+        tenantId: tenant.id,
+        storeId: store.id,
+        active: true
+      }
+    });
+  }
 
   console.log('✅ Usuario configurado correctamente\n');
   console.log('═══════════════════════════════════════════');

@@ -83,7 +83,16 @@ async function main() {
   // 3. Crear usuario super admin
   console.log('\n3️⃣ Creando usuario super admin...');
   let user = await prisma.user.findUnique({
-    where: { email: ADMIN_USER.email }
+    where: { email: ADMIN_USER.email },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      active: true,
+      tenantId: true,
+      storeId: true
+    }
   });
 
   const hashedPassword = await bcrypt.hash(ADMIN_USER.password, 10);
