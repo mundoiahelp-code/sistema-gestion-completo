@@ -732,6 +732,7 @@ export default function StoresList({ data }: Props) {
             </DialogHeader>
             <div className='overflow-y-auto flex-1 px-1'>
               <StoreEditForm
+                key={storeToEdit.id}
                 data={storeToEdit}
                 handleEdit={handleEditStore}
                 loading={loading}
