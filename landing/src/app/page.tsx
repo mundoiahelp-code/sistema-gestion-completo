@@ -591,54 +591,11 @@ export default function LandingPage() {
           {/* Planes Mensuales */}
           {pricingTab === 'monthly' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* FREE */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }}
-              className="bg-white border border-gray-200 rounded-xl p-8 hover:border-gray-300 transition-all hover:shadow-lg"
-            >
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Prueba gratuita</h3>
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-bold text-gray-900">Gratis</span>
-                </div>
-                <p className="text-gray-600 text-sm">14 días para probar</p>
-              </div>
-              
-              <button 
-                onClick={() => openModal('free')} 
-                className="w-full bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 font-medium py-3 px-6 rounded-lg transition mb-8"
-              >
-                Comenzar prueba
-              </button>
-              
-              <div className="space-y-4">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">Incluye</p>
-                {[
-                  { text: 'Productos ilimitados', desc: 'Sin límite de SKUs' },
-                  { text: 'Ventas ilimitadas', desc: 'Registrá todas tus ventas' },
-                  { text: 'Punto de venta completo', desc: 'Efectivo, tarjeta, transferencia' },
-                  { text: 'Reportes básicos', desc: 'Ventas diarias y mensuales' },
-                  { text: 'Hasta 4 usuarios', desc: 'Equipo pequeño' },
-                ].map((f, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <span className="text-gray-700 text-sm block">{f.text}</span>
-                      <span className="text-gray-500 text-xs">{f.desc}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
             {/* BASIC */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
               whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
-              transition={{ delay: 0.1 }}
+              viewport={{ once: true }}
               className="bg-white border-2 border-blue-600 rounded-xl p-8 hover:shadow-xl transition-all relative"
             >
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-sm font-semibold px-4 py-1 rounded-full">
@@ -676,6 +633,49 @@ export default function LandingPage() {
                 ].map((f, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="text-gray-700 text-sm block">{f.text}</span>
+                      <span className="text-gray-500 text-xs">{f.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* FREE */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-white border border-gray-200 rounded-xl p-8 hover:border-gray-300 transition-all hover:shadow-lg"
+            >
+              <div className="mb-8">
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Prueba gratuita</h3>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-5xl font-bold text-gray-900">Gratis</span>
+                </div>
+                <p className="text-gray-600 text-sm">14 días para probar</p>
+              </div>
+              
+              <button 
+                onClick={() => openModal('free')} 
+                className="w-full bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 font-medium py-3 px-6 rounded-lg transition mb-8"
+              >
+                Comenzar prueba
+              </button>
+              
+              <div className="space-y-4">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">Incluye</p>
+                {[
+                  { text: 'Productos ilimitados', desc: 'Sin límite de SKUs' },
+                  { text: 'Ventas ilimitadas', desc: 'Registrá todas tus ventas' },
+                  { text: 'Punto de venta completo', desc: 'Efectivo, tarjeta, transferencia' },
+                  { text: 'Reportes básicos', desc: 'Ventas diarias y mensuales' },
+                  { text: 'Hasta 4 usuarios', desc: 'Equipo pequeño' },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <span className="text-gray-700 text-sm block">{f.text}</span>
                       <span className="text-gray-500 text-xs">{f.desc}</span>
