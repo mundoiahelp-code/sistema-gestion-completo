@@ -316,14 +316,6 @@ export default function LandingPage() {
             <button onClick={() => scrollTo('funciones')} className="text-sm text-gray-600 hover:text-gray-900 transition hidden md:block font-medium">Funciones</button>
             <button onClick={() => scrollTo('planes')} className="text-sm text-gray-600 hover:text-gray-900 transition hidden md:block font-medium">Planes</button>
             <a href={`${APP_URL}/iniciar-sesion`} className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">Iniciar sesión</a>
-            <motion.button 
-              onClick={() => openModal('free')} 
-              className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Probar gratis
-            </motion.button>
           </div>
         </div>
       </nav>
@@ -374,7 +366,7 @@ export default function LandingPage() {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <motion.button 
-                onClick={() => openModal('free')} 
+                onClick={() => scrollTo('planes')} 
                 className="group relative inline-flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold px-8 py-4 rounded-lg text-lg shadow-lg hover:bg-blue-700 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -526,7 +518,7 @@ export default function LandingPage() {
               { icon: Package, title: 'Gestion de Stock', desc: 'Gestioná tu stock en tiempo real con seguimiento por IMEI/serie. Sabé exactamente qué tenés, qué vendiste y qué te queda, sin errores humanos.', color: 'blue' },
               { icon: CreditCard, title: 'Registro de ventas', desc: 'Registrá ventas al instante con efectivo, tarjeta, transferencia o UsdT. Todo queda ordenado, registrado y listo para analizar tus ganancias.', color: 'emerald' },
               { icon: Calendar, title: 'Turnos Automaticos', desc: 'Tus clientes sacan turno solos desde WhatsApp. El sistema agenda, confirma y organiza todo sin que tengas que responder ni un mensaje.', badge: 'Pro', color: 'orange' },
-              { icon: Users, title: 'CRM Completo', desc: 'Respondé WhatsApp desde el sistema con todo tu equipo, organizá chats con etiquetas, enviá mensajes masivos en segundos y controlá cuántos mensajes entran, se responden y se cierran cada día.', badge: 'Pro', color: 'pink' },
+              { icon: Users, title: 'CRM Completo', desc: 'Respondé WhatsApp desde el sistema con todo tu equipo, organizá chats con etiquetas, enviá mensajes masivos en segundos y controlá cuántos mensajes se responden y se cierran cada día.', badge: 'Pro', color: 'pink' },
               { icon: BarChart2, title: 'Estadisticas', desc: 'Dashboard en vivo con ventas, ultimos ingresos, ultimas ventas y ganancias reales. Calculos de ganancias y facturacion totalmente automaticos.', color: 'indigo' },
             ].map((feature, i) => (
               <motion.div
