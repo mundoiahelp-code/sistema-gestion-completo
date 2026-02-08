@@ -364,7 +364,12 @@ export default function LandingPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <img src="/screenshots/logo-solo-clodeb.png" alt="Clodeb" className="h-10 w-10" />
+            <img 
+              src="/screenshots/logo-solo-clodeb.png" 
+              alt="Clodeb" 
+              className="h-12 w-auto object-contain"
+              style={{ imageRendering: 'crisp-edges' }}
+            />
             <span className="text-lg font-semibold text-white hidden sm:block">Clodeb</span>
           </motion.button>
           <div className="flex items-center gap-6">
@@ -850,7 +855,12 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <img src="/screenshots/logo-solo-clodeb.png" alt="Clodeb" className="h-10 w-10" />
+              <img 
+                src="/screenshots/logo-solo-clodeb.png" 
+                alt="Clodeb" 
+                className="h-12 w-auto object-contain"
+                style={{ imageRendering: 'crisp-edges' }}
+              />
               <span className="font-semibold text-white">Clodeb</span>
             </div>
             <div className="flex items-center gap-6">
@@ -1208,7 +1218,12 @@ export default function LandingPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
           {/* Logo en la esquina superior izquierda */}
           <div className="absolute top-8 left-8 flex items-center gap-3">
-            <img src="/screenshots/logo-solo-clodeb.png" alt="Clodeb" className="h-12 w-12" />
+            <img 
+              src="/screenshots/logo-solo-clodeb.png" 
+              alt="Clodeb" 
+              className="h-14 w-auto object-contain"
+              style={{ imageRendering: 'crisp-edges' }}
+            />
             <span className="text-xl font-semibold text-gray-900">Clodeb</span>
           </div>
 
